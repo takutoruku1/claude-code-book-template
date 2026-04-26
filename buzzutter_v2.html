@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ばずったー v2 — SNS運用代行ADV</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=DotGothic16&display=swap');
+
+:root {
+  --bg: #0d0d14;
+  --surface: #16161f;
+  --surface2: #1e1e2e;
+  --border: #2a2a40;
+  --accent: #ff6b9d;
+  --accent2: #7c6af7;
+  --accent3: #00d4aa;
+  --text: #e8e8f0;
+  --text-dim: #888899;
+  --chat-self: #2a1f4a;
+  --chat-other: #1e2a1e;
+  --line-green: #06c755;
+  --buzz-blue: #1d9bf0;
+  --heart: #f91880;
+  --win-border: #3a3a5a;
+  --win-header: #252535;
+  --win-titlebar: #1a1a28;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: #080810;
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== DESKTOP BG ===== */
+.desktop {
+  width: 100vw;
+  height: 100vh;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(124,106,247,.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(255,107,157,.08) 0%, transparent 50%),
+    #080810;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.desktop-icons {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 1;
+}
+.desktop-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background .15s;
+  width: 64px;
+}
+.desktop-icon:hover { background: rgba(255,255,255,.08); }
+.desktop-icon .icon-img { font-size: 28px; }
+.desktop-icon .icon-label { font-size: 10px; color: rgba(255,255,255,.7); text-align: center; text-shadow: 0 1px 3px #000; }
+
+/* ===== TITLE SCREEN ===== */
+#screen-title {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, #1a0a2e 0%, #0d0d14 60%);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 32px;
+  z-index: 200;
+  animation: fadeIn .4s ease;
+}
+#screen-title.active { display: flex; }
+
+.title-deco {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.title-deco span {
+  position: absolute;
+  font-size: 120px;
+  opacity: .04;
+  animation: blink 3s infinite;
+}
+.title-logo { text-align: center; z-index: 1; }
+.title-logo .sub {
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.title-logo h1 {
+  font-family: 'DotGothic16', monospace;
+  font-size: 64px;
+  color: var(--text);
+  line-height: 1;
+  text-shadow: 0 0 40px rgba(255,107,157,.5);
+}
+.title-logo h1 span { color: var(--accent); }
+.title-logo .catch { font-size: 14px; color: var(--text-dim); margin-top: 16px; }
+
+.btn-start {
+  z-index: 1;
+  padding: 16px 56px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  border: none;
+  border-radius: 50px;
+  color: white;
+  font-size: 16px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 8px 32px rgba(255,107,157,.4);
+}
+.btn-start:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(255,107,157,.6); }
+
+/* ===== WINDOW CHROME ===== */
+.app-window {
+  width: min(1300px, 98vw);
+  height: min(780px, 96vh);
+  background: var(--surface);
+  border: 1px solid var(--win-border);
+  border-radius: 12px;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.04);
+  animation: windowOpen .3s cubic-bezier(.34,1.4,.64,1);
+  overflow: hidden;
+}
+.app-window.active { display: flex; }
+
+@keyframes windowOpen {
+  from { opacity: 0; transform: scale(.94) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.titlebar {
+  background: var(--win-titlebar);
+  border-bottom: 1px solid var(--win-border);
+  padding: 0 16px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  user-select: none;
+}
+.titlebar-dots { display: flex; gap: 6px; }
+.titlebar-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.titlebar-dot.red   { background: #ff5f57; }
+.titlebar-dot.yellow { background: #febc2e; }
+.titlebar-dot.green { background: #28c840; }
+.titlebar-dot.red:hover   { background: #ff3b30; }
+.titlebar-dot.yellow:hover { background: #f5a623; }
+.titlebar-dot.green:hover { background: #1ab72d; }
+.titlebar-title {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-left: auto;
+  margin-right: auto;
+  font-family: 'DotGothic16', monospace;
+  letter-spacing: 1px;
+}
+
+/* ===== STEP BAR ===== */
+.step-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: var(--win-header);
+  border-bottom: 1px solid var(--win-border);
+  height: 36px;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.step-item {
+  flex: 1;
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-dim);
+  padding: 6px 4px;
+  border-radius: 6px;
+  transition: all .3s;
+  letter-spacing: .3px;
+  white-space: nowrap;
+}
+.step-item.active { color: var(--accent); background: rgba(255,107,157,.12); font-weight: 700; }
+.step-item.done { color: var(--accent3); }
+
+/* ===== MAIN LAYOUT (2-column) ===== */
+.main-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ===== LEFT: CHAT PANEL ===== */
+.chat-panel {
+  width: 340px;
+  min-width: 340px;
+  border-right: 1px solid var(--win-border);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+.chat-panel-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--win-border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.chat-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a4a2a, #1a3a1a);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  border: 2px solid var(--line-green);
+  flex-shrink: 0;
+}
+.chat-name { font-weight: 700; font-size: 13px; }
+.chat-status { font-size: 10px; color: var(--line-green); }
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chat-messages::-webkit-scrollbar { width: 3px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.msg-row {
+  display: flex;
+  gap: 6px;
+  animation: slideUp .3s ease;
+}
+.msg-row.self { flex-direction: row-reverse; }
+.msg-ava {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.msg-ava.client { background: linear-gradient(135deg, #2a4a2a, #1a3a1a); border: 1px solid var(--line-green); }
+.msg-ava.self   { background: linear-gradient(135deg, #2a1f4a, #1a0f3a); border: 1px solid var(--accent2); }
+.msg-bubble {
+  max-width: 78%;
+  padding: 8px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.msg-bubble.client {
+  background: var(--chat-other);
+  border: 1px solid rgba(6,199,85,.15);
+  border-top-left-radius: 4px;
+}
+.msg-bubble.self {
+  background: var(--chat-self);
+  border: 1px solid rgba(124,106,247,.2);
+  border-top-right-radius: 4px;
+}
+.msg-time { font-size: 9px; color: var(--text-dim); align-self: flex-end; }
+
+.typing-indicator {
+  display: flex; align-items: center; gap: 4px;
+  padding: 8px 12px;
+  background: var(--chat-other);
+  border-radius: 16px;
+  border-top-left-radius: 4px;
+  width: fit-content;
+  border: 1px solid rgba(6,199,85,.15);
+}
+.typing-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  animation: blink 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: .2s; }
+.typing-dot:nth-child(3) { animation-delay: .4s; }
+
+.chat-choices {
+  padding: 10px 12px;
+  border-top: 1px solid var(--win-border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.choice-btn {
+  padding: 8px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  text-align: left;
+  transition: all .2s;
+}
+.choice-btn:hover {
+  border-color: var(--accent2);
+  background: rgba(124,106,247,.1);
+  transform: translateX(3px);
+}
+
+/* ===== RIGHT: GAME PANEL ===== */
+.game-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ===== MATERIAL AREA ===== */
+.material-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+.material-area.active { display: flex; }
+.material-area::-webkit-scrollbar { width: 4px; }
+.material-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.material-area-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.material-area-title { font-size: 13px; font-weight: 700; color: var(--text-dim); }
+.card-limit-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(124,106,247,.15);
+  border: 1px solid rgba(124,106,247,.3);
+  color: var(--accent2);
+}
+
+.material-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* CARD FLIP */
+.card-flip-wrapper {
+  perspective: 800px;
+  height: 170px;
+  cursor: pointer;
+}
+.card-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .5s cubic-bezier(.4,0,.2,1);
+}
+.card-flip-wrapper.flipped .card-flip-inner { transform: rotateY(180deg); }
+.card-flip-wrapper.selected .card-back { border-color: var(--accent3); background: rgba(0,212,170,.08); }
+
+.card-face, .card-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  padding: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.card-face {
+  background: linear-gradient(135deg, var(--surface2), #161624);
+  gap: 8px;
+}
+.card-face-icon { font-size: 32px; }
+.card-face-title { font-size: 13px; font-weight: 700; }
+.card-face-hint { font-size: 10px; color: var(--text-dim); }
+
+.card-back {
+  transform: rotateY(180deg);
+  align-items: flex-start;
+  text-align: left;
+  justify-content: flex-start;
+  gap: 6px;
+}
+.card-back-type {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.card-back-title { font-size: 12px; font-weight: 700; }
+.card-back-desc { font-size: 11px; color: var(--text-dim); line-height: 1.5; flex: 1; }
+.card-back-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+.card-tag {
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 9px;
+  background: rgba(255,107,157,.12);
+  border: 1px solid rgba(255,107,157,.2);
+  color: var(--accent);
+  animation: tagPop .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes tagPop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+
+.card-flip-wrapper.locked { opacity: .45; pointer-events: none; }
+
+.material-proceed-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  opacity: .4;
+  transition: opacity .2s, transform .15s;
+}
+.material-proceed-btn:not(:disabled) { opacity: 1; }
+.material-proceed-btn:not(:disabled):hover { transform: translateY(-1px); }
+
+/* ===== POST AREA ===== */
+.post-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+}
+.post-area.active { display: flex; }
+.post-area::-webkit-scrollbar { width: 4px; }
+.post-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.section-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.post-options { display: flex; flex-wrap: wrap; gap: 7px; }
+.post-opt {
+  padding: 7px 13px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  transition: all .18s;
+}
+.post-opt:hover { border-color: var(--accent2); background: rgba(124,106,247,.1); }
+.post-opt.selected { background: rgba(124,106,247,.2); border-color: var(--accent2); }
+.post-opt.buzz-risk { border-color: rgba(255,107,157,.25); }
+.post-opt.buzz-risk.selected { background: rgba(255,107,157,.15); border-color: var(--accent); }
+.post-opt:disabled { opacity: .35; cursor: not-allowed; }
+
+.post-preview-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+.post-preview-label { font-size: 10px; color: var(--text-dim); text-align: center; margin-bottom: 8px; }
+.preview-inner {
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  min-height: 60px;
+}
+.preview-text { font-size: 13px; line-height: 1.7; color: var(--text); }
+.preview-hash { font-size: 12px; color: var(--buzz-blue); margin-top: 6px; }
+
+.score-row { display: flex; gap: 10px; }
+.score-box {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.score-label { font-size: 10px; color: var(--text-dim); margin-bottom: 5px; }
+.score-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.score-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .5s cubic-bezier(.34,1.56,.64,1);
+}
+.score-fill.buzz { background: var(--accent); }
+.score-fill.self { background: var(--accent3); }
+.score-val { font-size: 11px; font-weight: 700; margin-top: 4px; }
+
+.btn-post {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.btn-post:disabled { opacity: .4; cursor: not-allowed; }
+.btn-post:not(:disabled):hover { opacity: .9; }
+
+/* ===== REACTION AREA ===== */
+.reaction-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+.reaction-area.active { display: flex; }
+.reaction-area::-webkit-scrollbar { width: 4px; }
+.reaction-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.feed-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+.feed-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.feed-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a4a2a, #1a3a1a);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  border: 2px solid var(--line-green);
+  flex-shrink: 0;
+}
+.feed-uname { font-weight: 700; font-size: 13px; }
+.feed-handle { font-size: 11px; color: var(--text-dim); }
+.feed-text { font-size: 13px; line-height: 1.7; margin-bottom: 10px; }
+.feed-tags { font-size: 11px; color: var(--buzz-blue); margin-bottom: 10px; }
+
+.feed-actions { display: flex; gap: 16px; }
+.feed-action {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--text-dim);
+  cursor: pointer; transition: color .2s;
+}
+.feed-action:hover { color: var(--text); }
+.feed-action.liked { color: var(--heart); }
+.feed-action.rtd   { color: var(--accent3); }
+
+.reply-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.reply-item {
+  display: flex; gap: 8px;
+  padding: 8px 10px;
+  background: var(--surface2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  animation: slideUp .3s ease both;
+}
+.reply-ava {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.reply-name { font-size: 10px; font-weight: 700; color: var(--text-dim); margin-bottom: 2px; }
+.reply-text { font-size: 11px; line-height: 1.5; }
+
+.stats-row {
+  display: flex; gap: 8px;
+}
+.stat-chip {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+.stat-num {
+  font-size: 20px;
+  font-weight: 900;
+  font-family: 'DotGothic16', monospace;
+  display: block;
+}
+.stat-num.pos { color: var(--accent3); }
+.stat-num.neg { color: var(--accent); }
+.stat-num.buzz-col { color: var(--accent); }
+.stat-label { font-size: 9px; color: var(--text-dim); display: block; margin-top: 2px; }
+
+.btn-next-phase {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .2s;
+  flex-shrink: 0;
+}
+.btn-next-phase:hover { opacity: .9; }
+
+/* ===== ENDING SCREEN ===== */
+#screen-ending {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, #1a0a2e 0%, #0d0d14 70%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+  padding: 40px;
+  text-align: center;
+  z-index: 300;
+  animation: fadeIn .4s ease;
+}
+#screen-ending.active { display: flex; }
+
+.ending-emoji { font-size: 72px; animation: pop .5s ease; }
+.ending-title { font-size: 28px; font-weight: 900; }
+.ending-sub { font-size: 14px; color: var(--text-dim); line-height: 1.8; max-width: 380px; white-space: pre-line; }
+.ending-scores { display: flex; gap: 16px; }
+.ending-score {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 28px;
+}
+.ending-score-num {
+  font-size: 36px;
+  font-weight: 900;
+  font-family: 'DotGothic16', monospace;
+  display: block;
+}
+.ending-score-label { font-size: 11px; color: var(--text-dim); display: block; margin-top: 4px; }
+.btn-retry {
+  padding: 12px 44px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  color: var(--text-dim);
+  font-size: 14px;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-retry:hover { border-color: var(--accent2); color: var(--text); }
+
+/* ===== MISC ===== */
+.heart-float {
+  position: fixed; pointer-events: none;
+  font-size: 20px;
+  animation: heartFloat .8s ease forwards;
+  z-index: 999;
+}
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pop { 0%{transform:scale(.8);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes heartFloat { 0%{transform:translateY(0) scale(1);opacity:1} 100%{transform:translateY(-60px) scale(1.5);opacity:0} }
+
+.sys-msg {
+  text-align: center;
+  font-size: 10px;
+  color: var(--accent3);
+  padding: 6px;
+  animation: fadeIn .3s ease;
+}
+
+/* placeholder text */
+.game-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-dim);
+  font-size: 13px;
+  opacity: .5;
+}
+.game-placeholder .ph-icon { font-size: 48px; }
+</style>
+</head>
+<body>
+
+<!-- DESKTOP -->
+<div class="desktop">
+  <div class="desktop-icons">
+    <div class="desktop-icon" onclick="openApp()">
+      <div class="icon-img">📱</div>
+      <div class="icon-label">ばずったー</div>
+    </div>
+  </div>
+
+  <!-- TITLE SCREEN -->
+  <div id="screen-title" class="active">
+    <div class="title-deco">
+      <span style="top:5%;left:8%;">📱</span>
+      <span style="top:18%;right:10%;animation-delay:.5s">💬</span>
+      <span style="bottom:22%;left:12%;animation-delay:1s">❤️</span>
+      <span style="bottom:12%;right:18%;animation-delay:1.5s">🔁</span>
+      <span style="top:50%;left:3%;animation-delay:.8s">✨</span>
+    </div>
+    <div class="title-logo">
+      <div class="sub">SNS運用代行 ADV</div>
+      <h1>ば<span>ず</span>ったー</h1>
+      <div class="catch">「この人らしさ」を翻訳せよ</div>
+    </div>
+    <button class="btn-start" onclick="openApp()">▶ ゲームをはじめる</button>
+  </div>
+
+  <!-- APP WINDOW -->
+  <div class="app-window" id="appWindow">
+    <!-- Titlebar -->
+    <div class="titlebar">
+      <div class="titlebar-dots">
+        <div class="titlebar-dot red" onclick="closeApp()"></div>
+        <div class="titlebar-dot yellow"></div>
+        <div class="titlebar-dot green"></div>
+      </div>
+      <div class="titlebar-title">ばずったー — SNS運用代行ADV</div>
+    </div>
+
+    <!-- Step bar -->
+    <div class="step-bar">
+      <div class="step-item" id="s1">① 依頼受付</div>
+      <div class="step-item" id="s2">② 素材を読む</div>
+      <div class="step-item" id="s3">③ 投稿を組む</div>
+      <div class="step-item" id="s4">④ 反響を見る</div>
+      <div class="step-item" id="s5">⑤ 投稿者の反応</div>
+      <div class="step-item" id="s6">⑥ 結末</div>
+    </div>
+
+    <!-- 2-column layout -->
+    <div class="main-layout">
+
+      <!-- LEFT: Chat -->
+      <div class="chat-panel">
+        <div class="chat-panel-header">
+          <div class="chat-avatar">🌿</div>
+          <div>
+            <div class="chat-name">田中 みどり</div>
+            <div class="chat-status" id="chatStatus">オンライン</div>
+          </div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-choices" id="chatChoices"></div>
+      </div>
+
+      <!-- RIGHT: Game Panel -->
+      <div class="game-panel" id="gamePanel">
+
+        <!-- placeholder shown before game starts -->
+        <div class="game-placeholder" id="gamePlaceholder">
+          <div class="ph-icon">🌿</div>
+          <div>依頼者とのやり取りを読もう</div>
+        </div>
+
+        <!-- MATERIAL AREA -->
+        <div class="material-area" id="materialArea">
+          <div class="material-area-header">
+            <div class="material-area-title">📦 届いた素材（最大2枚選択）</div>
+            <div class="card-limit-badge" id="cardLimitBadge">0 / 2</div>
+          </div>
+          <div class="material-grid" id="materialGrid"></div>
+          <button class="material-proceed-btn" id="materialProceedBtn" disabled onclick="goToPost()">
+            この素材で投稿を組む →
+          </button>
+        </div>
+
+        <!-- POST AREA -->
+        <div class="post-area" id="postArea">
+          <div>
+            <div class="section-label">文体を選ぶ</div>
+            <div class="post-options" id="optsStyle"></div>
+          </div>
+          <div>
+            <div class="section-label">ハッシュタグを選ぶ</div>
+            <div class="post-options" id="optsHash"></div>
+          </div>
+          <div class="post-preview-box">
+            <div class="post-preview-label">— プレビュー —</div>
+            <div class="preview-inner">
+              <div class="preview-text" id="previewText">文体を選ぶと投稿が表示されます</div>
+              <div class="preview-hash" id="previewHash"></div>
+            </div>
+          </div>
+          <div class="score-row">
+            <div class="score-box">
+              <div class="score-label">🔥 バズ度</div>
+              <div class="score-track"><div class="score-fill buzz" id="buzzBar" style="width:0%"></div></div>
+              <div class="score-val" id="buzzVal" style="color:var(--accent)">0%</div>
+            </div>
+            <div class="score-box">
+              <div class="score-label">🌿 らしさスコア</div>
+              <div class="score-track"><div class="score-fill self" id="selfBar" style="width:0%"></div></div>
+              <div class="score-val" id="selfVal" style="color:var(--accent3)">0%</div>
+            </div>
+          </div>
+          <button class="btn-post" id="postBtn" disabled onclick="submitPost()">この投稿を発信する 📤</button>
+        </div>
+
+        <!-- REACTION AREA -->
+        <div class="reaction-area" id="reactionArea">
+          <!-- filled dynamically -->
+        </div>
+
+      </div><!-- /game-panel -->
+    </div><!-- /main-layout -->
+  </div><!-- /app-window -->
+</div><!-- /desktop -->
+
+<!-- ENDING -->
+<div id="screen-ending">
+  <div class="ending-emoji" id="endEmoji">🌿</div>
+  <div class="ending-title" id="endTitle"></div>
+  <div class="ending-sub" id="endSub"></div>
+  <div class="ending-scores">
+    <div class="ending-score">
+      <span class="ending-score-num" id="endBuzz" style="color:var(--accent)">0</span>
+      <span class="ending-score-label">バズ度</span>
+    </div>
+    <div class="ending-score">
+      <span class="ending-score-num" id="endSelf" style="color:var(--accent3)">0</span>
+      <span class="ending-score-label">らしさスコア</span>
+    </div>
+  </div>
+  <button class="btn-retry" onclick="retryGame()">もう一度プレイする</button>
+</div>
+
+<script>
+/* ============================================================
+   STATE
+============================================================ */
+let state = {
+  buzz: 0, self: 0,
+  selectedStyle: null, selectedHash: null,
+  chatPhase: 'intro',   // intro | material | post | reaction | client | ending
+  selectedCards: [],    // indices of flipped+selected cards (max 2)
+  flippedCards: [],     // indices of flipped cards
+  baseFollowers: 1240
+};
+
+/* ============================================================
+   CHAT FLOW
+============================================================ */
+const chatFlow = [
+  { from:'client', text:'はじめまして！SNS代行の件でご連絡しました🌿\nよろしくお願いします…！' },
+  { from:'choices', opts:[
+    { text:'こちらこそ！どんなSNSをやりたいですか？', next:2 },
+    { text:'よろしくお願いします。まずは自己紹介を聞かせてください', next:2 }
+  ]},
+  { from:'client', text:'Instagramをやってみたくて。\n植物と料理の写真をたまに撮るんですけど…\n全然センスがなくて投稿できないんです😢' },
+  { from:'choices', opts:[
+    { text:'写真を見てみたいです！送ってもらえますか？', next:4 },
+    { text:'センスじゃなくて「らしさ」を出せばいいんですよ', next:4 }
+  ]},
+  { from:'client', text:'ありがとうございます…！\n実は始めたい理由があって。\nお母さんが最近施設に入ったんです。\n離れてても繋がってるって感じたくて。' },
+  { from:'player', text:'…そうなんですね。\nお母さんに届くような投稿、一緒に考えましょう。' },
+  { from:'client', text:'泣きそう…🌿\nよろしくお願いします！\n素材、今から送りますね！' },
+  { from:'system', text:'→ 素材が届きました' },
+  { from:'trigger', action:'showMaterial' }
+];
+
+/* ============================================================
+   MATERIALS
+============================================================ */
+const materials = [
+  {
+    type:'スクリーンショット', icon:'💬',
+    title:'お母さんへのLINE',
+    desc:'「今日もゼラニウム咲いたよ。去年より元気な気がする。」\n読んでほしくて撮った、と書いてある。',
+    tags:['日常的', '家族へ', '植物愛'],
+    styleUnlock:[0,1], hashUnlock:[0,1,3]
+  },
+  {
+    type:'メモ帳', icon:'📓',
+    title:'走り書きメモ',
+    desc:'「料理の失敗ばかりだけど作るのは好き」\n「味より見た目がマシな日もある笑」\n「完璧じゃなくていいのかな」',
+    tags:['自己開示', '等身大', 'ゆるい'],
+    styleUnlock:[1,3], hashUnlock:[1,3,4]
+  },
+  {
+    type:'写真', icon:'📷',
+    title:'窓際の植物写真',
+    desc:'少しぼけた朝の光。ゼラニウムが窓際に並ぶ。\n「うまく撮れてないけど好きな景色」とメモ付き。',
+    tags:['温かみ', '日常美', '完璧じゃない'],
+    styleUnlock:[0,3], hashUnlock:[0,1,3]
+  },
+  {
+    type:'写真', icon:'🍳',
+    title:'手料理の写真',
+    desc:'少し歪んだオムレツの写真。\n「失敗作だけど美味しかった」という付箋が貼ってある。',
+    tags:['失敗OK', 'ユーモア', '正直'],
+    styleUnlock:[2,3], hashUnlock:[2,3,4]
+  }
+];
+
+/* ============================================================
+   POST OPTIONS
+   絵文字は文中に自動埋め込み (FB #10)
+============================================================ */
+const styleOptions = [
+  {
+    label:'短くシンプルに',
+    textFn:()=>'今朝のゼラニウム🌿 去年より元気そう。',
+    buzz:30, self:80
+  },
+  {
+    label:'丁寧に感情を込めて',
+    textFn:()=>'植物って正直だなって思う🌱 ちゃんと水をあげた日は元気に咲いてくれる。私もそうありたい。',
+    buzz:50, self:55
+  },
+  {
+    label:'バズを狙って大胆に 🔥',
+    textFn:()=>'【100日チャレンジ✨】毎日植物の写真投稿します！フォローよろしく！',
+    buzz:85, self:15, isBuzz:true
+  },
+  {
+    label:'失敗も含めてリアルに',
+    textFn:()=>'また写真ぶれた😅 でも今日も元気に咲いてたから良し🌿',
+    buzz:45, self:90
+  }
+];
+
+const hashOptions = [
+  { label:'#植物のある暮らし', val:'#植物のある暮らし', buzz:30, self:15 },
+  { label:'#今日の一枚',       val:'#今日の一枚',       buzz:20, self:20 },
+  { label:'#バズれ #フォロワー増やしたい', val:'#バズれ #フォロワー増やしたい', buzz:40, self:-30, isBuzz:true },
+  { label:'#ゆるく記録する',   val:'#ゆるく記録する',   buzz:15, self:35 },
+  { label:'タグなし',          val:'',                   buzz:-10, self:5 }
+];
+
+/* ============================================================
+   REACTIONS  (FB #11: baseFollowers + delta)
+============================================================ */
+const reactionSets = {
+  high_self: {
+    likesDelta:47, rtsDelta:8, followerDelta:12, followerChange:'pos',
+    replies:[
+      {ava:'🌷',name:'hanako_garden', text:'こういう投稿大好きです…ゆっくり見てしまった'},
+      {ava:'👩',name:'midori_mama',   text:'みどりちゃん！お母さんだよ！みてるよ💕'},
+      {ava:'🌿',name:'slow_life_log', text:'完璧じゃないのがかえっていい。また来ます'}
+    ],
+    // FB #12: client reaction goes to LEFT chat
+    clientMsg:'お母さんからリプライが来た…！！！\nなんか泣けてきた😢\nこれ、私の言葉っぽい気がする'
+  },
+  high_buzz: {
+    likesDelta:318, rtsDelta:102, followerDelta:+234, followerChange:'pos',
+    replies:[
+      {ava:'🔥',name:'buzz_hunter',   text:'100日チャレンジ応援！フォローしました！'},
+      {ava:'📱',name:'insta_tips99',  text:'リールも作るといいですよ！伸びます'},
+      {ava:'🤖',name:'follow4follow', text:'フォローバックお願いします！！'}
+    ],
+    clientMsg:'すごいいいねが来てる…！\nでもなんか、私じゃない感じがして\nちょっとこわいです😢'
+  },
+  balanced: {
+    likesDelta:89, rtsDelta:23, followerDelta:41, followerChange:'pos',
+    replies:[
+      {ava:'🌸',name:'petit_garden', text:'ぶれた写真もそれはそれで味わいあります🌿'},
+      {ava:'👩',name:'midori_mama',  text:'かわいい！お母さん毎日見てるよ〜！'},
+      {ava:'☕',name:'morning_log',  text:'フォローしました！ゆっくり読む系のアカウント好きです'}
+    ],
+    clientMsg:'お母さんが毎日見てくれてる…！\nこれくらいのペースが自分に合ってる気がする。\n次、自分で書いてみたいかも'
+  }
+};
+
+/* ============================================================
+   UTILS
+============================================================ */
+function setStep(n) {
+  for (let i=1;i<=6;i++) {
+    const el = document.getElementById('s'+i);
+    if (!el) continue;
+    el.className = 'step-item' + (i<n?' done':i===n?' active':'');
+  }
+}
+
+function showArea(name) {
+  ['gamePlaceholder','materialArea','postArea','reactionArea'].forEach(id=>{
+    document.getElementById(id).style.display = 'none';
+  });
+  if (name) document.getElementById(name).style.display = 'flex';
+}
+
+function addChatMsg(from, text, ava) {
+  const msgs = document.getElementById('chatMessages');
+  const row = document.createElement('div');
+  row.className = 'msg-row' + (from==='self'?' self':'');
+  const now = new Date();
+  const t = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  row.innerHTML = `
+    <div class="msg-ava ${from}">${ava}</div>
+    <div class="msg-bubble ${from}">${text.replace(/\n/g,'<br>')}</div>
+    <div class="msg-time">${t}</div>`;
+  msgs.appendChild(row);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addTyping() {
+  removeTyping();
+  const msgs = document.getElementById('chatMessages');
+  const r = document.createElement('div');
+  r.className='msg-row'; r.id='typingRow';
+  r.innerHTML=`<div class="msg-ava client">🌿</div>
+    <div class="typing-indicator">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+    </div>`;
+  msgs.appendChild(r);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function removeTyping() {
+  const t=document.getElementById('typingRow'); if(t)t.remove();
+}
+
+function addSysMsg(text) {
+  const msgs = document.getElementById('chatMessages');
+  const d = document.createElement('div');
+  d.className='sys-msg'; d.textContent=text;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+/* ============================================================
+   CHAT ENGINE
+============================================================ */
+let chatIdx = 0;
+function runChat(idx) {
+  if (idx >= chatFlow.length) return;
+  const node = chatFlow[idx];
+
+  if (node.from==='client') {
+    addTyping();
+    setTimeout(()=>{
+      removeTyping();
+      addChatMsg('client', node.text, '🌿');
+      runChat(idx+1);
+    }, 1000+Math.random()*600);
+
+  } else if (node.from==='player') {
+    addChatMsg('self', node.text, '👤');
+    setTimeout(()=>runChat(idx+1), 400);
+
+  } else if (node.from==='system') {
+    addSysMsg(node.text);
+    setTimeout(()=>runChat(idx+1), 800);
+
+  } else if (node.from==='choices') {
+    showChoices(node.opts);
+
+  } else if (node.from==='trigger') {
+    if (node.action==='showMaterial') {
+      setStep(2);
+      showArea('materialArea');
+    }
+  }
+  chatIdx = idx;
+}
+
+function showChoices(opts) {
+  const box = document.getElementById('chatChoices');
+  box.innerHTML = '';
+  opts.forEach(opt=>{
+    const btn = document.createElement('button');
+    btn.className='choice-btn';
+    btn.textContent=opt.text;
+    btn.onclick=()=>{
+      addChatMsg('self', opt.text, '👤');
+      box.innerHTML='';
+      setTimeout(()=>runChat(opt.next), 300);
+    };
+    box.appendChild(btn);
+  });
+}
+
+/* ============================================================
+   MATERIAL SETUP
+============================================================ */
+function setupMaterials() {
+  const grid = document.getElementById('materialGrid');
+  grid.innerHTML='';
+  state.selectedCards=[];
+  state.flippedCards=[];
+
+  materials.forEach((m,i)=>{
+    const wrapper = document.createElement('div');
+    wrapper.className='card-flip-wrapper';
+    wrapper.dataset.idx=i;
+
+    wrapper.innerHTML=`
+      <div class="card-flip-inner">
+        <div class="card-face">
+          <div class="card-face-icon">${m.icon}</div>
+          <div class="card-face-title">${m.title}</div>
+          <div class="card-face-hint">クリックで内容を確認</div>
+        </div>
+        <div class="card-back">
+          <div class="card-back-type">${m.type}</div>
+          <div class="card-back-title">${m.title}</div>
+          <div class="card-back-desc">${m.desc.replace(/\n/g,'<br>')}</div>
+          <div class="card-back-tags" id="cardTags${i}"></div>
+        </div>
+      </div>`;
+
+    wrapper.onclick=()=>handleCardClick(wrapper, i);
+    grid.appendChild(wrapper);
+  });
+  updateCardBadge();
+}
+
+function handleCardClick(wrapper, i) {
+  const alreadyFlipped = state.flippedCards.includes(i);
+  const alreadySelected = state.selectedCards.includes(i);
+
+  // First click: flip the card
+  if (!alreadyFlipped) {
+    wrapper.classList.add('flipped');
+    state.flippedCards.push(i);
+    // show tags with pop animation
+    setTimeout(()=>{
+      const tagsEl = document.getElementById('cardTags'+i);
+      materials[i].tags.forEach((tag,ti)=>{
+        const t = document.createElement('span');
+        t.className='card-tag';
+        t.style.animationDelay=`${ti*0.1}s`;
+        t.textContent=tag;
+        tagsEl.appendChild(t);
+      });
+    }, 250);
+    return;
+  }
+
+  // Second click: select / deselect
+  if (alreadySelected) {
+    wrapper.classList.remove('selected');
+    state.selectedCards = state.selectedCards.filter(x=>x!==i);
+  } else {
+    if (state.selectedCards.length >= 2) return; // max 2
+    wrapper.classList.add('selected');
+    state.selectedCards.push(i);
+  }
+
+  updateCardBadge();
+  lockExcessCards();
+}
+
+function updateCardBadge() {
+  document.getElementById('cardLimitBadge').textContent = `${state.selectedCards.length} / 2`;
+  document.getElementById('materialProceedBtn').disabled = state.selectedCards.length === 0;
+}
+
+function lockExcessCards() {
+  const all = document.querySelectorAll('.card-flip-wrapper');
+  all.forEach(w=>{
+    const idx = parseInt(w.dataset.idx);
+    if (state.selectedCards.length>=2 && !state.selectedCards.includes(idx)) {
+      w.classList.add('locked');
+    } else {
+      w.classList.remove('locked');
+    }
+  });
+}
+
+/* ============================================================
+   POST SETUP
+============================================================ */
+function goToPost() {
+  setStep(3);
+  showArea('postArea');
+  state.selectedStyle = null;
+  state.selectedHash  = null;
+
+  // Determine which options are unlocked from selected cards (FB #7)
+  let unlockedStyles = new Set();
+  let unlockedHash   = new Set();
+  state.selectedCards.forEach(ci=>{
+    materials[ci].styleUnlock.forEach(x=>unlockedStyles.add(x));
+    materials[ci].hashUnlock.forEach(x=>unlockedHash.add(x));
+  });
+  // Always unlock buzz options so player can still make that choice
+  unlockedStyles.add(2); // buzz style always available
+  unlockedHash.add(2);   // buzz hash always available
+
+  buildOpts('optsStyle', styleOptions, 'selectedStyle', unlockedStyles);
+  buildOpts('optsHash',  hashOptions,  'selectedHash',  unlockedHash);
+  updatePreview();
+}
+
+function buildOpts(containerId, opts, stateKey, unlocked) {
+  const box = document.getElementById(containerId);
+  box.innerHTML='';
+  opts.forEach((opt,i)=>{
+    const btn = document.createElement('button');
+    btn.className='post-opt'+(opt.isBuzz?' buzz-risk':'');
+    btn.textContent=opt.label;
+    if (!unlocked.has(i)) {
+      btn.disabled=true;
+      btn.title='この素材を選ばないと使えません';
+    }
+    btn.onclick=()=>{
+      box.querySelectorAll('.post-opt').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state[stateKey]=i;
+      updatePreview();
+    };
+    box.appendChild(btn);
+  });
+}
+
+function updatePreview() {
+  const s = state.selectedStyle!==null ? styleOptions[state.selectedStyle] : null;
+  const h = state.selectedHash!==null  ? hashOptions[state.selectedHash]   : null;
+
+  document.getElementById('previewText').textContent = s ? s.textFn() : '文体を選ぶと投稿が表示されます';
+  document.getElementById('previewHash').textContent = h ? h.val : '';
+
+  let buzz=0, self=0;
+  if(s){buzz+=s.buzz; self+=s.self;}
+  if(h){buzz+=h.buzz; self+=h.self;}
+  buzz=Math.min(100,Math.max(0,buzz));
+  self=Math.min(100,Math.max(0,self));
+  state.buzz=buzz; state.self=self;
+
+  document.getElementById('buzzBar').style.width=buzz+'%';
+  document.getElementById('selfBar').style.width=self+'%';
+  document.getElementById('buzzVal').textContent=buzz+'%';
+  document.getElementById('selfVal').textContent=self+'%';
+
+  document.getElementById('postBtn').disabled = !(state.selectedStyle!==null && state.selectedHash!==null);
+}
+
+/* ============================================================
+   SUBMIT POST & REACTIONS
+============================================================ */
+let activeReactions = null;
+
+function submitPost() {
+  setStep(4);
+  showArea('reactionArea');
+  buildReactionFeed();
+}
+
+function getReactionKey() {
+  if (state.self>=60 && state.buzz<60) return 'high_self';
+  if (state.buzz>=60 && state.self<50) return 'high_buzz';
+  return 'balanced';
+}
+
+function buildReactionFeed() {
+  const area = document.getElementById('reactionArea');
+  area.innerHTML='';
+
+  const s = styleOptions[state.selectedStyle];
+  const h = hashOptions[state.selectedHash];
+  const rKey = getReactionKey();
+  const R = reactionSets[rKey];
+  activeReactions = R;
+
+  const postText = s.textFn();
+  const postHash = h.val;
+
+  // ---- Post card ----
+  const postCard = document.createElement('div');
+  postCard.className='feed-card';
+  postCard.innerHTML=`
+    <div class="feed-top">
+      <div class="feed-avatar">🌿</div>
+      <div>
+        <div class="feed-uname">田中 みどり</div>
+        <div class="feed-handle">@midori_plant</div>
+      </div>
+    </div>
+    <div class="feed-text">${postText.replace(/\n/g,'<br>')}</div>
+    <div class="feed-tags">${postHash}</div>
+    <div class="feed-actions">
+      <div class="feed-action" id="likeBtn" onclick="toggleLike(this)">🤍 <span id="likeCount">0</span></div>
+      <div class="feed-action" onclick="this.classList.toggle('rtd')">🔁 <span id="rtCount">0</span></div>
+      <div class="feed-action">💬 ${R.replies.length}</div>
+    </div>
+    <div class="reply-list" id="replyList"></div>`;
+  area.appendChild(postCard);
+
+  // Animate like/rt counters
+  let lc=0, rc=0;
+  const likeEl = document.getElementById('likeCount');
+  const rtEl   = document.getElementById('rtCount');
+  const likeInt = setInterval(()=>{
+    lc += Math.ceil(R.likesDelta/30);
+    if(lc>=R.likesDelta){lc=R.likesDelta;clearInterval(likeInt);}
+    likeEl.textContent=lc;
+    if(lc>50) document.getElementById('likeBtn').classList.add('liked');
+  },80);
+  const rtInt = setInterval(()=>{
+    rc+=1; if(rc>=R.rtsDelta){rc=R.rtsDelta;clearInterval(rtInt);}
+    rtEl.textContent=rc;
+  },120);
+
+  // Replies with delay
+  const rList = document.getElementById('replyList');
+  R.replies.forEach((r,i)=>{
+    setTimeout(()=>{
+      const ri=document.createElement('div'); ri.className='reply-item';
+      ri.innerHTML=`<div class="reply-ava">${r.ava}</div><div><div class="reply-name">${r.name}</div><div class="reply-text">${r.text}</div></div>`;
+      rList.appendChild(ri);
+      area.scrollTop=area.scrollHeight;
+    }, 900+i*700);
+  });
+
+  // ---- Stats (FB #11: show base + delta) ----
+  setTimeout(()=>{
+    const stats = document.createElement('div');
+    stats.className='stats-row';
+    const newTotal = state.baseFollowers + R.followerDelta;
+    const arrow = R.followerDelta>=0 ? '▲' : '▼';
+    const cls = R.followerDelta>=0 ? 'pos' : 'neg';
+    stats.innerHTML=`
+      <div class="stat-chip">
+        <span class="stat-num ${cls}">${arrow}${Math.abs(R.followerDelta)}</span>
+        <span class="stat-label">フォロワー増減<br><small style="font-size:9px;color:var(--text-dim)">${state.baseFollowers.toLocaleString()} → ${newTotal.toLocaleString()}</small></span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-num buzz-col">${R.likesDelta}</span>
+        <span class="stat-label">いいね</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-num">${R.rtsDelta}</span>
+        <span class="stat-label">リポスト</span>
+      </div>`;
+    area.appendChild(stats);
+
+    // Next phase button (FB #12: client reaction is separate)
+    const btn=document.createElement('button');
+    btn.className='btn-next-phase';
+    btn.textContent='みどりさんの反応を見る →';
+    btn.onclick=showClientReaction;
+    area.appendChild(btn);
+    area.scrollTop=area.scrollHeight;
+  }, 900 + R.replies.length*700 + 400);
+}
+
+/* ============================================================
+   PHASE 5: Client reaction → LEFT CHAT (FB #12)
+============================================================ */
+function showClientReaction() {
+  setStep(5);
+  // Remove next-phase button from reaction area
+  const area=document.getElementById('reactionArea');
+  const oldBtn=area.querySelector('.btn-next-phase');
+  if(oldBtn) oldBtn.remove();
+
+  // Add message to LEFT chat panel
+  addTyping();
+  setTimeout(()=>{
+    removeTyping();
+    addChatMsg('client', activeReactions.clientMsg, '🌿');
+    document.getElementById('chatStatus').textContent = 'メッセージが届きました';
+
+    // Add ending button to reaction area
+    const btn=document.createElement('button');
+    btn.className='btn-next-phase';
+    btn.style.marginTop='8px';
+    btn.textContent='結末を見る →';
+    btn.onclick=showEnding;
+    area.appendChild(btn);
+    area.scrollTop=area.scrollHeight;
+  }, 1400);
+}
+
+/* ============================================================
+   PHASE 6: ENDING (FB #13: 穏やかエンドの条件を明確化)
+   Conditions:
+   - 自立エンド : self >= 65
+   - ズレエンド : buzz >= 65
+   - 穏やかエンド: both < 65 (neither extreme)
+============================================================ */
+function showEnding() {
+  document.getElementById('screen-ending').classList.add('active');
+  setStep(6);
+
+  document.getElementById('endBuzz').textContent = state.buzz+'%';
+  document.getElementById('endSelf').textContent = state.self+'%';
+
+  let emoji, title, sub;
+  if (state.self >= 65) {
+    emoji='🌿'; title='自立エンド';
+    sub='みどりさんから連絡が来た。\n「次は自分で書いてみたいです」\nあなたの「翻訳」は、彼女に自分の言葉を取り戻させた。';
+  } else if (state.buzz >= 65) {
+    emoji='🔥'; title='ズレエンド';
+    sub='フォロワーは増えた。でもみどりさんは言った。\n「なんか…違う私になってきた気がして」\nバズったのに、どこか寂しい結末。';
+  } else {
+    emoji='☀️'; title='穏やかなエンド';
+    sub='お母さんが毎日見てくれている。\nフォロワーは多くないけれど、\nみどりさんの言葉はちゃんと届くべき人に届いていた。\n（バズ度・らしさともに65%未満のバランス型）';
+  }
+
+  document.getElementById('endEmoji').textContent = emoji;
+  document.getElementById('endTitle').textContent = title;
+  document.getElementById('endSub').textContent   = sub;
+}
+
+function toggleLike(el) {
+  el.classList.toggle('liked');
+  spawnHeart(el);
+}
+function spawnHeart(el) {
+  const r=el.getBoundingClientRect();
+  const h=document.createElement('div');
+  h.className='heart-float'; h.textContent='❤️';
+  h.style.left=r.left+'px'; h.style.top=r.top+'px';
+  document.body.appendChild(h);
+  setTimeout(()=>h.remove(),800);
+}
+
+/* ============================================================
+   APP OPEN / CLOSE / RETRY
+============================================================ */
+function openApp() {
+  document.getElementById('screen-title').classList.remove('active');
+  document.getElementById('appWindow').classList.add('active');
+  resetGame();
+}
+
+function closeApp() {
+  document.getElementById('appWindow').classList.remove('active');
+  document.getElementById('screen-title').classList.add('active');
+}
+
+function resetGame() {
+  state = { buzz:0, self:0, selectedStyle:null, selectedHash:null,
+            chatPhase:'intro', selectedCards:[], flippedCards:[], baseFollowers:1240 };
+
+  document.getElementById('chatMessages').innerHTML='';
+  document.getElementById('chatChoices').innerHTML='';
+  document.getElementById('chatStatus').textContent='オンライン';
+  document.getElementById('screen-ending').classList.remove('active');
+
+  setStep(1);
+  showArea('gamePlaceholder');
+  setupMaterials();
+
+  setTimeout(()=>runChat(0), 400);
+}
+
+function retryGame() {
+  document.getElementById('screen-ending').classList.remove('active');
+  resetGame();
+}
+</script>
+</body>
+</html>
