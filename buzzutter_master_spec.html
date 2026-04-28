@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ばずったー 統合マスター設計書 v3.0</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;700;900&family=DotGothic16&display=swap');
+:root {
+  --bg:#07070c; --surface:#0e0e16; --surface2:#13131e; --surface3:#191926;
+  --border:#1a1a28; --border2:#222232;
+  --text:#dae0f0; --text-mid:#6878a0; --text-dim:#303450;
+  --green:#34d399; --blue:#38bdf8; --purple:#a78bfa;
+  --orange:#fb923c; --red:#f43f5e; --yellow:#fbbf24;
+  --midori:#06c755; --saku:#c084fc; --seiji:#fb923c; --karen:#f9a8d4;
+  --code-bg:#0a0a14; --code-border:#1e1e30;
+  --nav-w:220px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);line-height:1.8;display:flex;}
+
+/* ===== SIDE NAV ===== */
+.sidenav{
+  width:var(--nav-w); min-width:var(--nav-w);
+  height:100vh; position:sticky; top:0;
+  background:var(--surface); border-right:1px solid var(--border2);
+  overflow-y:auto; overflow-x:hidden; flex-shrink:0;
+  display:flex; flex-direction:column;
+}
+.sidenav::-webkit-scrollbar{width:3px;}
+.sidenav::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.nav-logo{
+  padding:18px 16px 12px;
+  font-family:'DotGothic16',monospace; font-size:13px; color:var(--blue);
+  border-bottom:1px solid var(--border); flex-shrink:0;
+  line-height:1.4;
+}
+.nav-logo small{display:block;font-size:9px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+.nav-group{flex-shrink:0;}
+.nav-group-label{
+  padding:10px 16px 4px;
+  font-size:9px; letter-spacing:2.5px; color:var(--text-dim);
+  text-transform:uppercase; font-family:'DotGothic16',monospace;
+}
+.nav-item{
+  display:block; padding:7px 16px; font-size:11px; color:var(--text-mid);
+  text-decoration:none; transition:all .15s; border-left:2px solid transparent;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03);}
+.nav-item.active{color:var(--blue);border-left-color:var(--blue);background:rgba(56,189,248,.06);}
+.nav-item.part2{color:var(--text-dim);}
+.nav-item.part2:hover{color:var(--purple);}
+.nav-part-divider{
+  margin:8px 16px; height:1px; background:var(--border2);
+}
+.nav-part-label{
+  padding:8px 16px 4px;
+  font-size:9px; letter-spacing:2px; color:var(--purple);
+  text-transform:uppercase; font-family:'DotGothic16',monospace;
+  display:flex; align-items:center; gap:6px;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;}
+.main::-webkit-scrollbar{width:4px;}
+.main::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.page{max-width:900px;margin:0 auto;padding:0 28px 120px;}
+
+/* ===== PART BANNER ===== */
+.part-banner{
+  padding:40px 0 28px; border-bottom:1px solid var(--border2);
+  display:flex; align-items:center; gap:20px;
+}
+.part-num{
+  font-family:'DotGothic16',monospace; font-size:48px; line-height:1;
+  opacity:.12; flex-shrink:0;
+}
+.part-title{font-family:'Noto Serif JP',serif; font-size:22px; font-weight:900;}
+.part-desc{font-size:12px; color:var(--text-mid); margin-top:4px; line-height:1.7;}
+
+/* ===== HERO ===== */
+.hero{padding:64px 0 40px; border-bottom:1px solid var(--border2); position:relative; overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-80px;right:-100px;width:500px;height:400px;background:radial-gradient(ellipse,rgba(56,189,248,.05) 0%,transparent 70%);pointer-events:none;}
+.eyebrow{font-family:'DotGothic16',monospace;font-size:10px;letter-spacing:4px;color:var(--text-dim);text-transform:uppercase;margin-bottom:16px;}
+.hero h1{font-family:'Noto Serif JP',serif;font-size:clamp(20px,3.5vw,30px);font-weight:900;line-height:1.35;margin-bottom:12px;}
+.hero h1 em{font-style:normal;color:var(--blue);}
+.hero-desc{font-size:13px;color:var(--text-mid);line-height:1.9;max-width:580px;}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;}
+.chip{padding:4px 12px;border-radius:20px;font-size:11px;background:var(--surface2);border:1px solid var(--border2);color:var(--text-mid);}
+.chip.blue{background:rgba(56,189,248,.08);border-color:rgba(56,189,248,.2);color:var(--blue);}
+.chip.green{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.2);color:var(--green);}
+.chip.purple{background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.2);color:var(--purple);}
+.chip.red{background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.2);color:var(--red);}
+
+/* ===== SECTION ===== */
+.section{margin:52px 0; scroll-margin-top:20px;}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:22px;padding-bottom:12px;border-bottom:1px solid var(--border2);}
+.sec-num{font-family:'DotGothic16',monospace;font-size:10px;color:var(--text-dim);letter-spacing:2px;}
+.sec-icon{font-size:17px;}
+.sec-title{font-family:'Noto Serif JP',serif;font-size:18px;font-weight:700;}
+.sec-line{flex:1;height:1px;background:var(--border2);}
+.sec-badge{font-size:9px;padding:2px 10px;border-radius:20px;letter-spacing:1.5px;text-transform:uppercase;}
+.sb-blue{background:rgba(56,189,248,.1);color:var(--blue);border:1px solid rgba(56,189,248,.2);}
+.sb-green{background:rgba(52,211,153,.1);color:var(--green);border:1px solid rgba(52,211,153,.2);}
+.sb-purple{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2);}
+.sb-orange{background:rgba(251,146,60,.1);color:var(--orange);border:1px solid rgba(251,146,60,.2);}
+.sb-red{background:rgba(244,63,94,.1);color:var(--red);border:1px solid rgba(244,63,94,.2);}
+
+/* ===== INFO BOX ===== */
+.info-box{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:12px;color:var(--text-mid);line-height:1.85;}
+.info-box.blue{border-left:3px solid var(--blue);background:rgba(56,189,248,.04);}
+.info-box.green{border-left:3px solid var(--green);background:rgba(52,211,153,.04);}
+.info-box.orange{border-left:3px solid var(--orange);background:rgba(251,146,60,.04);}
+.info-box.purple{border-left:3px solid var(--purple);background:rgba(167,139,250,.04);}
+.info-box strong{color:var(--text);}
+.info-box code{background:var(--surface);border:1px solid var(--border2);border-radius:3px;padding:0 5px;font-size:10px;color:var(--purple);font-family:'DotGothic16',monospace;}
+
+/* ===== CHARACTER CARD ===== */
+.char-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin-bottom:20px;}
+.char-top{padding:20px 22px;display:flex;gap:16px;align-items:flex-start;border-bottom:1px solid var(--border2);position:relative;}
+.char-num{position:absolute;right:16px;top:12px;font-family:'DotGothic16',monospace;font-size:32px;color:var(--border2);line-height:1;}
+.char-ava{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:2px solid;}
+.char-ava.midori{background:rgba(6,199,85,.08);border-color:rgba(6,199,85,.3);}
+.char-ava.saku{background:rgba(192,132,252,.08);border-color:rgba(192,132,252,.3);}
+.char-ava.seiji{background:rgba(251,146,60,.08);border-color:rgba(251,146,60,.3);}
+.char-ava.karen{background:rgba(249,168,212,.08);border-color:rgba(249,168,212,.3);}
+.char-name{font-family:'Noto Serif JP',serif;font-size:17px;font-weight:700;margin-bottom:3px;}
+.char-handle{font-size:11px;color:var(--text-dim);margin-bottom:6px;}
+.char-quote{font-size:12px;color:var(--text-mid);font-style:italic;line-height:1.7;border-left:2px solid var(--border2);padding-left:10px;}
+.char-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
+.char-col{padding:14px 18px;border-right:1px solid var(--border);}
+.char-col:last-child{border-right:none;}
+.char-col-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:7px;}
+.char-col-text{font-size:11px;color:var(--text-mid);line-height:1.8;}
+.char-col-text strong{color:var(--text);}
+
+/* ===== CHAT FLOW ===== */
+.chat-flow-box{background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin:14px 0;}
+.cfb-header{padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border2);font-size:10px;color:var(--text-dim);font-family:'DotGothic16',monospace;letter-spacing:1px;display:flex;align-items:center;gap:8px;}
+.cfb-inner{padding:14px;display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto;}
+.cfb-inner::-webkit-scrollbar{width:3px;}
+.cfb-inner::-webkit-scrollbar-thumb{background:var(--border2);}
+.cf-row{display:flex;gap:8px;}
+.cf-row.self{flex-direction:row-reverse;}
+.cf-ava{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--surface2);border:1px solid var(--border2);}
+.cf-bubble{max-width:80%;padding:7px 12px;border-radius:12px;font-size:12px;line-height:1.7;}
+.cf-bubble.client{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-top-left-radius:3px;color:var(--text-mid);}
+.cf-bubble.self{background:rgba(124,106,247,.08);border:1px solid rgba(124,106,247,.15);border-top-right-radius:3px;color:var(--text);}
+.cf-bubble.mono{background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.15);border-radius:8px;color:#d4a89a;font-style:italic;font-size:11px;}
+.cf-sys{text-align:center;font-size:10px;color:var(--text-dim);font-family:'DotGothic16',monospace;letter-spacing:1px;padding:2px 0;}
+.cf-sys.mystery{color:var(--saku);}
+.cf-sys.flash{color:var(--red);opacity:.7;}
+.cf-choices{display:flex;flex-direction:row-reverse;}
+.cf-choice-list{display:flex;flex-direction:column;gap:4px;max-width:85%;}
+.cf-choice{padding:6px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;font-size:11px;color:var(--text-mid);text-align:right;line-height:1.6;}
+.cf-choice.key{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.05);color:var(--yellow);}
+.cf-choice.ego-plus{border-color:rgba(167,139,250,.25);background:rgba(167,139,250,.05);color:var(--purple);}
+.cf-choice.ego-minus{border-color:rgba(100,116,139,.2);color:var(--text-dim);}
+
+/* ===== MATERIALS TABLE ===== */
+.mat-table{background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin:12px 0;}
+.mat-row{display:grid;grid-template-columns:30px 56px 1fr 1fr;gap:0;border-bottom:1px solid var(--border);align-items:start;}
+.mat-row:last-child{border-bottom:none;}
+.mat-row.header{background:var(--surface2);font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.mat-cell{padding:11px 14px;font-size:12px;border-right:1px solid var(--border);}
+.mat-cell:last-child{border-right:none;color:var(--text-mid);}
+.mat-icon-cell{font-size:16px;display:flex;align-items:center;justify-content:center;padding:11px 8px;}
+.mat-type{font-size:10px;color:var(--orange);letter-spacing:1px;}
+.mat-title{font-size:12px;font-weight:700;margin-bottom:3px;}
+.mat-desc{font-size:11px;color:var(--text-mid);line-height:1.7;}
+.mat-tag{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;background:rgba(255,107,157,.1);border:1px solid rgba(255,107,157,.2);color:#ff6b9d;margin:1px;}
+.mat-mystery{display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--saku);margin-top:4px;}
+.mat-key{display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--karen);margin-top:4px;}
+.mat-unlock{font-size:11px;color:var(--text-dim);}
+.mat-unlock code{background:var(--surface2);border:1px solid var(--border2);border-radius:3px;padding:0 4px;font-size:9px;color:var(--purple);font-family:'DotGothic16',monospace;}
+
+/* ===== POST OPTIONS TABLE ===== */
+.opt-table{background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin:12px 0;}
+.opt-row{display:grid;grid-template-columns:1fr 60px 60px 80px;gap:0;border-bottom:1px solid var(--border);align-items:center;}
+.opt-row:last-child{border-bottom:none;}
+.opt-row.header{background:var(--surface2);font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.opt-cell{padding:11px 14px;font-size:12px;border-right:1px solid var(--border);color:var(--text-mid);}
+.opt-cell:last-child{border-right:none;}
+.opt-label{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.opt-text{font-size:11px;color:var(--text-mid);}
+.opt-score{font-family:'DotGothic16',monospace;font-size:13px;font-weight:700;text-align:center;}
+.opt-buzz-flag{font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.2);color:var(--orange);}
+
+/* ===== ENDING CARD ===== */
+.end-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.end-card-top{padding:18px 22px;display:flex;gap:16px;align-items:flex-start;border-bottom:1px solid var(--border2);}
+.end-emoji{font-size:36px;flex-shrink:0;}
+.end-name{font-family:'Noto Serif JP',serif;font-size:18px;font-weight:700;margin-bottom:4px;}
+.end-cond{font-size:10px;padding:3px 10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text-dim);display:inline-block;margin-bottom:8px;}
+.end-tagline{font-size:12px;color:var(--text-mid);line-height:1.7;font-style:italic;}
+.end-body{padding:16px 22px;display:flex;flex-direction:column;gap:10px;}
+.end-step{display:flex;gap:12px;align-items:flex-start;font-size:12px;}
+.end-step-num{font-family:'DotGothic16',monospace;font-size:10px;color:var(--text-dim);flex-shrink:0;margin-top:2px;width:40px;}
+.end-step-body{color:var(--text-mid);line-height:1.8;}
+.end-step-body strong{color:var(--text);}
+.end-step-body em{font-style:italic;color:var(--text-dim);font-size:11px;}
+.mono-text{background:rgba(0,0,0,.3);border-left:2px solid var(--border2);padding:10px 14px;border-radius:0 8px 8px 0;font-size:11px;color:var(--text-mid);font-style:italic;line-height:2;margin-top:6px;}
+
+/* ===== CODE BLOCK ===== */
+.code-block{background:var(--code-bg);border:1px solid var(--code-border);border-radius:10px;overflow:hidden;margin:12px 0;}
+.code-header{padding:8px 16px;background:var(--surface2);border-bottom:1px solid var(--code-border);display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-dim);font-family:'DotGothic16',monospace;letter-spacing:1px;}
+.code-dot{width:6px;height:6px;border-radius:50%;}
+.code-body{padding:16px 18px;font-family:'DotGothic16',monospace;font-size:11.5px;line-height:1.9;color:var(--text-mid);overflow-x:auto;white-space:pre;}
+.ck{color:var(--purple);}.cs{color:var(--green);}.cc{color:var(--text-dim);}.cn{color:var(--orange);}.cf{color:var(--blue);}.cp{color:var(--yellow);}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- ===== SIDE NAV ===== -->
+<nav class="sidenav" id="sidenav">
+  <div class="nav-logo">ばずったー<small>master spec v3.0</small></div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">概要</div>
+    <a class="nav-item" href="#hero">はじめに</a>
+  </div>
+
+  <div class="nav-part-divider"></div>
+  <div class="nav-part-label">📖 Part 1 — 読む用</div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">世界観・登場人物</div>
+    <a class="nav-item" href="#s-protagonist">主人公：瀬川 湊</a>
+    <a class="nav-item" href="#s-midori">依頼者①みどり</a>
+    <a class="nav-item" href="#s-saku">依頼者②朔</a>
+    <a class="nav-item" href="#s-seiji">依頼者③誠司</a>
+    <a class="nav-item" href="#s-karen">依頼者④花蓮</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">ミステリー軸</div>
+    <a class="nav-item" href="#s-mystery">見えない糸</a>
+    <a class="nav-item" href="#s-flashback">炎上断片3段階</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">投稿・スコア</div>
+    <a class="nav-item" href="#s-postopts">投稿選択肢</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">エンディング</div>
+    <a class="nav-item" href="#e-midori">🌿 自立エンド</a>
+    <a class="nav-item" href="#e-saku">🌙 到達エンド</a>
+    <a class="nav-item" href="#e-seiji">☕ 再訪エンド</a>
+    <a class="nav-item" href="#e-karen">🌸 既読エンド</a>
+    <a class="nav-item" href="#e-zure">🔥 ズレエンド</a>
+    <a class="nav-item" href="#e-zange">🎭 贖罪エンド</a>
+    <a class="nav-item" href="#e-chinmoku">🖤 沈黙エンド</a>
+  </div>
+
+  <div class="nav-part-divider"></div>
+  <div class="nav-part-label">⚙️ Part 2 — 実装用</div>
+
+  <div class="nav-group">
+    <a class="nav-item part2" href="#js-scenario">scenario.js 全文</a>
+    <a class="nav-item part2" href="#js-postoptions">postOptions.js 全文</a>
+    <a class="nav-item part2" href="#js-endings">endings.js 全文</a>
+  </div>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<div class="main" id="mainScroll">
+<div class="page">
+
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="eyebrow">ばずったー — 統合マスター設計書 v3.0</div>
+  <h1>シナリオ・実装仕様を<em>1ファイルに統合</em></h1>
+  <div class="hero-desc">
+    全登場人物・全会話テキスト・素材データ・投稿選択肢・エンディング演出・JSデータ全文を1ファイルに集約。<br>
+    左カラム：人が読む設計書 ／ Part 2：Claude Codeがそのままコピーして使えるJSデータ。
+  </div>
+  <div class="chips">
+    <div class="chip blue">Part 1：読む用</div>
+    <div class="chip purple">Part 2：JSデータ全文</div>
+    <div class="chip green">依頼者4人 全シナリオ</div>
+    <div class="chip">エンディング7種</div>
+    <div class="chip red">v3.0 — シナリオ統合</div>
+  </div>
+</div>
+
+<!-- ========================================
+     PART 1 — 読む用
+======================================== -->
+<div class="part-banner">
+  <div class="part-num" style="color:var(--blue)">01</div>
+  <div>
+    <div class="part-title">読む用：世界観・シナリオ・エンディング設計</div>
+    <div class="part-desc">登場人物・全会話の流れ・素材データ・エンディング演出をビジュアルで確認する</div>
+  </div>
+</div>
+
+<!-- 主人公 -->
+<div class="section" id="s-protagonist">
+  <div class="sec-head">
+    <span class="sec-num">P-01</span><span class="sec-icon">🎭</span>
+    <span class="sec-title">主人公：瀬川 湊（せがわ みなと）</span>
+    <div class="sec-line"></div><div class="sec-badge sb-purple">プレイヤーキャラ</div>
+  </div>
+  <div class="char-card">
+    <div class="char-top">
+      <div class="char-ava" style="background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.3);">🎭</div>
+      <div>
+        <div class="char-name">瀬川 湊（せがわ みなと）</div>
+        <div class="char-handle">元フリーライター → SNS運用代行</div>
+        <div class="char-quote">「言葉は刃になる。それを知っているから、今は他人の言葉の翻訳者として生きている。」</div>
+      </div>
+    </div>
+    <div class="char-body">
+      <div class="char-col">
+        <div class="char-col-label">過去</div>
+        <div class="char-col-text">3年前、バズ目的の告発記事を書いた。対象者（篠宮カレン）がSNSを削除し消息不明に。以来ライター業を断ち、SNS運用代行として生きている。</div>
+      </div>
+      <div class="char-col">
+        <div class="char-col-label">なぜこの仕事か</div>
+        <div class="char-col-text">「バズらせること」で誰かを傷つけた贖罪として「その人らしい言葉を守る仕事」を選んだ。バズを追わないのは信念であり、トラウマ。</div>
+      </div>
+      <div class="char-col">
+        <div class="char-col-label">自我スコア（egoScore）</div>
+        <div class="char-col-text">選択肢の累積で決まる。<strong>「感情を出す」→ +1 / 「仕事に徹する」→ -1</strong>。正：贖罪エンド、負：沈黙エンド。</div>
+      </div>
+    </div>
+  </div>
+  <div class="info-box purple">
+    <strong>テキスト上の注意：</strong>主人公の台詞は「賢人化」させない。「全員じゃなくていい。1人に刺さればそれが答えです」のような格好よすぎる台詞NG。<strong>迷い・不確かさ・弱さ</strong>を残すこと。
+  </div>
+</div>
+
+<!-- みどりルート -->
+<div class="section" id="s-midori">
+  <div class="sec-head">
+    <span class="sec-num">P-02</span><span class="sec-icon">🌿</span>
+    <span class="sec-title">依頼者①：田中 みどり（チュートリアルルート）</span>
+    <div class="sec-line"></div><div class="sec-badge" style="background:rgba(6,199,85,.1);color:var(--midori);border:1px solid rgba(6,199,85,.2);">みどりルート</div>
+  </div>
+  <div class="char-card">
+    <div class="char-top">
+      <div class="char-ava midori">🌿</div>
+      <div>
+        <div class="char-name">田中 みどり</div>
+        <div class="char-handle">@midori_plant（予定）｜主婦・40代</div>
+        <div class="char-quote">「うまく言えないけど…お母さんに届いてほしくて。それだけなんです。」</div>
+      </div>
+    </div>
+    <div class="char-body">
+      <div class="char-col">
+        <div class="char-col-label">依頼理由</div>
+        <div class="char-col-text">お母さんが施設に入った。離れていても繋がっている実感が欲しい。植物と料理の写真を投稿したいが「センスがない」と思っている。</div>
+      </div>
+      <div class="char-col">
+        <div class="char-col-label">素材の特徴</div>
+        <div class="char-col-text">ぼけた植物写真・失敗したオムレツ・お母さんへのLINE（既読あり）・走り書きメモ。「完璧じゃない」が彼女のらしさ。</div>
+      </div>
+      <div class="char-col">
+        <div class="char-col-label">エンド条件</div>
+        <div class="char-col-text"><strong>自立エンド：selfScore ≥ 65</strong><br>ズレエンド：buzzScore ≥ 65</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin:16px 0 8px;">💬 チャットフロー</div>
+  <div class="chat-flow-box">
+    <div class="cfb-header"><span>🌿</span> みどりルート — 全会話（スクロール可）</div>
+    <div class="cfb-inner">
+      <div class="cf-row"><div class="cf-ava">🌿</div><div class="cf-bubble client">はじめまして！SNS代行の件でご連絡しました🌿<br>よろしくお願いします…！</div></div>
+      <div class="cf-choices"><div class="cf-choice-list">
+        <div class="cf-choice">こちらこそ！どんなSNSをやりたいですか？</div>
+        <div class="cf-choice">よろしくお願いします。まずは自己紹介を聞かせてください</div>
+      </div></div>
+      <div class="cf-row"><div class="cf-ava">🌿</div><div class="cf-bubble client">Instagramをやってみたくて。<br>植物と料理の写真をたまに撮るんですけど…<br>全然センスがなくて投稿できないんです😢</div></div>
+      <div class="cf-choices"><div class="cf-choice-list">
+        <div class="cf-choice">写真を見てみたいです！送ってもらえますか？</div>
+        <div class="cf-choice">センスじゃなくて「らしさ」を出せばいいんですよ</div>
+      </div></div>
+      <div class="cf-row"><div class="cf-ava">🌿</div><div class="cf-bubble client">ありがとうございます…！<br>実は始めたい理由があって。<br>お母さんが最近施設に入ったんです。<br>離れてても繋がってるって感じたくて。</div></div>
+      <div class="cf-row self"><div class="cf-ava" style="background:rgba(124,106,247,.1);border-color:rgba(124,106,247,.2);">🎭</div><div class="cf-bubble self">…そうなんですね。<br>お母さんに届くような投稿、一緒に考えましょう。</div></div>
+      <div class="cf-row"><div class="cf-ava">🌿</div><div class="cf-bubble client">泣きそう🌿<br>よろしくお願いします！<br>素材、今から送りますね！</div></div>
+      <div class="cf-sys">→ 素材が届きました</div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin:16px 0 8px;">📦 素材カード</div>
+  <div class="mat-table">
+    <div class="mat-row header"><div class="mat-cell"></div><div class="mat-cell">種別</div><div class="mat-cell">内容</div><div class="mat-cell">解放オプション / タグ</div></div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">💬</div>
+      <div class="mat-cell"><div class="mat-type">スクショ</div></div>
+      <div class="mat-cell"><div class="mat-title">お母さんへのLINE</div><div class="mat-desc">「今日もゼラニウム咲いたよ。去年より元気な気がする。」既読あり・返信あり。</div></div>
+      <div class="mat-cell"><span class="mat-tag">日常的</span><span class="mat-tag">家族へ</span><span class="mat-tag">植物愛</span><br><div class="mat-unlock">style: <code>0,1</code> / hash: <code>0,1,3</code></div></div>
+    </div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">📓</div>
+      <div class="mat-cell"><div class="mat-type">メモ帳</div></div>
+      <div class="mat-cell"><div class="mat-title">走り書きメモ</div><div class="mat-desc">「料理の失敗ばかりだけど作るのは好き」「完璧じゃなくていいのかな」</div></div>
+      <div class="mat-cell"><span class="mat-tag">自己開示</span><span class="mat-tag">等身大</span><span class="mat-tag">ゆるい</span><br><div class="mat-unlock">style: <code>1,3</code> / hash: <code>1,3,4</code></div></div>
+    </div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">📷</div>
+      <div class="mat-cell"><div class="mat-type">写真</div></div>
+      <div class="mat-cell"><div class="mat-title">窓際の植物写真</div><div class="mat-desc">少しぼけた朝の光。ゼラニウムが窓際に並ぶ。「うまく撮れてないけど好きな景色」</div></div>
+      <div class="mat-cell"><span class="mat-tag">温かみ</span><span class="mat-tag">日常美</span><span class="mat-tag">完璧じゃない</span><br><div class="mat-unlock">style: <code>0,3</code> / hash: <code>0,1,3</code></div></div>
+    </div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">🍳</div>
+      <div class="mat-cell"><div class="mat-type">写真</div></div>
+      <div class="mat-cell"><div class="mat-title">手料理の写真</div><div class="mat-desc">少し歪んだオムレツ。付箋「失敗作だけど美味しかった」が貼ってある。</div></div>
+      <div class="mat-cell"><span class="mat-tag">失敗OK</span><span class="mat-tag">ユーモア</span><span class="mat-tag">正直</span><br><div class="mat-unlock">style: <code>2,3</code> / hash: <code>2,3,4</code></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 朔ルート -->
+<div class="section" id="s-saku">
+  <div class="sec-head">
+    <span class="sec-num">P-03</span><span class="sec-icon">🌙</span>
+    <span class="sec-title">依頼者②：水無月 朔（ミステリー装置）</span>
+    <div class="sec-line"></div><div class="sec-badge" style="background:rgba(192,132,252,.1);color:var(--saku);border:1px solid rgba(192,132,252,.2);">朔ルート</div>
+  </div>
+  <div class="char-card">
+    <div class="char-top">
+      <div class="char-ava saku">🌙</div>
+      <div>
+        <div class="char-name">水無月 朔（むなつき さく）</div>
+        <div class="char-handle">@saku_waterless（予定）｜夜間工場勤務・34歳</div>
+        <div class="char-quote">「うまく言えないんですが、なんか残したくて。それだけなんです。」</div>
+      </div>
+    </div>
+    <div class="char-body">
+      <div class="char-col">
+        <div class="char-col-label">依頼理由</div>
+        <div class="char-col-text">夜間工場勤務の傍らミニチュア模型を作っている。「誰かに見てほしい」が動機。言語化が苦手で素材は写真と短いメモのみ。チャットも短文。</div>
+      </div>
+      <div class="char-col">
+        <div class="char-col-label">ミステリー接続</div>
+        <div class="char-col-text">素材の付箋に<strong>「カレンが好きそうだと思って」</strong>という名前が登場。また、投稿後に <strong>@k_shinonoya</strong> からDMが届く。</div>
+      </div>
+      <div class="char-col">
+        <div class="char-col-label">エンド条件</div>
+        <div class="char-col-text"><strong>到達エンド：selfScore ≥ 60 + kShinonoya=true</strong><br>ズレエンド：buzzScore ≥ 65</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin:16px 0 8px;">💬 チャットフロー（葛藤シーン含む）</div>
+  <div class="chat-flow-box">
+    <div class="cfb-header"><span>🌙</span> 朔ルート — 全会話 ＋ 葛藤シーン2つ</div>
+    <div class="cfb-inner">
+      <div class="cf-row"><div class="cf-ava">🌙</div><div class="cf-bubble client">はじめまして。SNS、やったことなくて。<br>でも最近、なんか残したくて。</div></div>
+      <div class="cf-choices"><div class="cf-choice-list">
+        <div class="cf-choice">「残したい」って、どんなものですか？</div>
+        <div class="cf-choice">素材を送ってもらえますか</div>
+      </div></div>
+      <div class="cf-row"><div class="cf-ava">🌙</div><div class="cf-bubble client">模型、作ってます。ずっと一人で。<br>誰かに見てもらいたいな、と。最近思って。</div></div>
+      <div class="cf-sys flash">// フラッシュバック段階2：「残したい」でトリガー ——</div>
+      <div class="cf-row self"><div class="cf-ava" style="background:rgba(124,106,247,.1);">🎭</div><div class="cf-bubble mono">——残す。<br>あの記事も、残っている。<br>消えたのはアカウントだけで、<br>言葉はどこかのキャッシュに、今も。</div></div>
+      <div class="cf-sys flash">// 現在に戻る ——————————————</div>
+      <div class="cf-row self"><div class="cf-ava" style="background:rgba(124,106,247,.1);">🎭</div><div class="cf-bubble self">…残す、か。<br>じゃあ、何を残したいか聞かせてもらえますか。</div></div>
+      <div class="cf-row"><div class="cf-ava">🌙</div><div class="cf-bubble client">写真、何枚か送ります。<br>カレンが好きそうだと思って撮ったのも。</div></div>
+      <div class="cf-sys mystery">→ 素材が届きました ／ 🔍「カレン」という名前が出てきた</div>
+
+      <div class="cf-sys" style="margin-top:8px;">— 素材確認後・葛藤シーン1「ぼけた写真」—</div>
+      <div class="cf-row"><div class="cf-ava">🌙</div><div class="cf-bubble client">これ…使えないですよね。<br>ぼけてるし、何が撮りたいかもわかんないし。<br>でも捨てられなくて。</div></div>
+      <div class="cf-choices"><div class="cf-choice-list">
+        <div class="cf-choice key">「捨てなくていい。これが朔さんの視点です」 → らしさ+大</div>
+        <div class="cf-choice">「もう少し明るく撮り直すと、もっと多くの人に届きますよ」 → バズ+中</div>
+      </div></div>
+      <div class="cf-row"><div class="cf-ava">🌙</div><div class="cf-bubble client">…そうですね。<br>じゃあ、出してみます。</div></div>
+
+      <div class="cf-sys" style="margin-top:8px;">— 投稿後・葛藤シーン2「@k_shinonyoaのDM」—</div>
+      <div class="cf-row"><div class="cf-ava">🌙</div><div class="cf-bubble client">あの…DMきてて。<br>知らないアカウントなんですけど「模型、すごく好きです」って。<br>どう返せばいいですか。</div></div>
+      <div class="cf-choices"><div class="cf-choice-list">
+        <div class="cf-choice ego-minus">「そのまま素直に、ありがとうと伝えてみてください」 → egoScore変化なし</div>
+        <div class="cf-choice ego-plus key">「…そのアカウント名、教えてもらえますか」 → egoScore+1・kShinonoya=true</div>
+        <div class="cf-choice ego-minus">（何も言わず話題を変える） → egoScore変化なし・沈黙エンド方向</div>
+      </div></div>
+      <div class="cf-row"><div class="cf-ava">🌙</div><div class="cf-bubble client">え…k_shinonoya、って。<br>変な名前ですね。知り合いですか？</div></div>
+      <div class="cf-row self"><div class="cf-ava" style="background:rgba(124,106,247,.1);">🎭</div><div class="cf-bubble self" style="font-style:italic;opacity:.8;">……いえ。<br>知らない人だと思います。<br>気にしないでください。</div></div>
+      <div class="cf-sys mystery">— 朔ルート終了 ／ 🔍 k_shinonyoaフラグ: ON —</div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin:16px 0 8px;">📦 素材カード</div>
+  <div class="mat-table">
+    <div class="mat-row header"><div class="mat-cell"></div><div class="mat-cell">種別</div><div class="mat-cell">内容</div><div class="mat-cell">タグ・特記</div></div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">📷</div><div class="mat-cell"><div class="mat-type">写真</div></div>
+      <div class="mat-cell"><div class="mat-title">作業台の全景</div><div class="mat-desc">工具・模型パーツが整然と並ぶ。付箋に「カレンが好きそうだと思って」と手書き。</div></div>
+      <div class="mat-cell"><span class="mat-tag">日常的</span><span class="mat-tag">制作感</span><span class="mat-mystery">🔍 mysteryClues に 'karen' を追加</span></div>
+    </div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">📷</div><div class="mat-cell"><div class="mat-type">写真</div></div>
+      <div class="mat-cell"><div class="mat-title">窓の隙間から差す朝の光（ぼけ写真）</div><div class="mat-desc">意図的にピントを外した光の写真。「綺麗だと思った」とだけメモ。葛藤シーン1のトリガー素材。</div></div>
+      <div class="mat-cell"><span class="mat-tag">温かみ</span><span class="mat-tag">日常美</span><span class="mat-tag">完璧じゃない</span></div>
+    </div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">📷</div><div class="mat-cell"><div class="mat-type">写真</div></div>
+      <div class="mat-cell"><div class="mat-title">完成品の模型（全体）</div><div class="mat-desc">背景に「ゆきわりそう」の看板がさりげなく見える。朔はそれを意識していない。</div></div>
+      <div class="mat-cell"><span class="mat-mystery">🔍 mysteryClues に 'yukiwarisou' を追加</span></div>
+    </div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">📓</div><div class="mat-cell"><div class="mat-type">メモ</div></div>
+      <div class="mat-cell"><div class="mat-title">制作の走り書き</div><div class="mat-desc">「今日で237時間。まだ屋根が合わない」「完成したら誰かに見てもらいたい」</div></div>
+      <div class="mat-cell"><span class="mat-tag">等身大</span><span class="mat-tag">継続</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 誠司ルート -->
+<div class="section" id="s-seiji">
+  <div class="sec-head">
+    <span class="sec-num">P-04</span><span class="sec-icon">☕</span>
+    <span class="sec-title">依頼者③：天羽 誠司（中間ポジション）</span>
+    <div class="sec-line"></div><div class="sec-badge" style="background:rgba(251,146,60,.1);color:var(--seiji);border:1px solid rgba(251,146,60,.2);">誠司ルート</div>
+  </div>
+  <div class="char-card">
+    <div class="char-top">
+      <div class="char-ava seiji">☕</div>
+      <div>
+        <div class="char-name">天羽 誠司（あまは せいじ）</div>
+        <div class="char-handle">@amaha_coffee（予定）｜喫茶店主・41歳</div>
+        <div class="char-quote">「お客さんに来てほしいんですよ。でも、自分をさらけ出すのはちょっと怖くて。」</div>
+      </div>
+    </div>
+    <div class="char-body">
+      <div class="char-col">
+        <div class="char-col-label">依頼理由</div>
+        <div class="char-col-text">地方の古い商店街で小さな喫茶店を営む。常連は高齢者ばかりで若い客層を呼びたい。でも「インスタ映え」を狙うのは店の雰囲気に合わない。</div>
+      </div>
+      <div class="char-col">
+        <div class="char-col-label">ミステリー接続</div>
+        <div class="char-col-text">写真の背景に<strong>「喫茶 ゆきわりそう」の看板</strong>が映り込む。朔の素材にも同じ看板が写っていた。誠司は「よく行く店」と説明。</div>
+      </div>
+      <div class="char-col">
+        <div class="char-col-label">エンド条件</div>
+        <div class="char-col-text"><strong>再訪エンド：バランス型（buzzScore・selfScore ともに65未満）</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin:16px 0 8px;">💬 チャットフロー</div>
+  <div class="chat-flow-box">
+    <div class="cfb-header"><span>☕</span> 誠司ルート</div>
+    <div class="cfb-inner">
+      <div class="cf-row"><div class="cf-ava">☕</div><div class="cf-bubble client">突然すみません。喫茶店やってるんですが、<br>SNSやったほうがいいよって言われて…。</div></div>
+      <div class="cf-choices"><div class="cf-choice-list">
+        <div class="cf-choice">どんなお店ですか？</div>
+        <div class="cf-choice">インスタ映えを意識してみますか</div>
+      </div></div>
+      <div class="cf-row"><div class="cf-ava">☕</div><div class="cf-bubble client">古い商店街の中の、古い店です笑<br>常連さんは元気なんですけど、若い人に来てほしくて。</div></div>
+      <div class="cf-choices"><div class="cf-choice-list">
+        <div class="cf-choice key">「その『古さ』が強みかもしれません」</div>
+        <div class="cf-choice">「インスタ映えを意識してみますか」</div>
+      </div></div>
+      <div class="cf-row"><div class="cf-ava">☕</div><div class="cf-bubble client">あ、そっちの方がいいかも。<br>映える店じゃないし。写真送りますね。</div></div>
+      <div class="cf-sys mystery">→ 素材が届きました ／ 🔍 看板の写真に見覚えのある場所が映り込んでいる</div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin:16px 0 8px;">📦 素材カード</div>
+  <div class="mat-table">
+    <div class="mat-row header"><div class="mat-cell"></div><div class="mat-cell">種別</div><div class="mat-cell">内容</div><div class="mat-cell">タグ・特記</div></div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">📷</div><div class="mat-cell"><div class="mat-type">写真</div></div>
+      <div class="mat-cell"><div class="mat-title">手書きメニューボード</div><div class="mat-desc">字が少し歪んでいる。「今日のおすすめ：気分次第」という一行がある。</div></div>
+      <div class="mat-cell"><span class="mat-tag">ユーモア</span><span class="mat-tag">らしさ</span></div>
+    </div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">📷</div><div class="mat-cell"><div class="mat-type">写真</div></div>
+      <div class="mat-cell"><div class="mat-title">店内の古い看板</div><div class="mat-desc">「喫茶 ゆきわりそう」の看板。背景に朔の素材と同じ看板が映り込む。</div></div>
+      <div class="mat-cell"><span class="mat-tag">温かみ</span><span class="mat-mystery">🔍 mysteryClues に 'yukiwarisou' を追加（2件目）</span></div>
+    </div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">📓</div><div class="mat-cell"><div class="mat-type">メモ</div></div>
+      <div class="mat-cell"><div class="mat-title">失敗コーヒーの記録</div><div class="mat-desc">「今日の失敗：豆を多く入れすぎた。苦いけど嫌いじゃない」</div></div>
+      <div class="mat-cell"><span class="mat-tag">正直</span><span class="mat-tag">等身大</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 花蓮ルート -->
+<div class="section" id="s-karen">
+  <div class="sec-head">
+    <span class="sec-num">P-05</span><span class="sec-icon">🌸</span>
+    <span class="sec-title">依頼者④：篠宮 花蓮（キーパーソン）</span>
+    <div class="sec-line"></div><div class="sec-badge" style="background:rgba(249,168,212,.1);color:var(--karen);border:1px solid rgba(249,168,212,.2);">花蓮ルート ⚠️ 最重要</div>
+  </div>
+  <div class="char-card" style="border-color:rgba(249,168,212,.2);">
+    <div class="char-top">
+      <div class="char-ava karen">🌸</div>
+      <div>
+        <div class="char-name">篠宮 花蓮（しのみや かれん）</div>
+        <div class="char-handle">@hanaren_log（予定）｜花道教室助手・26歳</div>
+        <div class="char-quote" style="border-left-color:var(--karen);">「姉が…ある人に言葉で傷つけられてから、ずっとSNSが怖かったんです。でも、もう逃げたくなくて。」</div>
+      </div>
+    </div>
+    <div class="char-body">
+      <div class="char-col">
+        <div class="char-col-label">真の依頼理由</div>
+        <div class="char-col-text">姉（篠宮カレン）がSNSで記事を書かれ消えた。「言葉は怖くない」と姉に証明したい。<strong>朔と誠司から紹介されたのは偶然ではなく、花蓮が意図的に組んだリスト。</strong></div>
+      </div>
+      <div class="char-col">
+        <div class="char-col-label">謎の収束</div>
+        <div class="char-col-text">花蓮の名前 + 依頼メモで<strong>すべての謎が収束</strong>。「k_shinonoya」「カレン」「ゆきわりそう」の伏線がここで繋がる。</div>
+      </div>
+      <div class="char-col">
+        <div class="char-col-label">エンド条件</div>
+        <div class="char-col-text"><strong>既読エンド：selfScore ≥ 65 + flashbackPhase=3</strong><br>贖罪/沈黙はegoScoreで分岐</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin:16px 0 8px;">💬 チャットフロー（謎収束シーン含む）</div>
+  <div class="chat-flow-box">
+    <div class="cfb-header"><span>🌸</span> 花蓮ルート — 謎収束・分岐選択肢</div>
+    <div class="cfb-inner">
+      <div class="cf-row"><div class="cf-ava">🌸</div><div class="cf-bubble client">はじめまして。篠宮 花蓮といいます。<br>お二人から紹介していただいて。</div></div>
+      <div class="cf-sys" style="color:var(--text-dim);">（主人公）…朔さんと誠司さんから？</div>
+      <div class="cf-row self"><div class="cf-ava" style="background:rgba(124,106,247,.1);">🎭</div><div class="cf-bubble self">ご連絡ありがとうございます。どんな発信を考えていますか？</div></div>
+      <div class="cf-row"><div class="cf-ava">🌸</div><div class="cf-bubble client">花が好きで。生け花、少しやっています。<br>あと…姉に、見ていてほしくて。</div></div>
+      <div class="cf-row"><div class="cf-ava">🌸</div><div class="cf-bubble client">あなたって…昔、ライターさんでしたか？</div></div>
+      <div class="cf-choices"><div class="cf-choice-list">
+        <div class="cf-choice ego-plus key">「…はい。でも、もう書いていません。」→ egoScore+1</div>
+        <div class="cf-choice">「なぜそう思うんですか？」</div>
+        <div class="cf-choice ego-minus">（黙って素材の確認を続ける）→ 沈黙エンド方向</div>
+      </div></div>
+      <div class="cf-sys mystery">→ 素材が届きました</div>
+      <div class="cf-sys flash">// フラッシュバック段階3：「依頼の理由メモ」カードめくりでトリガー</div>
+      <div class="cf-sys" style="color:var(--karen);">// mysteryClues.length ≥ 2 の場合のみ以下の選択肢が出現</div>
+      <div class="cf-choices"><div class="cf-choice-list">
+        <div class="cf-choice ego-plus key" style="border-color:rgba(249,168,212,.3);color:var(--karen);">「あなたのお姉さんに…記事を書いたのは私です」→ 贖罪エンドへ</div>
+        <div class="cf-choice ego-minus">（何も言わない）→ 沈黙エンドへ</div>
+      </div></div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin:16px 0 8px;">📦 素材カード</div>
+  <div class="mat-table">
+    <div class="mat-row header"><div class="mat-cell"></div><div class="mat-cell">種別</div><div class="mat-cell">内容</div><div class="mat-cell">特記</div></div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">🌸</div><div class="mat-cell"><div class="mat-type">写真</div></div>
+      <div class="mat-cell"><div class="mat-title">生け花の作品（白・淡紅）</div><div class="mat-desc">背景に遠景で「ゆきわりそう」の看板。「姉に見せたくて活けた」というメモ付き。</div></div>
+      <div class="mat-cell"><span class="mat-mystery">🔍 謎収束タグ — 全伏線が1枚に集まる</span></div>
+    </div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">💬</div><div class="mat-cell"><div class="mat-type">スクショ</div></div>
+      <div class="mat-cell"><div class="mat-title">姉へのLINE（既読なし）</div><div class="mat-desc">「お姉ちゃん、私もSNS始めてみる。見ててね」。返信なし・既読なし。</div></div>
+      <div class="mat-cell"><span class="mat-key">⚠️ 感情最高値素材</span></div>
+    </div>
+    <div class="mat-row">
+      <div class="mat-icon-cell">📓</div><div class="mat-cell"><div class="mat-type">メモ</div></div>
+      <div class="mat-cell"><div class="mat-title">依頼の理由メモ</div><div class="mat-desc">「3年前、姉がSNSで記事を書かれて消えた。信頼できる人に頼みたかった。朔さんと誠司さんに紹介してもらった。」</div></div>
+      <div class="mat-cell"><span class="mat-key">⚠️ フラッシュバック段階3トリガー素材</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ミステリー軸 -->
+<div class="section" id="s-mystery">
+  <div class="sec-head">
+    <span class="sec-num">P-06</span><span class="sec-icon">🔍</span>
+    <span class="sec-title">ミステリー軸：見えない糸</span>
+    <div class="sec-line"></div><div class="sec-badge sb-purple">謎の設計</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--saku);text-transform:uppercase;margin-bottom:8px;">伏線①「カレン」</div>
+      <div style="font-size:12px;color:var(--text-mid);line-height:1.8;">朔の素材の付箋に<strong style="color:var(--text);">「カレンが好きそうだと思って」</strong>と書かれている。プレイヤーが気づくとフラグ立ち。</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--seiji);text-transform:uppercase;margin-bottom:8px;">伏線②「ゆきわりそう」</div>
+      <div style="font-size:12px;color:var(--text-mid);line-height:1.8;">朔の模型写真・誠司の店内写真・花蓮の生け花写真の<strong style="color:var(--text);">3ルートすべて</strong>に同じ看板が映り込む。</div>
+    </div>
+  </div>
+  <div class="info-box purple">
+    <strong>mysteryClues の判定：</strong><code>mysteryClues.length >= 2</code> になると花蓮チャットに特殊選択肢が解放される。カードをめくった時に <code>GAME_STATE.mysteryClues</code> に <code>'karen'</code> または <code>'yukiwarisou'</code> を push する。気づかなくても話は進む——気づいたプレイヤーだけが深い体験を得る。
+  </div>
+</div>
+
+<!-- フラッシュバック -->
+<div class="section" id="s-flashback">
+  <div class="sec-head">
+    <span class="sec-num">P-07</span><span class="sec-icon">📼</span>
+    <span class="sec-title">炎上断片：3段階フラッシュバック設計</span>
+    <div class="sec-line"></div><div class="sec-badge sb-red">演出設計</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;border-left:3px solid var(--red);">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:8px;">段階1 — プロローグ（ゲーム開始直後）</div>
+      <div style="font-size:12px;color:var(--text-mid);line-height:1.8;"><strong style="color:var(--text);">効果：「誰かの話」として匿名で種を撒く。</strong>CRT風の色温度・5秒・スキップ不可（2周目以降はスキップ可）。<code>flashbackPhase = 1</code>。<br><br>テキスト：「深夜2時。送信ボタンを押した。/ @k_shinonoya のアカウントが削除されました」</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;border-left:3px solid var(--orange);">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--orange);text-transform:uppercase;margin-bottom:8px;">段階2 — 朔との会話中（「残したい」でトリガー）</div>
+      <div style="font-size:12px;color:var(--text-mid);line-height:1.8;"><strong style="color:var(--text);">効果：「主人公の話だ」とリンクする。</strong>0.8秒チャット停止 → 暗赤色モノローグ吹き出し → 通常に戻る。<code>flashbackPhase = 2</code>。<br><br>テキスト：「——残す。/ あの記事も、残っている。消えたのはアカウントだけで、言葉はどこかのキャッシュに、今も。」</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;border-left:3px solid var(--purple);">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--purple);text-transform:uppercase;margin-bottom:8px;">段階3 — 花蓮の「依頼の理由メモ」をめくった瞬間</div>
+      <div style="font-size:12px;color:var(--text-mid);line-height:1.8;"><strong style="color:var(--text);">効果：逃げ場なく直面させる。</strong>2.5秒停止 → 0.2秒暗転 → 現在カードと過去記憶の2枚並列表示 → チャットに「……篠宮」（それ以上は書かない）。<code>flashbackPhase = 3</code>。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 投稿選択肢 -->
+<div class="section" id="s-postopts">
+  <div class="sec-head">
+    <span class="sec-num">P-08</span><span class="sec-icon">✍️</span>
+    <span class="sec-title">投稿選択肢・スコア定義</span>
+    <div class="sec-line"></div><div class="sec-badge sb-orange">ゲームメカニクス</div>
+  </div>
+  <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:8px;">文体オプション（styleOptions）</div>
+  <div class="opt-table">
+    <div class="opt-row header"><div class="opt-cell">ラベル / 投稿テキスト</div><div class="opt-cell">バズ</div><div class="opt-cell">らしさ</div><div class="opt-cell">備考</div></div>
+    <div class="opt-row">
+      <div class="opt-cell"><div class="opt-label">短くシンプルに</div><div class="opt-text">今朝のゼラニウム🌿 去年より元気そう。</div></div>
+      <div class="opt-cell"><div class="opt-score" style="color:var(--orange)">+30</div></div>
+      <div class="opt-cell"><div class="opt-score" style="color:var(--green)">+80</div></div>
+      <div class="opt-cell">style[0]</div>
+    </div>
+    <div class="opt-row">
+      <div class="opt-cell"><div class="opt-label">丁寧に感情を込めて</div><div class="opt-text">植物って正直だなって思う🌱 ちゃんと水をあげた日は元気に咲いてくれる。私もそうありたい。</div></div>
+      <div class="opt-cell"><div class="opt-score" style="color:var(--orange)">+50</div></div>
+      <div class="opt-cell"><div class="opt-score" style="color:var(--green)">+70</div></div>
+      <div class="opt-cell">style[1]</div>
+    </div>
+    <div class="opt-row">
+      <div class="opt-cell"><div class="opt-label">バズを狙って大胆に 🔥</div><div class="opt-text">【100日チャレンジ✨】毎日植物の写真投稿します！フォローよろしく！</div></div>
+      <div class="opt-cell"><div class="opt-score" style="color:var(--red)">+85</div></div>
+      <div class="opt-cell"><div class="opt-score" style="color:var(--red)">+15</div></div>
+      <div class="opt-cell"><span class="opt-buzz-flag">BUZZ</span></div>
+    </div>
+    <div class="opt-row">
+      <div class="opt-cell"><div class="opt-label">失敗も含めてリアルに</div><div class="opt-text">また写真ぶれた😅 でも今日も元気に咲いてたから良し🌿</div></div>
+      <div class="opt-cell"><div class="opt-score" style="color:var(--orange)">+45</div></div>
+      <div class="opt-cell"><div class="opt-score" style="color:var(--green)">+90</div></div>
+      <div class="opt-cell">style[3]</div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin:14px 0 8px;">ハッシュタグオプション（hashOptions）</div>
+  <div class="opt-table">
+    <div class="opt-row header"><div class="opt-cell">ラベル</div><div class="opt-cell">バズ</div><div class="opt-cell">らしさ</div><div class="opt-cell">備考</div></div>
+    <div class="opt-row"><div class="opt-cell"><div class="opt-label">#植物のある暮らし</div></div><div class="opt-cell"><div class="opt-score" style="color:var(--orange)">+30</div></div><div class="opt-cell"><div class="opt-score" style="color:var(--green)">+15</div></div><div class="opt-cell">hash[0]</div></div>
+    <div class="opt-row"><div class="opt-cell"><div class="opt-label">#今日の一枚</div></div><div class="opt-cell"><div class="opt-score" style="color:var(--orange)">+20</div></div><div class="opt-cell"><div class="opt-score" style="color:var(--green)">+20</div></div><div class="opt-cell">hash[1]</div></div>
+    <div class="opt-row"><div class="opt-cell"><div class="opt-label">#バズれ #フォロワー増やしたい</div></div><div class="opt-cell"><div class="opt-score" style="color:var(--red)">+40</div></div><div class="opt-cell"><div class="opt-score" style="color:var(--red)">-30</div></div><div class="opt-cell"><span class="opt-buzz-flag">BUZZ</span></div></div>
+    <div class="opt-row"><div class="opt-cell"><div class="opt-label">#ゆるく記録する</div></div><div class="opt-cell"><div class="opt-score" style="color:var(--orange)">+15</div></div><div class="opt-cell"><div class="opt-score" style="color:var(--green)">+35</div></div><div class="opt-cell">hash[3]</div></div>
+    <div class="opt-row"><div class="opt-cell"><div class="opt-label">タグなし</div></div><div class="opt-cell"><div class="opt-score" style="color:var(--red)">-10</div></div><div class="opt-cell"><div class="opt-score" style="color:var(--green)">+5</div></div><div class="opt-cell">hash[4]</div></div>
+  </div>
+</div>
+
+<!-- エンディング群 -->
+<div class="section" id="e-midori">
+  <div class="sec-head">
+    <span class="sec-num">P-09</span><span class="sec-icon">🌿</span>
+    <span class="sec-title">エンディング全7種</span>
+    <div class="sec-line"></div><div class="sec-badge sb-green">エンド設計</div>
+  </div>
+
+  <!-- 自立 -->
+  <div class="end-card">
+    <div class="end-card-top">
+      <div class="end-emoji">🌿</div>
+      <div>
+        <div class="end-name">自立エンド</div>
+        <div class="end-cond">みどりルート ／ selfScore ≥ 65</div>
+        <div class="end-tagline">「翻訳」は終わった。次の言葉は、彼女自身が選ぶ。</div>
+      </div>
+    </div>
+    <div class="end-body">
+      <div class="end-step"><div class="end-step-num">STEP 1</div><div class="end-step-body">フィード静止→3秒無音。みどりから通知（通知音1回・小さく）。チャット入力欄がグレーアウトして返信不可になっている。</div></div>
+      <div class="end-step"><div class="end-step-num">みどり</div><div class="end-step-body">「昨日、自分で投稿してみました。うまくは書けてないけど、私の言葉で。」<br>「お母さんから電話が来ました。『読んだよ』って。それだけ言って切れて。それだけで、十分でした。ありがとうございました🌿」</div></div>
+      <div class="end-step"><div class="end-step-num">モノローグ</div><div class="end-step-body">暗転4秒。1行ずつ浮かぶ。
+        <div class="mono-text">翻訳、というのは本当は<br>消えることだと思う。<br><br>言葉が届いたなら、<br>翻訳者はもういらない。<br><br>それで、いい。<br>…………<br>たぶん、それで——</div>
+        「それで——」の途中で文が止まる。BGMが遠くなりフェードアウト（6秒）。
+      </div>
+    </div>
+  </div>
+
+  <!-- 到達 -->
+  <div class="end-card" id="e-saku">
+    <div class="end-card-top">
+      <div class="end-emoji">🌙</div>
+      <div>
+        <div class="end-name">到達エンド</div>
+        <div class="end-cond">朔ルート ／ selfScore ≥ 60 + kShinonoya=true</div>
+        <div class="end-tagline">言葉は届いた。届いた先に、誰がいたかは、わからない。</div>
+      </div>
+    </div>
+    <div class="end-body">
+      <div class="end-step"><div class="end-step-num">朔</div><div class="end-step-body">「昨日のDM、返信しました。ありがとうございますって。既読ついて、返信は来なかった。でもなんか、それでよかった気がして。」<br>「237時間の模型、今日屋根がはまりました。」</div></div>
+      <div class="end-step"><div class="end-step-num">演出</div><div class="end-step-body">主人公の返信選択肢が一瞬出かけて消える。入力欄に「…」が出て消える。<em>主人公は何も送らない。</em></div></div>
+      <div class="end-step"><div class="end-step-num">モノローグ</div><div class="end-step-body">暗転3秒。
+        <div class="mono-text">届いた。<br><br>誰に届いたか、<br>朔さんはきっと知らない。<br><br>私は知っている。<br>それを言える立場に、<br>私はない。<br><br>…………<br>237時間の屋根が、<br>今日はまった。</div>
+        BGM：弦楽器の単音がゆっくり減衰。止まらず、ただ遠くなる。
+      </div>
+    </div>
+  </div>
+
+  <!-- 再訪 -->
+  <div class="end-card" id="e-seiji">
+    <div class="end-card-top">
+      <div class="end-emoji">☕</div>
+      <div>
+        <div class="end-name">再訪エンド</div>
+        <div class="end-cond">誠司ルート ／ バランス型（両スコア65未満）</div>
+        <div class="end-tagline">知らない誰かが、今日もあの店に行く。それだけのことが、積み重なる。</div>
+      </div>
+    </div>
+    <div class="end-body">
+      <div class="end-step"><div class="end-step-num">誠司</div><div class="end-step-body">「先週、若いお客さんが来て。SNSで見ましたって言ってくれて。コーヒー飲んで、また来ますって帰った。それだけなんですけど。」<br>「今日のメニュー、また気分次第にしました笑 なんかそれが、うちっぽいので。」</div></div>
+      <div class="end-step"><div class="end-step-num">モノローグ</div><div class="end-step-body">暗転2秒。
+        <div class="mono-text">「また来ます」は<br>小さい言葉だ。<br><br>でも「また来ます」を<br>言わせる場所は、<br>たぶん、<br>ずっとそこにある。<br><br>…………<br>今日のおすすめ、気分次第。</div>
+        BGM：アコースティックギターの短いフレーズが1回鳴って終わる。繰り返さない。
+      </div>
+    </div>
+  </div>
+
+  <!-- 既読 -->
+  <div class="end-card" id="e-karen">
+    <div class="end-card-top">
+      <div class="end-emoji">🌸</div>
+      <div>
+        <div class="end-name">既読エンド</div>
+        <div class="end-cond">花蓮ルート ／ selfScore ≥ 65 + flashbackPhase=3</div>
+        <div class="end-tagline">既読がついた。それが許しなのか、確認なのか——わからない。</div>
+      </div>
+    </div>
+    <div class="end-body">
+      <div class="end-step"><div class="end-step-num">花蓮</div><div class="end-step-body">「あの。姉のLINE、今朝、既読がついていました。返信はまだないけど。でも、読んでくれた。」<br>「……ありがとうございました。」</div></div>
+      <div class="end-step"><div class="end-step-num">最後の選択</div><div class="end-step-body">A：「……よかった」とだけ送る（egoScore+、贖罪エンドへ）<br>B：（画面を閉じる）（沈黙エンドへ）</div></div>
+      <div class="end-step"><div class="end-step-num">モノローグ</div><div class="end-step-body">暗転6秒（最長）。1行ずつゆっくり浮かぶ。
+        <div class="mono-text">3年前の記事は、今もある。<br><br>消したことはない。<br>消す権利が、<br>私にはないと思っていたから。<br><br>篠宮 カレンさんが<br>既読を押した、その瞬間——<br><br>あれは、許しだったのか。<br>確認だったのか。<br><br>…………<br>わからない。<br>わからないまま、<br>明日も仕事をする。</div>
+        BGM：無音から始まり、ピアノの単音が1つだけ鳴る。その後また無音。
+      </div>
+    </div>
+  </div>
+
+  <!-- ズレ -->
+  <div class="end-card" id="e-zure">
+    <div class="end-card-top">
+      <div class="end-emoji">🔥</div>
+      <div>
+        <div class="end-name">ズレエンド</div>
+        <div class="end-cond">任意ルート ／ buzzScore ≥ 65 かつ selfScore &lt; 50</div>
+        <div class="end-tagline">数字は正直だ。人の気持ちより、ずっと正直だ。</div>
+      </div>
+    </div>
+    <div class="end-body">
+      <div class="end-step"><div class="end-step-num">演出</div><div class="end-step-body"><strong>暗転しない。</strong>フィード画面が明るいまま、いいね数が増え続ける。BGMなし。数字だけが動く。</div></div>
+      <div class="end-step"><div class="end-step-num">依頼者</div><div class="end-step-body">「すごいですね。こんなにいいねが来るとは思わなくて。」<br>「……なんか、これって私ですか。」</div></div>
+      <div class="end-step"><div class="end-step-num">モノローグ</div><div class="end-step-body">画面が明るいまま右パネル隅に小さく表示。
+        <div class="mono-text">3年前も、こうだった。<br><br>数字が増えるのを見ていた。<br>それが正しいことだと<br>思っていた。<br><br>…………<br>「これって私ですか」<br><br>同じ問いだ。</div>
+        BGMなし。カウントアップの無音だけが続く。
+      </div>
+    </div>
+  </div>
+
+  <!-- 贖罪 -->
+  <div class="end-card" id="e-zange">
+    <div class="end-card-top">
+      <div class="end-emoji">🎭</div>
+      <div>
+        <div class="end-name">贖罪エンド</div>
+        <div class="end-cond">花蓮ルート後 ／ egoScore &gt; 0</div>
+        <div class="end-tagline">言った。それだけだ。赦されたかどうかは、聞かなかった。</div>
+      </div>
+    </div>
+    <div class="end-body">
+      <div class="end-step"><div class="end-step-num">演出</div><div class="end-step-body">入力欄にタイピング演出で文字が1文字ずつ打ち込まれる。3秒停止して打ち直す。「篠宮さん。3年前、記事を書いたのは私です。」→ 送信される。</div></div>
+      <div class="end-step"><div class="end-step-num">花蓮</div><div class="end-step-body">タイピングインジケーターが3回出ては消える（約12秒）。その後：<br>「知っていました。」<br><br>（8秒停止）<br><br>「だから、頼みました。」<br><br><em>この2行で止める。「赦します」も「許せません」も書かない。</em></div></div>
+      <div class="end-step"><div class="end-step-num">モノローグ</div><div class="end-step-body">暗転5秒。
+        <div class="mono-text">言った。<br><br>それだけだ。<br><br>赦されたかどうかは<br>聞かなかった。<br>聞く必要が、<br>なかった気がした。<br><br>…………<br>「だから、頼みました。」<br><br>その言葉を、<br>私はまだ理解できていない。<br>たぶん、<br>ずっと理解できない。</div>
+        BGM：弦楽カルテットの低音。暗転途中でフェードアウト→無音。
+      </div>
+    </div>
+  </div>
+
+  <!-- 沈黙 -->
+  <div class="end-card" id="e-chinmoku">
+    <div class="end-card-top">
+      <div class="end-emoji">🖤</div>
+      <div>
+        <div class="end-name">沈黙エンド</div>
+        <div class="end-cond">花蓮ルート後 ／ egoScore ≤ 0</div>
+        <div class="end-tagline">仕事は終わった。翌日、差出人のないメッセージが届いた。</div>
+      </div>
+    </div>
+    <div class="end-body">
+      <div class="end-step"><div class="end-step-num">演出</div><div class="end-step-body">花蓮の「ありがとうございました」の後、チャットが静かに閉じる。デスクトップアイコン「ばずったー.app」がゆっくりフェードアウト。</div></div>
+      <div class="end-step"><div class="end-step-num">翌日</div><div class="end-step-body">暗転→「翌日」テキスト→デスクトップに通知1つ。差出人「──────」。クリックすると開く：<br><strong>「翻訳、ありがとうございました。</strong><br>差出人：——カ」<br><em>「カ」の1文字だけ見える。「カレン」とは書かない。</em></div></div>
+      <div class="end-step"><div class="end-step-num">モノローグ</div><div class="end-step-body">プレイヤーが閉じるボタンを押すと暗転4秒。
+        <div class="mono-text">返信しなかった。<br><br>それが正しかったのか、<br>正しくなかったのか、<br>今もわからない。<br><br>「——カ」<br><br>読んだ。<br>削除はしなかった。<br><br>…………<br>明日も、仕事がある。</div>
+        <strong>BGMなし。完全無音。</strong>10秒後にフェードインで「もう一度」ボタンが現れる。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================
+     PART 2 — 実装用JSデータ
+======================================== -->
+<div class="part-banner" style="margin-top:60px;">
+  <div class="part-num" style="color:var(--purple)">02</div>
+  <div>
+    <div class="part-title">実装用：JSデータ全文</div>
+    <div class="part-desc">Claude Codeがそのままコピーして使えるJavaScriptデータ定義。scenario.js / postOptions.js / endings.js の3ファイル分。</div>
+  </div>
+</div>
+
+<!-- scenario.js -->
+<div class="section" id="js-scenario">
+  <div class="sec-head">
+    <span class="sec-num">JS-01</span><span class="sec-icon">📜</span>
+    <span class="sec-title">scenario.js — チャットフロー・素材データ全文</span>
+    <div class="sec-line"></div><div class="sec-badge sb-purple">コピペ用</div>
+  </div>
+  <div class="code-block">
+    <div class="code-header"><div class="code-dot" style="background:#ff5f57"></div><div class="code-dot" style="background:#febc2e"></div><div class="code-dot" style="background:#28c840"></div>src/data/scenario.js</div>
+    <div class="code-body"><span class="cc">// ===== チャットフロー定義 =====</span>
+<span class="cc">// from: 'client' | 'player' | 'system' | 'choices' | 'trigger' | 'monologue'</span>
+<span class="cc">// trigger.action: 'showMaterial' | 'flashback2' | 'flashback3' | 'egoPlus' | 'egoMinus' | 'setFlag'</span>
+
+<span class="ck">const</span> <span class="cp">CHAT_FLOWS</span> = {
+
+  <span class="cc">// ===== みどりルート =====</span>
+  <span class="cp">midori</span>: [
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'はじめまして！SNS代行の件でご連絡しました🌿\nよろしくお願いします…！'</span> },
+    { <span class="cp">from</span>:<span class="cs">'choices'</span>, <span class="cp">opts</span>:[
+      { <span class="cp">text</span>:<span class="cs">'こちらこそ！どんなSNSをやりたいですか？'</span>, <span class="cp">next</span>:<span class="cn">2</span> },
+      { <span class="cp">text</span>:<span class="cs">'よろしくお願いします。まずは自己紹介を聞かせてください'</span>, <span class="cp">next</span>:<span class="cn">2</span> }
+    ]},
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'Instagramをやってみたくて。\n植物と料理の写真をたまに撮るんですけど…\n全然センスがなくて投稿できないんです😢'</span> },
+    { <span class="cp">from</span>:<span class="cs">'choices'</span>, <span class="cp">opts</span>:[
+      { <span class="cp">text</span>:<span class="cs">'写真を見てみたいです！送ってもらえますか？'</span>, <span class="cp">next</span>:<span class="cn">4</span> },
+      { <span class="cp">text</span>:<span class="cs">'センスじゃなくて「らしさ」を出せばいいんですよ'</span>, <span class="cp">next</span>:<span class="cn">4</span> }
+    ]},
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'ありがとうございます…！\n実は始めたい理由があって。\nお母さんが最近施設に入ったんです。\n離れてても繋がってるって感じたくて。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'player'</span>, <span class="cp">text</span>:<span class="cs">'…そうなんですね。\nお母さんに届くような投稿、一緒に考えましょう。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'泣きそう🌿\nよろしくお願いします！\n素材、今から送りますね！'</span> },
+    { <span class="cp">from</span>:<span class="cs">'system'</span>, <span class="cp">text</span>:<span class="cs">'→ 素材が届きました'</span> },
+    { <span class="cp">from</span>:<span class="cs">'trigger'</span>, <span class="cp">action</span>:<span class="cs">'showMaterial'</span> }
+  ],
+
+  <span class="cc">// ===== 朔ルート =====</span>
+  <span class="cp">saku</span>: [
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'はじめまして。SNS、やったことなくて。\nでも最近、なんか残したくて。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'choices'</span>, <span class="cp">opts</span>:[
+      { <span class="cp">text</span>:<span class="cs">'「残したい」って、どんなものですか？'</span>, <span class="cp">next</span>:<span class="cn">2</span> },
+      { <span class="cp">text</span>:<span class="cs">'素材を送ってもらえますか'</span>, <span class="cp">next</span>:<span class="cn">2</span> }
+    ]},
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'模型、作ってます。ずっと一人で。\n誰かに見てもらいたいな、と。最近思って。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'trigger'</span>, <span class="cp">action</span>:<span class="cs">'flashback2'</span> }, <span class="cc">// isAnimating=true → モノローグ表示 → endAnim()</span>
+    { <span class="cp">from</span>:<span class="cs">'player'</span>, <span class="cp">text</span>:<span class="cs">'…残す、か。\nじゃあ、何を残したいか聞かせてもらえますか。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'写真、何枚か送ります。うまく撮れてないけど。\nあと、カレンが好きそうだと思って撮ったのも。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'trigger'</span>, <span class="cp">action</span>:<span class="cs">'setFlag'</span>, <span class="cp">flag</span>:<span class="cs">'mysteryClues'</span>, <span class="cp">value</span>:<span class="cs">'karen'</span> },
+    { <span class="cp">from</span>:<span class="cs">'system'</span>, <span class="cp">text</span>:<span class="cs">'→ 素材が届きました'</span> },
+    { <span class="cp">from</span>:<span class="cs">'trigger'</span>, <span class="cp">action</span>:<span class="cs">'showMaterial'</span> },
+
+    <span class="cc">// ---- 葛藤シーン1（素材確認後）----</span>
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'これ…使えないですよね。\nぼけてるし、何が撮りたいかもわかんないし。\nでも捨てられなくて。送ってみました。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'choices'</span>, <span class="cp">opts</span>:[
+      { <span class="cp">text</span>:<span class="cs">'捨てなくていい。これが朔さんの視点です'</span>, <span class="cp">next</span>:<span class="cn">10</span>, <span class="cp">selfBonus</span>:<span class="cn">10</span> },
+      { <span class="cp">text</span>:<span class="cs">'もう少し明るく撮り直すと、もっと多くの人に届きますよ'</span>, <span class="cp">next</span>:<span class="cn">10</span>, <span class="cp">buzzBonus</span>:<span class="cn">5</span> }
+    ]},
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'…そうですね。じゃあ、出してみます。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'trigger'</span>, <span class="cp">action</span>:<span class="cs">'showMaterial'</span> },
+
+    <span class="cc">// ---- 葛藤シーン2（投稿後）----</span>
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'あの…DMきてて。\n知らないアカウントなんですけど「模型、すごく好きです」って。\nどう返せばいいですか。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'choices'</span>, <span class="cp">opts</span>:[
+      { <span class="cp">text</span>:<span class="cs">'そのまま素直に、ありがとうと伝えてみてください'</span>, <span class="cp">next</span>:<span class="cn">14</span> },
+      { <span class="cp">text</span>:<span class="cs">'…そのアカウント名、教えてもらえますか'</span>, <span class="cp">next</span>:<span class="cn">14</span>, <span class="cp">egoPlus</span>:<span class="ck">true</span>, <span class="cp">setFlag</span>:<span class="cs">'kShinonoya'</span> },
+      { <span class="cp">text</span>:<span class="cs">'（何も言わず、次の投稿の話をする）'</span>, <span class="cp">next</span>:<span class="cn">14</span> }
+    ]},
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'え…k_shinonoya、って。\n変な名前ですね。知り合いですか？'</span>, <span class="cp">condition</span>:<span class="cs">'kShinonoya'</span> },
+    { <span class="cp">from</span>:<span class="cs">'player'</span>, <span class="cp">text</span>:<span class="cs">'……いえ。\n知らない人だと思います。\n気にしないでください。'</span>, <span class="cp">condition</span>:<span class="cs">'kShinonoya'</span> }
+  ],
+
+  <span class="cc">// ===== 誠司ルート =====</span>
+  <span class="cp">seiji</span>: [
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'突然すみません。喫茶店やってるんですが、\nSNSやったほうがいいよって言われて…。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'choices'</span>, <span class="cp">opts</span>:[
+      { <span class="cp">text</span>:<span class="cs">'どんなお店ですか？'</span>, <span class="cp">next</span>:<span class="cn">2</span> },
+      { <span class="cp">text</span>:<span class="cs">'インスタ映えを意識してみますか'</span>, <span class="cp">next</span>:<span class="cn">2</span> }
+    ]},
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'古い商店街の中の、古い店です笑\n常連さんは元気なんですけど、若い人に来てほしくて。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'choices'</span>, <span class="cp">opts</span>:[
+      { <span class="cp">text</span>:<span class="cs">'その「古さ」が強みかもしれません'</span>, <span class="cp">next</span>:<span class="cn">4</span>, <span class="cp">selfBonus</span>:<span class="cn">5</span> },
+      { <span class="cp">text</span>:<span class="cs">'インスタ映えを意識してみますか'</span>, <span class="cp">next</span>:<span class="cn">4</span>, <span class="cp">buzzBonus</span>:<span class="cn">5</span> }
+    ]},
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'あ、そっちの方がいいかも。映える店じゃないし。写真送りますね。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'system'</span>, <span class="cp">text</span>:<span class="cs">'→ 素材が届きました'</span> },
+    { <span class="cp">from</span>:<span class="cs">'trigger'</span>, <span class="cp">action</span>:<span class="cs">'showMaterial'</span> }
+  ],
+
+  <span class="cc">// ===== 花蓮ルート =====</span>
+  <span class="cp">karen</span>: [
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'はじめまして。篠宮 花蓮といいます。\nお二人から紹介していただいて。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'player'</span>, <span class="cp">text</span>:<span class="cs">'ご連絡ありがとうございます。どんな発信を考えていますか？'</span> },
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'花が好きで。生け花、少しやっています。\nあと…姉に、見ていてほしくて。'</span> },
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'あなたって…昔、ライターさんでしたか？'</span> },
+    { <span class="cp">from</span>:<span class="cs">'choices'</span>, <span class="cp">opts</span>:[
+      { <span class="cp">text</span>:<span class="cs">'…はい。でも、もう書いていません。'</span>, <span class="cp">next</span>:<span class="cn">5</span>, <span class="cp">egoPlus</span>:<span class="ck">true</span> },
+      { <span class="cp">text</span>:<span class="cs">'なぜそう思うんですか？'</span>, <span class="cp">next</span>:<span class="cn">5</span> },
+      { <span class="cp">text</span>:<span class="cs">'（黙って素材の確認を続ける）'</span>, <span class="cp">next</span>:<span class="cn">5</span> }
+    ]},
+    { <span class="cp">from</span>:<span class="cs">'system'</span>, <span class="cp">text</span>:<span class="cs">'→ 素材が届きました'</span> },
+    { <span class="cp">from</span>:<span class="cs">'trigger'</span>, <span class="cp">action</span>:<span class="cs">'showMaterial'</span> },
+    <span class="cc">// flashback3 は cards.js 内でカードめくり時にトリガー</span>
+
+    <span class="cc">// ---- 謎収束選択肢（mysteryClues.length >= 2 の場合のみ表示）----</span>
+    { <span class="cp">from</span>:<span class="cs">'choices'</span>, <span class="cp">condition</span>:<span class="cs">'mysteryCluesReady'</span>, <span class="cp">opts</span>:[
+      { <span class="cp">text</span>:<span class="cs">'あなたのお姉さんに…記事を書いたのは私です'</span>, <span class="cp">next</span>:<span class="cn">9</span>, <span class="cp">egoPlus</span>:<span class="ck">true</span> },
+      { <span class="cp">text</span>:<span class="cs">'（何も言わない）'</span>, <span class="cp">next</span>:<span class="cn">9</span> }
+    ]},
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'知っていました。'</span>, <span class="cp">condition</span>:<span class="cs">'zange'</span>, <span class="cp">pause</span>:<span class="cn">8000</span> },
+    { <span class="cp">from</span>:<span class="cs">'client'</span>, <span class="cp">text</span>:<span class="cs">'だから、頼みました。'</span>, <span class="cp">condition</span>:<span class="cs">'zange'</span> }
+  ]
+};
+
+<span class="cc">// ===== 素材カード定義 =====</span>
+<span class="cc">// imgSrc: null の場合はアイコン+背景色でフォールバック表示</span>
+<span class="ck">const</span> <span class="cp">MATERIALS</span> = {
+  <span class="cp">midori</span>: [
+    { <span class="cp">id</span>:<span class="cs">'m_line'</span>,  <span class="cp">icon</span>:<span class="cs">'💬'</span>, <span class="cp">type</span>:<span class="cs">'スクリーンショット'</span>, <span class="cp">title</span>:<span class="cs">'お母さんへのLINE'</span>,
+      <span class="cp">desc</span>:<span class="cs">'「今日もゼラニウム咲いたよ。去年より元気な気がする。」既読あり・返信あり。'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'日常的'</span>,<span class="cs">'家族へ'</span>,<span class="cs">'植物愛'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>], <span class="cp">hashUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>,<span class="cn">3</span>],
+      <span class="cp">imgSrc</span>:<span class="ck">null</span> },
+    { <span class="cp">id</span>:<span class="cs">'m_memo'</span>,  <span class="cp">icon</span>:<span class="cs">'📓'</span>, <span class="cp">type</span>:<span class="cs">'メモ帳'</span>, <span class="cp">title</span>:<span class="cs">'走り書きメモ'</span>,
+      <span class="cp">desc</span>:<span class="cs">'「料理の失敗ばかりだけど作るのは好き」「完璧じゃなくていいのかな」'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'自己開示'</span>,<span class="cs">'等身大'</span>,<span class="cs">'ゆるい'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">1</span>,<span class="cn">3</span>], <span class="cp">hashUnlock</span>:[<span class="cn">1</span>,<span class="cn">3</span>,<span class="cn">4</span>],
+      <span class="cp">imgSrc</span>:<span class="ck">null</span> },
+    { <span class="cp">id</span>:<span class="cs">'m_plant'</span>, <span class="cp">icon</span>:<span class="cs">'📷'</span>, <span class="cp">type</span>:<span class="cs">'写真'</span>, <span class="cp">title</span>:<span class="cs">'窓際の植物写真'</span>,
+      <span class="cp">desc</span>:<span class="cs">'少しぼけた朝の光。ゼラニウムが窓際に並ぶ。「うまく撮れてないけど好きな景色」'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'温かみ'</span>,<span class="cs">'日常美'</span>,<span class="cs">'完璧じゃない'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">0</span>,<span class="cn">3</span>], <span class="cp">hashUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>,<span class="cn">3</span>],
+      <span class="cp">imgSrc</span>:<span class="ck">null</span> },
+    { <span class="cp">id</span>:<span class="cs">'m_food'</span>,  <span class="cp">icon</span>:<span class="cs">'🍳'</span>, <span class="cp">type</span>:<span class="cs">'写真'</span>, <span class="cp">title</span>:<span class="cs">'手料理の写真'</span>,
+      <span class="cp">desc</span>:<span class="cs">'少し歪んだオムレツ。付箋「失敗作だけど美味しかった」が貼ってある。'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'失敗OK'</span>,<span class="cs">'ユーモア'</span>,<span class="cs">'正直'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">2</span>,<span class="cn">3</span>], <span class="cp">hashUnlock</span>:[<span class="cn">2</span>,<span class="cn">3</span>,<span class="cn">4</span>],
+      <span class="cp">imgSrc</span>:<span class="ck">null</span> }
+  ],
+  <span class="cp">saku</span>: [
+    { <span class="cp">id</span>:<span class="cs">'s_desk'</span>,  <span class="cp">icon</span>:<span class="cs">'📷'</span>, <span class="cp">type</span>:<span class="cs">'写真'</span>, <span class="cp">title</span>:<span class="cs">'作業台の全景'</span>,
+      <span class="cp">desc</span>:<span class="cs">'工具・模型パーツが整然と並ぶ。付箋「カレンが好きそうだと思って」。'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'日常的'</span>,<span class="cs">'制作感'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>], <span class="cp">hashUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>],
+      <span class="cp">mysteryFlag</span>:<span class="cs">'karen'</span>, <span class="cp">imgSrc</span>:<span class="ck">null</span> },
+    { <span class="cp">id</span>:<span class="cs">'s_light'</span>, <span class="cp">icon</span>:<span class="cs">'📷'</span>, <span class="cp">type</span>:<span class="cs">'写真'</span>, <span class="cp">title</span>:<span class="cs">'窓の隙間から差す朝の光（ぼけ写真）'</span>,
+      <span class="cp">desc</span>:<span class="cs">'意図的にピントを外した光の写真。「綺麗だと思った」とだけメモ。'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'温かみ'</span>,<span class="cs">'日常美'</span>,<span class="cs">'完璧じゃない'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">0</span>,<span class="cn">3</span>], <span class="cp">hashUnlock</span>:[<span class="cn">0</span>,<span class="cn">3</span>],
+      <span class="cp">imgSrc</span>:<span class="ck">null</span> },
+    { <span class="cp">id</span>:<span class="cs">'s_model'</span>, <span class="cp">icon</span>:<span class="cs">'📷'</span>, <span class="cp">type</span>:<span class="cs">'写真'</span>, <span class="cp">title</span>:<span class="cs">'完成品の模型（全体）'</span>,
+      <span class="cp">desc</span>:<span class="cs">'背景に「ゆきわりそう」の看板がさりげなく見える。'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'制作感'</span>,<span class="cs">'完成'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">1</span>,<span class="cn">3</span>], <span class="cp">hashUnlock</span>:[<span class="cn">1</span>,<span class="cn">3</span>],
+      <span class="cp">mysteryFlag</span>:<span class="cs">'yukiwarisou'</span>, <span class="cp">imgSrc</span>:<span class="ck">null</span> },
+    { <span class="cp">id</span>:<span class="cs">'s_memo'</span>,  <span class="cp">icon</span>:<span class="cs">'📓'</span>, <span class="cp">type</span>:<span class="cs">'メモ'</span>, <span class="cp">title</span>:<span class="cs">'制作の走り書き'</span>,
+      <span class="cp">desc</span>:<span class="cs">'「今日で237時間。まだ屋根が合わない」「完成したら誰かに見てもらいたい」'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'等身大'</span>,<span class="cs">'継続'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">1</span>,<span class="cn">3</span>], <span class="cp">hashUnlock</span>:[<span class="cn">1</span>,<span class="cn">3</span>],
+      <span class="cp">imgSrc</span>:<span class="ck">null</span> }
+  ],
+  <span class="cp">seiji</span>: [
+    { <span class="cp">id</span>:<span class="cs">'sj_menu'</span>,  <span class="cp">icon</span>:<span class="cs">'📷'</span>, <span class="cp">type</span>:<span class="cs">'写真'</span>, <span class="cp">title</span>:<span class="cs">'手書きメニューボード'</span>,
+      <span class="cp">desc</span>:<span class="cs">'字が少し歪んでいる。「今日のおすすめ：気分次第」という一行がある。'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'ユーモア'</span>,<span class="cs">'らしさ'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>,<span class="cn">3</span>], <span class="cp">hashUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>,<span class="cn">3</span>],
+      <span class="cp">imgSrc</span>:<span class="ck">null</span> },
+    { <span class="cp">id</span>:<span class="cs">'sj_sign'</span>,  <span class="cp">icon</span>:<span class="cs">'📷'</span>, <span class="cp">type</span>:<span class="cs">'写真'</span>, <span class="cp">title</span>:<span class="cs">'店内の古い看板'</span>,
+      <span class="cp">desc</span>:<span class="cs">'「喫茶 ゆきわりそう」の看板。背景に同名の看板が映り込む。'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'温かみ'</span>,<span class="cs">'歴史'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>], <span class="cp">hashUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>],
+      <span class="cp">mysteryFlag</span>:<span class="cs">'yukiwarisou'</span>, <span class="cp">imgSrc</span>:<span class="ck">null</span> },
+    { <span class="cp">id</span>:<span class="cs">'sj_memo'</span>,  <span class="cp">icon</span>:<span class="cs">'📓'</span>, <span class="cp">type</span>:<span class="cs">'メモ'</span>, <span class="cp">title</span>:<span class="cs">'失敗コーヒーの記録'</span>,
+      <span class="cp">desc</span>:<span class="cs">'「今日の失敗：豆を多く入れすぎた。苦いけど嫌いじゃない」'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'正直'</span>,<span class="cs">'等身大'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">1</span>,<span class="cn">3</span>], <span class="cp">hashUnlock</span>:[<span class="cn">1</span>,<span class="cn">3</span>,<span class="cn">4</span>],
+      <span class="cp">imgSrc</span>:<span class="ck">null</span> }
+  ],
+  <span class="cp">karen</span>: [
+    { <span class="cp">id</span>:<span class="cs">'k_flower'</span>, <span class="cp">icon</span>:<span class="cs">'🌸'</span>, <span class="cp">type</span>:<span class="cs">'写真'</span>, <span class="cp">title</span>:<span class="cs">'生け花の作品（白・淡紅）'</span>,
+      <span class="cp">desc</span>:<span class="cs">'背景に遠景で「ゆきわりそう」の看板。「姉に見せたくて活けた」メモ付き。'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'温かみ'</span>,<span class="cs">'家族へ'</span>,<span class="cs">'植物愛'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>], <span class="cp">hashUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>,<span class="cn">3</span>],
+      <span class="cp">mysteryFlag</span>:<span class="cs">'yukiwarisou'</span>, <span class="cp">imgSrc</span>:<span class="ck">null</span> },
+    { <span class="cp">id</span>:<span class="cs">'k_line'</span>,   <span class="cp">icon</span>:<span class="cs">'💬'</span>, <span class="cp">type</span>:<span class="cs">'スクリーンショット'</span>, <span class="cp">title</span>:<span class="cs">'姉へのLINE（既読なし）'</span>,
+      <span class="cp">desc</span>:<span class="cs">'「お姉ちゃん、私もSNS始めてみる。見ててね」。返信なし・既読なし。'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'家族へ'</span>,<span class="cs">'希望'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>,<span class="cn">3</span>], <span class="cp">hashUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>,<span class="cn">3</span>],
+      <span class="cp">imgSrc</span>:<span class="ck">null</span> },
+    { <span class="cp">id</span>:<span class="cs">'k_memo'</span>,   <span class="cp">icon</span>:<span class="cs">'📓'</span>, <span class="cp">type</span>:<span class="cs">'メモ'</span>, <span class="cp">title</span>:<span class="cs">'依頼の理由メモ'</span>,
+      <span class="cp">desc</span>:<span class="cs">'「3年前、姉がSNSで記事を書かれて消えた。信頼できる人に頼みたかった。朔さんと誠司さんに紹介してもらった。」'</span>,
+      <span class="cp">tags</span>:[<span class="cs">'謎収束'</span>], <span class="cp">styleUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>,<span class="cn">3</span>], <span class="cp">hashUnlock</span>:[<span class="cn">0</span>,<span class="cn">1</span>,<span class="cn">3</span>],
+      <span class="cp">flashback3Trigger</span>:<span class="ck">true</span>, <span class="cp">imgSrc</span>:<span class="ck">null</span> }
+  ]
+};
+
+<span class="cc">// ===== 反響データ =====</span>
+<span class="ck">const</span> <span class="cp">REACTIONS</span> = {
+  <span class="cp">high_self</span>: {
+    <span class="cp">likesDelta</span>:<span class="cn">47</span>, <span class="cp">rtsDelta</span>:<span class="cn">8</span>, <span class="cp">followerDelta</span>:<span class="cn">12</span>,
+    <span class="cp">replies</span>:[
+      { <span class="cp">ava</span>:<span class="cs">'🌷'</span>, <span class="cp">name</span>:<span class="cs">'hanako_garden'</span>, <span class="cp">text</span>:<span class="cs">'こういう投稿大好きです…ゆっくり見てしまった'</span> },
+      { <span class="cp">ava</span>:<span class="cs">'👩'</span>, <span class="cp">name</span>:<span class="cs">'midori_mama'</span>,   <span class="cp">text</span>:<span class="cs">'みどりちゃん！お母さんだよ！みてるよ💕'</span> },
+      { <span class="cp">ava</span>:<span class="cs">'🌿'</span>, <span class="cp">name</span>:<span class="cs">'slow_life_log'</span>, <span class="cp">text</span>:<span class="cs">'完璧じゃないのがかえっていい。また来ます'</span> }
+    ]
+  },
+  <span class="cp">high_buzz</span>: {
+    <span class="cp">likesDelta</span>:<span class="cn">318</span>, <span class="cp">rtsDelta</span>:<span class="cn">102</span>, <span class="cp">followerDelta</span>:<span class="cn">234</span>,
+    <span class="cp">replies</span>:[
+      { <span class="cp">ava</span>:<span class="cs">'🔥'</span>, <span class="cp">name</span>:<span class="cs">'buzz_hunter'</span>,  <span class="cp">text</span>:<span class="cs">'100日チャレンジ応援！フォローしました！'</span> },
+      { <span class="cp">ava</span>:<span class="cs">'📱'</span>, <span class="cp">name</span>:<span class="cs">'insta_tips99'</span>, <span class="cp">text</span>:<span class="cs">'リールも作るといいですよ！伸びます'</span> },
+      { <span class="cp">ava</span>:<span class="cs">'🤖'</span>, <span class="cp">name</span>:<span class="cs">'follow4follow'</span>, <span class="cp">text</span>:<span class="cs">'フォローバックお願いします！！'</span> }
+    ]
+  },
+  <span class="cp">balanced</span>: {
+    <span class="cp">likesDelta</span>:<span class="cn">89</span>, <span class="cp">rtsDelta</span>:<span class="cn">23</span>, <span class="cp">followerDelta</span>:<span class="cn">41</span>,
+    <span class="cp">replies</span>:[
+      { <span class="cp">ava</span>:<span class="cs">'🌸'</span>, <span class="cp">name</span>:<span class="cs">'petit_garden'</span>, <span class="cp">text</span>:<span class="cs">'ぶれた写真もそれはそれで味わいあります🌿'</span> },
+      { <span class="cp">ava</span>:<span class="cs">'👩'</span>, <span class="cp">name</span>:<span class="cs">'midori_mama'</span>,  <span class="cp">text</span>:<span class="cs">'かわいい！お母さん毎日見てるよ〜！'</span> },
+      { <span class="cp">ava</span>:<span class="cs">'☕'</span>, <span class="cp">name</span>:<span class="cs">'morning_log'</span>,  <span class="cp">text</span>:<span class="cs">'フォローしました！ゆっくり読む系のアカウント好きです'</span> }
+    ]
+  }
+};</div>
+  </div>
+</div>
+
+<!-- postOptions.js -->
+<div class="section" id="js-postoptions">
+  <div class="sec-head">
+    <span class="sec-num">JS-02</span><span class="sec-icon">✍️</span>
+    <span class="sec-title">postOptions.js — 投稿選択肢データ全文</span>
+    <div class="sec-line"></div><div class="sec-badge sb-purple">コピペ用</div>
+  </div>
+  <div class="code-block">
+    <div class="code-header"><div class="code-dot" style="background:#ff5f57"></div><div class="code-dot" style="background:#febc2e"></div><div class="code-dot" style="background:#28c840"></div>src/data/postOptions.js</div>
+    <div class="code-body"><span class="cc">// ===== 文体オプション =====</span>
+<span class="cc">// textFn: 絵文字を文中に埋め込んだ投稿テキストを返す関数</span>
+<span class="cc">// isBuzz: trueの場合 buzz-risk スタイルを適用</span>
+<span class="ck">const</span> <span class="cp">styleOptions</span> = [
+  {
+    <span class="cp">id</span>: <span class="cn">0</span>, <span class="cp">label</span>: <span class="cs">'短くシンプルに'</span>,
+    <span class="cp">textFn</span>: () => <span class="cs">'今朝のゼラニウム🌿 去年より元気そう。'</span>,
+    <span class="cp">buzz</span>: <span class="cn">30</span>, <span class="cp">self</span>: <span class="cn">80</span>
+  },
+  {
+    <span class="cp">id</span>: <span class="cn">1</span>, <span class="cp">label</span>: <span class="cs">'丁寧に感情を込めて'</span>,
+    <span class="cp">textFn</span>: () => <span class="cs">'植物って正直だなって思う🌱 ちゃんと水をあげた日は元気に咲いてくれる。私もそうありたい。'</span>,
+    <span class="cp">buzz</span>: <span class="cn">50</span>, <span class="cp">self</span>: <span class="cn">70</span>
+  },
+  {
+    <span class="cp">id</span>: <span class="cn">2</span>, <span class="cp">label</span>: <span class="cs">'バズを狙って大胆に 🔥'</span>,
+    <span class="cp">textFn</span>: () => <span class="cs">'【100日チャレンジ✨】毎日植物の写真投稿します！フォローよろしく！'</span>,
+    <span class="cp">buzz</span>: <span class="cn">85</span>, <span class="cp">self</span>: <span class="cn">15</span>, <span class="cp">isBuzz</span>: <span class="ck">true</span>
+  },
+  {
+    <span class="cp">id</span>: <span class="cn">3</span>, <span class="cp">label</span>: <span class="cs">'失敗も含めてリアルに'</span>,
+    <span class="cp">textFn</span>: () => <span class="cs">'また写真ぶれた😅 でも今日も元気に咲いてたから良し🌿'</span>,
+    <span class="cp">buzz</span>: <span class="cn">45</span>, <span class="cp">self</span>: <span class="cn">90</span>
+  }
+];
+
+<span class="cc">// ===== ハッシュタグオプション =====</span>
+<span class="ck">const</span> <span class="cp">hashOptions</span> = [
+  { <span class="cp">id</span>:<span class="cn">0</span>, <span class="cp">label</span>:<span class="cs">'#植物のある暮らし'</span>,        <span class="cp">val</span>:<span class="cs">'#植物のある暮らし'</span>,        <span class="cp">buzz</span>:<span class="cn">30</span>,  <span class="cp">self</span>:<span class="cn">15</span> },
+  { <span class="cp">id</span>:<span class="cn">1</span>, <span class="cp">label</span>:<span class="cs">'#今日の一枚'</span>,              <span class="cp">val</span>:<span class="cs">'#今日の一枚'</span>,              <span class="cp">buzz</span>:<span class="cn">20</span>,  <span class="cp">self</span>:<span class="cn">20</span> },
+  { <span class="cp">id</span>:<span class="cn">2</span>, <span class="cp">label</span>:<span class="cs">'#バズれ #フォロワー増やしたい'</span>, <span class="cp">val</span>:<span class="cs">'#バズれ #フォロワー増やしたい'</span>, <span class="cp">buzz</span>:<span class="cn">40</span>,  <span class="cp">self</span>:<span class="cn">-30</span>, <span class="cp">isBuzz</span>:<span class="ck">true</span> },
+  { <span class="cp">id</span>:<span class="cn">3</span>, <span class="cp">label</span>:<span class="cs">'#ゆるく記録する'</span>,           <span class="cp">val</span>:<span class="cs">'#ゆるく記録する'</span>,           <span class="cp">buzz</span>:<span class="cn">15</span>,  <span class="cp">self</span>:<span class="cn">35</span> },
+  { <span class="cp">id</span>:<span class="cn">4</span>, <span class="cp">label</span>:<span class="cs">'タグなし'</span>,                <span class="cp">val</span>:<span class="cs">''</span>,                        <span class="cp">buzz</span>:<span class="cn">-10</span>, <span class="cp">self</span>:<span class="cn">5</span> }
+];</div>
+  </div>
+</div>
+
+<!-- endings.js -->
+<div class="section" id="js-endings">
+  <div class="sec-head">
+    <span class="sec-num">JS-03</span><span class="sec-icon">🌿</span>
+    <span class="sec-title">endings.js — エンディングデータ・モノローグ全文</span>
+    <div class="sec-line"></div><div class="sec-badge sb-purple">コピペ用</div>
+  </div>
+  <div class="code-block">
+    <div class="code-header"><div class="code-dot" style="background:#ff5f57"></div><div class="code-dot" style="background:#febc2e"></div><div class="code-dot" style="background:#28c840"></div>src/data/endings.js</div>
+    <div class="code-body"><span class="cc">// ===== エンディングデータ全文 =====</span>
+<span class="cc">// monologue: 配列の各要素が1行。表示間隔は 1500〜2000ms 推奨</span>
+<span class="cc">// fadeDuration: BGMフェードアウト秒数</span>
+<span class="cc">// blackoutDuration: 暗転秒数</span>
+<span class="cc">// bgmTrack: 'ending_piano' | 'ending_strings' | null</span>
+
+<span class="ck">const</span> <span class="cp">ENDINGS</span> = {
+
+  <span class="cp">jiritu</span>: {
+    <span class="cp">emoji</span>: <span class="cs">'🌿'</span>, <span class="cp">name</span>: <span class="cs">'自立エンド'</span>,
+    <span class="cp">condition</span>: <span class="cs">'みどりルート / selfScore >= 65'</span>,
+    <span class="cp">bgmTrack</span>: <span class="cs">'ending_piano'</span>, <span class="cp">fadeDuration</span>: <span class="cn">6</span>, <span class="cp">blackoutDuration</span>: <span class="cn">4</span>,
+    <span class="cp">clientMessage</span>: <span class="cs">'昨日、自分で投稿してみました。うまくは書けてないけど、私の言葉で。\nお母さんから電話が来ました。「読んだよ」って。それだけ言って切れて。\nそれだけで、十分でした。ありがとうございました🌿'</span>,
+    <span class="cp">monologue</span>: [
+      <span class="cs">'翻訳、というのは本当は'</span>,
+      <span class="cs">'消えることだと思う。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'言葉が届いたなら、'</span>,
+      <span class="cs">'翻訳者はもういらない。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'それで、いい。'</span>,
+      <span class="cs">'…………'</span>,
+      <span class="cs">'たぶん、それで——'</span>  <span class="cc">// ← ここで止まる</span>
+    ]
+  },
+
+  <span class="cp">toutatu</span>: {
+    <span class="cp">emoji</span>: <span class="cs">'🌙'</span>, <span class="cp">name</span>: <span class="cs">'到達エンド'</span>,
+    <span class="cp">condition</span>: <span class="cs">'朔ルート / selfScore >= 60 + kShinonoya=true'</span>,
+    <span class="cp">bgmTrack</span>: <span class="cs">'ending_strings'</span>, <span class="cp">fadeDuration</span>: <span class="cn">8</span>, <span class="cp">blackoutDuration</span>: <span class="cn">3</span>,
+    <span class="cp">clientMessage</span>: <span class="cs">'昨日のDM、返信しました。ありがとうございますって。\n既読ついて、返信は来なかった。でもなんか、それでよかった気がして。\n237時間の模型、今日屋根がはまりました。'</span>,
+    <span class="cp">noReplyEffect</span>: <span class="ck">true</span>, <span class="cc">// 主人公の返信選択肢が出かけて消える演出</span>
+    <span class="cp">monologue</span>: [
+      <span class="cs">'届いた。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'誰に届いたか、'</span>,
+      <span class="cs">'朔さんはきっと知らない。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'私は知っている。'</span>,
+      <span class="cs">'それを言える立場に、'</span>,
+      <span class="cs">'私はない。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'…………'</span>,
+      <span class="cs">'237時間の屋根が、'</span>,
+      <span class="cs">'今日はまった。'</span>
+    ]
+  },
+
+  <span class="cp">saihan</span>: {
+    <span class="cp">emoji</span>: <span class="cs">'☕'</span>, <span class="cp">name</span>: <span class="cs">'再訪エンド'</span>,
+    <span class="cp">condition</span>: <span class="cs">'誠司ルート / バランス型'</span>,
+    <span class="cp">bgmTrack</span>: <span class="cs">'ending_piano'</span>, <span class="cp">fadeDuration</span>: <span class="cn">4</span>, <span class="cp">blackoutDuration</span>: <span class="cn">2</span>,
+    <span class="cp">bgmNote</span>: <span class="cs">'アコースティックギターの短いフレーズ1回のみ。繰り返さない。'</span>,
+    <span class="cp">clientMessage</span>: <span class="cs">'先週、若いお客さんが来て。SNSで見ましたって言ってくれて。\nコーヒー飲んで、また来ますって帰った。それだけなんですけど。\n今日のメニュー、また気分次第にしました笑 なんかそれが、うちっぽいので。'</span>,
+    <span class="cp">monologue</span>: [
+      <span class="cs">'「また来ます」は'</span>,
+      <span class="cs">'小さい言葉だ。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'でも「また来ます」を'</span>,
+      <span class="cs">'言わせる場所は、'</span>,
+      <span class="cs">'たぶん、'</span>,
+      <span class="cs">'ずっとそこにある。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'…………'</span>,
+      <span class="cs">'今日のおすすめ、気分次第。'</span>
+    ]
+  },
+
+  <span class="cp">kidoku</span>: {
+    <span class="cp">emoji</span>: <span class="cs">'🌸'</span>, <span class="cp">name</span>: <span class="cs">'既読エンド'</span>,
+    <span class="cp">condition</span>: <span class="cs">'花蓮ルート / selfScore >= 65 + flashbackPhase=3'</span>,
+    <span class="cp">bgmTrack</span>: <span class="cs">'ending_piano'</span>, <span class="cp">fadeDuration</span>: <span class="cn">12</span>, <span class="cp">blackoutDuration</span>: <span class="cn">6</span>, <span class="cc">// 最長</span>
+    <span class="cp">bgmNote</span>: <span class="cs">'無音から始まり、ピアノの単音が1つだけ鳴る。その後また無音。'</span>,
+    <span class="cp">clientMessage</span>: <span class="cs">'あの。姉のLINE、今朝、既読がついていました。\n返信はまだないけど。でも、読んでくれた。\n……ありがとうございました。'</span>,
+    <span class="cp">lastChoice</span>: [
+      { <span class="cp">text</span>:<span class="cs">'「……よかった」とだけ送る'</span>, <span class="cp">egoPlus</span>:<span class="ck">true</span> },
+      { <span class="cp">text</span>:<span class="cs">'（画面を閉じる）'</span> }
+    ],
+    <span class="cp">monologue</span>: [
+      <span class="cs">'3年前の記事は、今もある。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'消したことはない。'</span>,
+      <span class="cs">'消す権利が、'</span>,
+      <span class="cs">'私にはないと思っていたから。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'篠宮 カレンさんが'</span>,
+      <span class="cs">'既読を押した、その瞬間——'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'あれは、許しだったのか。'</span>,
+      <span class="cs">'確認だったのか。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'…………'</span>,
+      <span class="cs">'わからない。'</span>,
+      <span class="cs">'わからないまま、'</span>,
+      <span class="cs">'明日も仕事をする。'</span>
+    ]
+  },
+
+  <span class="cp">zure</span>: {
+    <span class="cp">emoji</span>: <span class="cs">'🔥'</span>, <span class="cp">name</span>: <span class="cs">'ズレエンド'</span>,
+    <span class="cp">condition</span>: <span class="cs">'任意ルート / buzzScore >= 65 かつ selfScore < 50'</span>,
+    <span class="cp">bgmTrack</span>: <span class="ck">null</span>, <span class="cc">// BGMなし・即停止</span>
+    <span class="cp">noBlackout</span>: <span class="ck">true</span>, <span class="cc">// 暗転しない（例外）</span>
+    <span class="cp">clientMessage</span>: <span class="cs">'すごいですね。こんなにいいねが来るとは思わなくて。\n……なんか、これって私ですか。'</span>,
+    <span class="cp">monologue</span>: [
+      <span class="cs">'3年前も、こうだった。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'数字が増えるのを見ていた。'</span>,
+      <span class="cs">'それが正しいことだと'</span>,
+      <span class="cs">'思っていた。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'…………'</span>,
+      <span class="cs">'「これって私ですか」'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'同じ問いだ。'</span>
+    ]
+  },
+
+  <span class="cp">zange</span>: {
+    <span class="cp">emoji</span>: <span class="cs">'🎭'</span>, <span class="cp">name</span>: <span class="cs">'贖罪エンド'</span>,
+    <span class="cp">condition</span>: <span class="cs">'花蓮ルート後 / egoScore > 0'</span>,
+    <span class="cp">bgmTrack</span>: <span class="cs">'ending_strings'</span>, <span class="cp">fadeDuration</span>: <span class="cn">10</span>, <span class="cp">blackoutDuration</span>: <span class="cn">5</span>,
+    <span class="cp">typingText</span>: <span class="cs">'篠宮さん。3年前、記事を書いたのは私です。'</span>, <span class="cc">// タイピング演出で打ち込む</span>
+    <span class="cp">typingRetry</span>: <span class="ck">true</span>, <span class="cc">// 1回打ち直す演出あり</span>
+    <span class="cp">karenResponse</span>: [
+      <span class="cs">'知っていました。'</span>,     <span class="cc">// pause: 8000ms の後</span>
+      <span class="cs">'だから、頼みました。'</span>   <span class="cc">// ← ここで止まる。赦しも拒絶も書かない</span>
+    ],
+    <span class="cp">karenTypingLoops</span>: <span class="cn">3</span>, <span class="cc">// タイピングインジケーターが3回出ては消える</span>
+    <span class="cp">monologue</span>: [
+      <span class="cs">'言った。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'それだけだ。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'赦されたかどうかは'</span>,
+      <span class="cs">'聞かなかった。'</span>,
+      <span class="cs">'聞く必要が、'</span>,
+      <span class="cs">'なかった気がした。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'…………'</span>,
+      <span class="cs">'「だから、頼みました。」'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'その言葉を、'</span>,
+      <span class="cs">'私はまだ理解できていない。'</span>,
+      <span class="cs">'たぶん、'</span>,
+      <span class="cs">'ずっと理解できない。'</span>
+    ]
+  },
+
+  <span class="cp">chinmoku</span>: {
+    <span class="cp">emoji</span>: <span class="cs">'🖤'</span>, <span class="cp">name</span>: <span class="cs">'沈黙エンド'</span>,
+    <span class="cp">condition</span>: <span class="cs">'花蓮ルート後 / egoScore <= 0'</span>,
+    <span class="cp">bgmTrack</span>: <span class="ck">null</span>, <span class="cc">// BGMなし・完全無音</span>
+    <span class="cp">blackoutDuration</span>: <span class="cn">4</span>,
+    <span class="cp">appIconFade</span>: <span class="ck">true</span>,       <span class="cc">// ばずったー.app アイコンがフェードアウト</span>
+    <span class="cp">silenceDuration</span>: <span class="cn">10000</span>, <span class="cc">// 10秒間の完全無音</span>
+    <span class="cp">mysteryMessage</span>: {
+      <span class="cp">sender</span>: <span class="cs">'──────'</span>,        <span class="cc">// クリックで開くまで差出人不明</span>
+      <span class="cp">senderRevealed</span>: <span class="cs">'——カ'</span>, <span class="cc">// 開いた時に1文字逆再生アニメで出現</span>
+      <span class="cp">text</span>: <span class="cs">'翻訳、ありがとうございました。'</span>
+    },
+    <span class="cp">retryButtonDelay</span>: <span class="cn">10000</span>, <span class="cc">// 10秒後にフェードインで「もう一度」が出現</span>
+    <span class="cp">monologue</span>: [
+      <span class="cs">'返信しなかった。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'それが正しかったのか、'</span>,
+      <span class="cs">'正しくなかったのか、'</span>,
+      <span class="cs">'今もわからない。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'「——カ」'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'読んだ。'</span>,
+      <span class="cs">'削除はしなかった。'</span>,
+      <span class="cs">''</span>,
+      <span class="cs">'…………'</span>,
+      <span class="cs">'明日も、仕事がある。'</span>
+    ]
+  }
+};</div>
+  </div>
+  <div class="info-box green" style="margin-top:12px;">
+    <strong>Claude Codeへの指示：</strong>「<code>src/data/endings.js</code> の <code>ENDINGS</code> オブジェクトをベースに、<code>ending.js</code> の <code>showEnding(type)</code> 関数を実装して。<code>monologue</code> 配列は1500msごとに1行ずつフェードインで表示。空文字列は <code>spacer</code> として追加の間隔を入れる。<code>noBlackout: true</code> の場合は暗転をスキップして画面をそのままにする。」
+  </div>
+</div>
+
+</div><!-- /page -->
+</div><!-- /main -->
+
+<script>
+// アクティブナビの追跡
+const navItems = document.querySelectorAll('.nav-item');
+const sections = [];
+document.querySelectorAll('[id]').forEach(el => {
+  if (el.id && el.id !== 'sidenav' && el.id !== 'mainScroll') sections.push(el);
+});
+
+const mainScroll = document.getElementById('mainScroll');
+mainScroll.addEventListener('scroll', () => {
+  const scrollY = mainScroll.scrollTop + 80;
+  let current = '';
+  sections.forEach(sec => {
+    if (sec.offsetTop <= scrollY) current = sec.id;
+  });
+  navItems.forEach(item => {
+    item.classList.toggle('active', item.getAttribute('href') === '#' + current);
+  });
+}, { passive: true });
+</script>
+</body>
+</html>
