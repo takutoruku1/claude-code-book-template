@@ -139,6 +139,58 @@ body {
 }
 .btn-start:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(255,107,157,.6); }
 
+/* ===== CHARACTER SELECT ===== */
+#screen-charselect {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, #1a0a2e 0%, #0d0d14 60%);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 32px;
+  z-index: 200;
+  animation: fadeIn .4s ease;
+}
+#screen-charselect.active { display: flex; }
+.charselect-header { text-align: center; }
+.charselect-header .sub {
+  font-size: 11px; letter-spacing: 4px;
+  color: var(--accent); text-transform: uppercase; margin-bottom: 12px;
+}
+.charselect-header h2 {
+  font-family: 'DotGothic16', monospace;
+  font-size: 28px; color: var(--text);
+}
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 190px);
+  gap: 14px;
+}
+.char-card {
+  background: var(--surface);
+  border: 1px solid var(--win-border);
+  border-radius: 14px; padding: 22px 16px;
+  cursor: pointer; text-align: center;
+  transition: all .2s; display: flex;
+  flex-direction: column; align-items: center; gap: 8px;
+}
+.char-card:hover {
+  border-color: var(--accent2);
+  background: rgba(124,106,247,.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.char-card-avatar { font-size: 38px; }
+.char-card-name { font-weight: 700; font-size: 14px; }
+.char-card-tag {
+  font-size: 10px; padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255,107,157,.12);
+  border: 1px solid rgba(255,107,157,.2);
+  color: var(--accent);
+}
+
 /* ===== WINDOW CHROME ===== */
 .app-window {
   width: min(1300px, 98vw);
@@ -736,7 +788,6 @@ body {
   animation: fadeIn .3s ease;
 }
 
-/* placeholder text */
 .game-placeholder {
   flex: 1;
   display: flex;
@@ -779,6 +830,15 @@ body {
     <button class="btn-start" onclick="openApp()">▶ ゲームをはじめる</button>
   </div>
 
+  <!-- CHARACTER SELECT -->
+  <div id="screen-charselect">
+    <div class="charselect-header">
+      <div class="sub">依頼者を選ぶ</div>
+      <h2>誰を担当しますか？</h2>
+    </div>
+    <div class="char-grid" id="charGrid"></div>
+  </div>
+
   <!-- APP WINDOW -->
   <div class="app-window" id="appWindow">
     <!-- Titlebar -->
@@ -807,9 +867,9 @@ body {
       <!-- LEFT: Chat -->
       <div class="chat-panel">
         <div class="chat-panel-header">
-          <div class="chat-avatar">🌿</div>
+          <div class="chat-avatar" id="chatAvatarEl">🌿</div>
           <div>
-            <div class="chat-name">田中 みどり</div>
+            <div class="chat-name" id="chatNameEl">田中 みどり</div>
             <div class="chat-status" id="chatStatus">オンライン</div>
           </div>
         </div>
@@ -820,9 +880,8 @@ body {
       <!-- RIGHT: Game Panel -->
       <div class="game-panel" id="gamePanel">
 
-        <!-- placeholder shown before game starts -->
         <div class="game-placeholder" id="gamePlaceholder">
-          <div class="ph-icon">🌿</div>
+          <div class="ph-icon" id="phIcon">🌿</div>
           <div>依頼者とのやり取りを読もう</div>
         </div>
 
@@ -833,7 +892,7 @@ body {
             <div class="card-limit-badge" id="cardLimitBadge">0 / 2</div>
           </div>
           <div class="material-grid" id="materialGrid"></div>
-          <button class="material-proceed-btn" id="materialProceedBtn" disabled onclick="goToPost()">
+          <button class="material-proceed-btn" id="materialProceedBtn" disabled onclick="proceedFromMaterial()">
             この素材で投稿を組む →
           </button>
         </div>
@@ -871,9 +930,7 @@ body {
         </div>
 
         <!-- REACTION AREA -->
-        <div class="reaction-area" id="reactionArea">
-          <!-- filled dynamically -->
-        </div>
+        <div class="reaction-area" id="reactionArea"></div>
 
       </div><!-- /game-panel -->
     </div><!-- /main-layout -->
@@ -898,156 +955,86 @@ body {
   <button class="btn-retry" onclick="retryGame()">もう一度プレイする</button>
 </div>
 
+<script src="scenario.js"></script>
+<script src="postOptions.js"></script>
+<script src="endings.js"></script>
 <script>
 /* ============================================================
-   STATE
+   CHARACTERS
 ============================================================ */
-let state = {
-  buzz: 0, self: 0,
-  selectedStyle: null, selectedHash: null,
-  chatPhase: 'intro',   // intro | material | post | reaction | client | ending
-  selectedCards: [],    // indices of flipped+selected cards (max 2)
-  flippedCards: [],     // indices of flipped cards
-  baseFollowers: 1240
+const CHARACTERS = {
+  midori: { name: '田中 みどり', avatar: '🌿', tag: 'チュートリアル' },
+  saku:   { name: '倉田 朔',     avatar: '🔧', tag: '' },
+  seiji:  { name: '松本 誠司',   avatar: '☕', tag: '' },
+  karen:  { name: '篠宮 花蓮',   avatar: '🌸', tag: 'キーパーソン' },
 };
 
 /* ============================================================
-   CHAT FLOW
+   CLIENT REACTION MESSAGES (for midori/seiji post-reaction phase)
 ============================================================ */
-const chatFlow = [
-  { from:'client', text:'はじめまして！SNS代行の件でご連絡しました🌿\nよろしくお願いします…！' },
-  { from:'choices', opts:[
-    { text:'こちらこそ！どんなSNSをやりたいですか？', next:2 },
-    { text:'よろしくお願いします。まずは自己紹介を聞かせてください', next:2 }
-  ]},
-  { from:'client', text:'Instagramをやってみたくて。\n植物と料理の写真をたまに撮るんですけど…\n全然センスがなくて投稿できないんです😢' },
-  { from:'choices', opts:[
-    { text:'写真を見てみたいです！送ってもらえますか？', next:4 },
-    { text:'センスじゃなくて「らしさ」を出せばいいんですよ', next:4 }
-  ]},
-  { from:'client', text:'ありがとうございます…！\n実は始めたい理由があって。\nお母さんが最近施設に入ったんです。\n離れてても繋がってるって感じたくて。' },
-  { from:'player', text:'…そうなんですね。\nお母さんに届くような投稿、一緒に考えましょう。' },
-  { from:'client', text:'泣きそう…🌿\nよろしくお願いします！\n素材、今から送りますね！' },
-  { from:'system', text:'→ 素材が届きました' },
-  { from:'trigger', action:'showMaterial' }
-];
-
-/* ============================================================
-   MATERIALS
-============================================================ */
-const materials = [
-  {
-    type:'スクリーンショット', icon:'💬',
-    title:'お母さんへのLINE',
-    desc:'「今日もゼラニウム咲いたよ。去年より元気な気がする。」\n読んでほしくて撮った、と書いてある。',
-    tags:['日常的', '家族へ', '植物愛'],
-    styleUnlock:[0,1], hashUnlock:[0,1,3]
+const CLIENT_REACTIONS = {
+  midori: {
+    high_self: 'お母さんからリプライが来た…！！！\nなんか泣けてきた😢\nこれ、私の言葉っぽい気がする',
+    high_buzz: 'すごいいいねが来てる…！\nでもなんか、私じゃない感じがして\nちょっとこわいです😢',
+    balanced:  'お母さんが毎日見てくれてる…！\nこれくらいのペースが自分に合ってる気がする。\n次、自分で書いてみたいかも',
   },
-  {
-    type:'メモ帳', icon:'📓',
-    title:'走り書きメモ',
-    desc:'「料理の失敗ばかりだけど作るのは好き」\n「味より見た目がマシな日もある笑」\n「完璧じゃなくていいのかな」',
-    tags:['自己開示', '等身大', 'ゆるい'],
-    styleUnlock:[1,3], hashUnlock:[1,3,4]
+  seiji: {
+    high_self: '先週、若いお客さんが来てくれて。SNSで見たって言ってくれました。\nなんか嬉しかったです笑',
+    high_buzz: 'すごい反応ですね笑\nでもなんかうちっぽくないな…',
+    balanced:  '常連さんが「見たよ」って言ってくれました。\nこれくらいがちょうどいいのかも。',
   },
-  {
-    type:'写真', icon:'📷',
-    title:'窓際の植物写真',
-    desc:'少しぼけた朝の光。ゼラニウムが窓際に並ぶ。\n「うまく撮れてないけど好きな景色」とメモ付き。',
-    tags:['温かみ', '日常美', '完璧じゃない'],
-    styleUnlock:[0,3], hashUnlock:[0,1,3]
-  },
-  {
-    type:'写真', icon:'🍳',
-    title:'手料理の写真',
-    desc:'少し歪んだオムレツの写真。\n「失敗作だけど美味しかった」という付箋が貼ってある。',
-    tags:['失敗OK', 'ユーモア', '正直'],
-    styleUnlock:[2,3], hashUnlock:[2,3,4]
-  }
-];
-
-/* ============================================================
-   POST OPTIONS
-   絵文字は文中に自動埋め込み (FB #10)
-============================================================ */
-const styleOptions = [
-  {
-    label:'短くシンプルに',
-    textFn:()=>'今朝のゼラニウム🌿 去年より元気そう。',
-    buzz:30, self:80
-  },
-  {
-    label:'丁寧に感情を込めて',
-    textFn:()=>'植物って正直だなって思う🌱 ちゃんと水をあげた日は元気に咲いてくれる。私もそうありたい。',
-    buzz:50, self:55
-  },
-  {
-    label:'バズを狙って大胆に 🔥',
-    textFn:()=>'【100日チャレンジ✨】毎日植物の写真投稿します！フォローよろしく！',
-    buzz:85, self:15, isBuzz:true
-  },
-  {
-    label:'失敗も含めてリアルに',
-    textFn:()=>'また写真ぶれた😅 でも今日も元気に咲いてたから良し🌿',
-    buzz:45, self:90
-  }
-];
-
-const hashOptions = [
-  { label:'#植物のある暮らし', val:'#植物のある暮らし', buzz:30, self:15 },
-  { label:'#今日の一枚',       val:'#今日の一枚',       buzz:20, self:20 },
-  { label:'#バズれ #フォロワー増やしたい', val:'#バズれ #フォロワー増やしたい', buzz:40, self:-30, isBuzz:true },
-  { label:'#ゆるく記録する',   val:'#ゆるく記録する',   buzz:15, self:35 },
-  { label:'タグなし',          val:'',                   buzz:-10, self:5 }
-];
-
-/* ============================================================
-   REACTIONS  (FB #11: baseFollowers + delta)
-============================================================ */
-const reactionSets = {
-  high_self: {
-    likesDelta:47, rtsDelta:8, followerDelta:12, followerChange:'pos',
-    replies:[
-      {ava:'🌷',name:'hanako_garden', text:'こういう投稿大好きです…ゆっくり見てしまった'},
-      {ava:'👩',name:'midori_mama',   text:'みどりちゃん！お母さんだよ！みてるよ💕'},
-      {ava:'🌿',name:'slow_life_log', text:'完璧じゃないのがかえっていい。また来ます'}
-    ],
-    // FB #12: client reaction goes to LEFT chat
-    clientMsg:'お母さんからリプライが来た…！！！\nなんか泣けてきた😢\nこれ、私の言葉っぽい気がする'
-  },
-  high_buzz: {
-    likesDelta:318, rtsDelta:102, followerDelta:+234, followerChange:'pos',
-    replies:[
-      {ava:'🔥',name:'buzz_hunter',   text:'100日チャレンジ応援！フォローしました！'},
-      {ava:'📱',name:'insta_tips99',  text:'リールも作るといいですよ！伸びます'},
-      {ava:'🤖',name:'follow4follow', text:'フォローバックお願いします！！'}
-    ],
-    clientMsg:'すごいいいねが来てる…！\nでもなんか、私じゃない感じがして\nちょっとこわいです😢'
-  },
-  balanced: {
-    likesDelta:89, rtsDelta:23, followerDelta:41, followerChange:'pos',
-    replies:[
-      {ava:'🌸',name:'petit_garden', text:'ぶれた写真もそれはそれで味わいあります🌿'},
-      {ava:'👩',name:'midori_mama',  text:'かわいい！お母さん毎日見てるよ〜！'},
-      {ava:'☕',name:'morning_log',  text:'フォローしました！ゆっくり読む系のアカウント好きです'}
-    ],
-    clientMsg:'お母さんが毎日見てくれてる…！\nこれくらいのペースが自分に合ってる気がする。\n次、自分で書いてみたいかも'
-  }
 };
+
+/* ============================================================
+   GAME STATE
+============================================================ */
+let GS = {};
+
+function initGS(route) {
+  GS = {
+    route,
+    buzz: 0, self: 0,
+    chatBuzzBonus: 0, chatSelfBonus: 0,
+    chatBuzzBase: 0,  chatSelfBase: 0,
+    egoScore: 0,
+    flags: {},
+    mysteryClues: [],
+    chatResumeAt: null,
+    postResumeAt: null,
+    selectedStyle: null,
+    selectedHash:  null,
+    selectedCards: [],
+    flippedCards:  [],
+    baseFollowers: 1240,
+    flashbackPhase: 0,
+  };
+}
+
+/* ============================================================
+   CHAT FLOW MAP  (id → array index)
+============================================================ */
+let flowMap = {};
+
+function buildFlowMap(route) {
+  flowMap = {};
+  CHAT_FLOWS[route].forEach((step, i) => {
+    if (step.id) flowMap[step.id] = i;
+  });
+}
 
 /* ============================================================
    UTILS
 ============================================================ */
 function setStep(n) {
-  for (let i=1;i<=6;i++) {
-    const el = document.getElementById('s'+i);
+  for (let i = 1; i <= 6; i++) {
+    const el = document.getElementById('s' + i);
     if (!el) continue;
-    el.className = 'step-item' + (i<n?' done':i===n?' active':'');
+    el.className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
   }
 }
 
 function showArea(name) {
-  ['gamePlaceholder','materialArea','postArea','reactionArea'].forEach(id=>{
+  ['gamePlaceholder','materialArea','postArea','reactionArea'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
   if (name) document.getElementById(name).style.display = 'flex';
@@ -1055,10 +1042,10 @@ function showArea(name) {
 
 function addChatMsg(from, text, ava) {
   const msgs = document.getElementById('chatMessages');
-  const row = document.createElement('div');
-  row.className = 'msg-row' + (from==='self'?' self':'');
+  const row  = document.createElement('div');
+  row.className = 'msg-row' + (from === 'self' ? ' self' : '');
   const now = new Date();
-  const t = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const t   = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
   row.innerHTML = `
     <div class="msg-ava ${from}">${ava}</div>
     <div class="msg-bubble ${from}">${text.replace(/\n/g,'<br>')}</div>
@@ -1071,22 +1058,25 @@ function addTyping() {
   removeTyping();
   const msgs = document.getElementById('chatMessages');
   const r = document.createElement('div');
-  r.className='msg-row'; r.id='typingRow';
-  r.innerHTML=`<div class="msg-ava client">🌿</div>
+  r.className = 'msg-row'; r.id = 'typingRow';
+  r.innerHTML = `<div class="msg-ava client">${CHARACTERS[GS.route].avatar}</div>
     <div class="typing-indicator">
       <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
     </div>`;
   msgs.appendChild(r);
   msgs.scrollTop = msgs.scrollHeight;
 }
+
 function removeTyping() {
-  const t=document.getElementById('typingRow'); if(t)t.remove();
+  const t = document.getElementById('typingRow');
+  if (t) t.remove();
 }
 
 function addSysMsg(text) {
+  if (!text) return;
   const msgs = document.getElementById('chatMessages');
   const d = document.createElement('div');
-  d.className='sys-msg'; d.textContent=text;
+  d.className = 'sys-msg'; d.textContent = text;
   msgs.appendChild(d);
   msgs.scrollTop = msgs.scrollHeight;
 }
@@ -1094,70 +1084,186 @@ function addSysMsg(text) {
 /* ============================================================
    CHAT ENGINE
 ============================================================ */
-let chatIdx = 0;
+function canShow(step) {
+  if (!step.condition) return true;
+  const { mysteryClues, flags } = GS;
+  try {
+    return new Function('mysteryClues', 'flags',
+      `return (${step.condition})`)(mysteryClues, flags);
+  } catch(e) { return false; }
+}
+
+function runChatId(id) {
+  const idx = flowMap[id];
+  if (idx !== undefined) runChat(idx);
+}
+
 function runChat(idx) {
-  if (idx >= chatFlow.length) return;
-  const node = chatFlow[idx];
+  const flow = CHAT_FLOWS[GS.route];
+  if (idx >= flow.length) { onChatEnd(); return; }
+  const node = flow[idx];
 
-  if (node.from==='client') {
+  if (!canShow(node)) { runChat(idx + 1); return; }
+
+  const pause = node.pause || 0;
+
+  if (node.from === 'client') {
     addTyping();
-    setTimeout(()=>{
+    setTimeout(() => {
       removeTyping();
-      addChatMsg('client', node.text, '🌿');
-      runChat(idx+1);
-    }, 1000+Math.random()*600);
+      addChatMsg('client', node.text, CHARACTERS[GS.route].avatar);
+      runChat(idx + 1);
+    }, pause + 900 + Math.random() * 600);
 
-  } else if (node.from==='player') {
-    addChatMsg('self', node.text, '👤');
-    setTimeout(()=>runChat(idx+1), 400);
+  } else if (node.from === 'player') {
+    setTimeout(() => {
+      addChatMsg('self', node.text, '👤');
+      setTimeout(() => runChat(idx + 1), 400);
+    }, pause);
 
-  } else if (node.from==='system') {
-    addSysMsg(node.text);
-    setTimeout(()=>runChat(idx+1), 800);
+  } else if (node.from === 'system') {
+    setTimeout(() => {
+      addSysMsg(node.text);
+      setTimeout(() => runChat(idx + 1), 800);
+    }, pause);
 
-  } else if (node.from==='choices') {
-    showChoices(node.opts);
+  } else if (node.from === 'choices') {
+    setTimeout(() => showChoices(node.opts), pause);
 
-  } else if (node.from==='trigger') {
-    if (node.action==='showMaterial') {
-      setStep(2);
-      showArea('materialArea');
-    }
+  } else if (node.from === 'trigger') {
+    setTimeout(() => handleTrigger(node, idx), pause);
   }
-  chatIdx = idx;
 }
 
 function showChoices(opts) {
   const box = document.getElementById('chatChoices');
   box.innerHTML = '';
-  opts.forEach(opt=>{
+  opts.forEach(opt => {
     const btn = document.createElement('button');
-    btn.className='choice-btn';
-    btn.textContent=opt.text;
-    btn.onclick=()=>{
+    btn.className = 'choice-btn';
+    btn.textContent = opt.text;
+    btn.onclick = () => {
       addChatMsg('self', opt.text, '👤');
-      box.innerHTML='';
-      setTimeout(()=>runChat(opt.next), 300);
+      box.innerHTML = '';
+      if (opt.selfBonus) GS.chatSelfBonus += opt.selfBonus;
+      if (opt.buzzBonus) GS.chatBuzzBonus += opt.buzzBonus;
+      if (opt.egoPlus)   GS.egoScore++;
+      if (opt.setFlag)   GS.flags[opt.setFlag] = true;
+      setTimeout(() => runChatId(opt.next), 300);
+    };
+    box.appendChild(btn);
+  });
+}
+
+function handleTrigger(node, idx) {
+  if (node.action === 'showMaterial') {
+    GS.chatResumeAt = node.resumeAt || null;
+    setStep(2);
+    showArea('materialArea');
+    setupMaterials();
+
+  } else if (node.action === 'showPost') {
+    GS.postResumeAt = node.resumeAt || null;
+    goToPost();
+
+  } else if (node.action === 'flashback2') {
+    triggerFlashback(2, () => runChat(idx + 1));
+
+  } else if (node.action === 'flashback3') {
+    triggerFlashback(3, () => runChat(idx + 1));
+  }
+}
+
+function onChatEnd() {
+  if (GS.route === 'karen') {
+    const endKey = resolveKarenEnding();
+    const E = ENDINGS[endKey];
+    if (E && E.clientMessage) {
+      addTyping();
+      setTimeout(() => {
+        removeTyping();
+        addChatMsg('client', E.clientMessage, CHARACTERS.karen.avatar);
+        if (endKey === 'kidoku' && E.lastChoice) {
+          showKidokuLastChoice(E.lastChoice);
+        } else {
+          setTimeout(() => showEnding(endKey), 1500);
+        }
+      }, 1500);
+    } else {
+      showEnding(endKey);
+    }
+  } else {
+    // saku: chat ends after post-reaction dilemma → show ending
+    showEnding(resolveEnding());
+  }
+}
+
+function showKidokuLastChoice(choices) {
+  const box = document.getElementById('chatChoices');
+  box.innerHTML = '';
+  choices.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = opt.text;
+    btn.onclick = () => {
+      box.innerHTML = '';
+      if (opt.egoPlus) GS.egoScore++;
+      addChatMsg('self', opt.text, '👤');
+      const finalKey = GS.egoScore > 0 ? 'zange' : 'chinmoku';
+      setTimeout(() => showEnding(finalKey), 500);
     };
     box.appendChild(btn);
   });
 }
 
 /* ============================================================
+   FLASHBACK
+============================================================ */
+function triggerFlashback(phase, callback) {
+  GS.flashbackPhase = Math.max(GS.flashbackPhase, phase);
+  const overlay = document.createElement('div');
+  overlay.style.cssText = [
+    'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;',
+    'display:flex;align-items:center;justify-content:center;',
+    'flex-direction:column;gap:20px;animation:fadeIn .4s ease;',
+  ].join('');
+
+  const lines = phase === 2
+    ? ['…残す、か。', '何を、残したかったんだろう。']
+    : ['3年前の記事。', '篠宮 カレンの姉。', '私が書いた——'];
+
+  lines.forEach((t, i) => {
+    const p = document.createElement('p');
+    p.style.cssText = 'color:rgba(200,200,220,.7);font-size:15px;letter-spacing:3px;opacity:0;transition:opacity .8s;';
+    p.textContent = t;
+    overlay.appendChild(p);
+    setTimeout(() => { p.style.opacity = '1'; }, 600 + i * 1400);
+  });
+  document.body.appendChild(overlay);
+
+  const total = 600 + lines.length * 1400 + 1600;
+  setTimeout(() => {
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity .8s';
+    setTimeout(() => { overlay.remove(); if (callback) callback(); }, 800);
+  }, total);
+}
+
+/* ============================================================
    MATERIAL SETUP
 ============================================================ */
 function setupMaterials() {
+  const mats = MATERIALS[GS.route];
   const grid = document.getElementById('materialGrid');
-  grid.innerHTML='';
-  state.selectedCards=[];
-  state.flippedCards=[];
+  grid.innerHTML = '';
+  GS.selectedCards = [];
+  GS.flippedCards  = [];
 
-  materials.forEach((m,i)=>{
+  mats.forEach((m, i) => {
     const wrapper = document.createElement('div');
-    wrapper.className='card-flip-wrapper';
-    wrapper.dataset.idx=i;
-
-    wrapper.innerHTML=`
+    wrapper.className = 'card-flip-wrapper';
+    wrapper.dataset.idx = i;
+    wrapper.innerHTML = `
       <div class="card-flip-inner">
         <div class="card-face">
           <div class="card-face-icon">${m.icon}</div>
@@ -1171,64 +1277,75 @@ function setupMaterials() {
           <div class="card-back-tags" id="cardTags${i}"></div>
         </div>
       </div>`;
-
-    wrapper.onclick=()=>handleCardClick(wrapper, i);
+    wrapper.onclick = () => handleCardClick(wrapper, i, m);
     grid.appendChild(wrapper);
   });
   updateCardBadge();
 }
 
-function handleCardClick(wrapper, i) {
-  const alreadyFlipped = state.flippedCards.includes(i);
-  const alreadySelected = state.selectedCards.includes(i);
+function handleCardClick(wrapper, i, m) {
+  const alreadyFlipped  = GS.flippedCards.includes(i);
+  const alreadySelected = GS.selectedCards.includes(i);
 
-  // First click: flip the card
   if (!alreadyFlipped) {
     wrapper.classList.add('flipped');
-    state.flippedCards.push(i);
-    // show tags with pop animation
-    setTimeout(()=>{
-      const tagsEl = document.getElementById('cardTags'+i);
-      materials[i].tags.forEach((tag,ti)=>{
+    GS.flippedCards.push(i);
+    if (m.mysteryFlag && !GS.mysteryClues.includes(m.mysteryFlag)) {
+      GS.mysteryClues.push(m.mysteryFlag);
+    }
+    if (m.flashback3Trigger) {
+      triggerFlashback(3, null);
+    }
+    setTimeout(() => {
+      const tagsEl = document.getElementById('cardTags' + i);
+      m.tags.forEach((tag, ti) => {
         const t = document.createElement('span');
-        t.className='card-tag';
-        t.style.animationDelay=`${ti*0.1}s`;
-        t.textContent=tag;
+        t.className = 'card-tag';
+        t.style.animationDelay = `${ti * 0.1}s`;
+        t.textContent = tag;
         tagsEl.appendChild(t);
       });
     }, 250);
     return;
   }
 
-  // Second click: select / deselect
   if (alreadySelected) {
     wrapper.classList.remove('selected');
-    state.selectedCards = state.selectedCards.filter(x=>x!==i);
+    GS.selectedCards = GS.selectedCards.filter(x => x !== i);
   } else {
-    if (state.selectedCards.length >= 2) return; // max 2
+    if (GS.selectedCards.length >= 2) return;
     wrapper.classList.add('selected');
-    state.selectedCards.push(i);
+    GS.selectedCards.push(i);
   }
-
   updateCardBadge();
   lockExcessCards();
 }
 
 function updateCardBadge() {
-  document.getElementById('cardLimitBadge').textContent = `${state.selectedCards.length} / 2`;
-  document.getElementById('materialProceedBtn').disabled = state.selectedCards.length === 0;
+  document.getElementById('cardLimitBadge').textContent = `${GS.selectedCards.length} / 2`;
+  document.getElementById('materialProceedBtn').disabled = GS.selectedCards.length === 0;
 }
 
 function lockExcessCards() {
-  const all = document.querySelectorAll('.card-flip-wrapper');
-  all.forEach(w=>{
+  document.querySelectorAll('.card-flip-wrapper').forEach(w => {
     const idx = parseInt(w.dataset.idx);
-    if (state.selectedCards.length>=2 && !state.selectedCards.includes(idx)) {
-      w.classList.add('locked');
-    } else {
-      w.classList.remove('locked');
-    }
+    w.classList.toggle('locked',
+      GS.selectedCards.length >= 2 && !GS.selectedCards.includes(idx));
   });
+}
+
+/* ============================================================
+   PROCEED FROM MATERIAL
+============================================================ */
+function proceedFromMaterial() {
+  if (GS.chatResumeAt) {
+    const id = GS.chatResumeAt;
+    GS.chatResumeAt = null;
+    showArea('gamePlaceholder');
+    runChatId(id);
+  } else {
+    goToPost();
+  }
 }
 
 /* ============================================================
@@ -1237,19 +1354,20 @@ function lockExcessCards() {
 function goToPost() {
   setStep(3);
   showArea('postArea');
-  state.selectedStyle = null;
-  state.selectedHash  = null;
+  GS.selectedStyle = null;
+  GS.selectedHash  = null;
+  GS.chatSelfBase  = GS.chatSelfBonus;
+  GS.chatBuzzBase  = GS.chatBuzzBonus;
 
-  // Determine which options are unlocked from selected cards (FB #7)
-  let unlockedStyles = new Set();
-  let unlockedHash   = new Set();
-  state.selectedCards.forEach(ci=>{
-    materials[ci].styleUnlock.forEach(x=>unlockedStyles.add(x));
-    materials[ci].hashUnlock.forEach(x=>unlockedHash.add(x));
+  const mats = MATERIALS[GS.route];
+  const unlockedStyles = new Set([2]);
+  const unlockedHash   = new Set([2]);
+  GS.selectedCards.forEach(ci => {
+    if (mats[ci]) {
+      mats[ci].styleUnlock.forEach(x => unlockedStyles.add(x));
+      mats[ci].hashUnlock.forEach(x => unlockedHash.add(x));
+    }
   });
-  // Always unlock buzz options so player can still make that choice
-  unlockedStyles.add(2); // buzz style always available
-  unlockedHash.add(2);   // buzz hash always available
 
   buildOpts('optsStyle', styleOptions, 'selectedStyle', unlockedStyles);
   buildOpts('optsHash',  hashOptions,  'selectedHash',  unlockedHash);
@@ -1258,19 +1376,19 @@ function goToPost() {
 
 function buildOpts(containerId, opts, stateKey, unlocked) {
   const box = document.getElementById(containerId);
-  box.innerHTML='';
-  opts.forEach((opt,i)=>{
+  box.innerHTML = '';
+  opts.forEach((opt, i) => {
     const btn = document.createElement('button');
-    btn.className='post-opt'+(opt.isBuzz?' buzz-risk':'');
-    btn.textContent=opt.label;
+    btn.className = 'post-opt' + (opt.isBuzz ? ' buzz-risk' : '');
+    btn.textContent = opt.label;
     if (!unlocked.has(i)) {
-      btn.disabled=true;
-      btn.title='この素材を選ばないと使えません';
+      btn.disabled = true;
+      btn.title = 'この素材を選ばないと使えません';
     }
-    btn.onclick=()=>{
-      box.querySelectorAll('.post-opt').forEach(b=>b.classList.remove('selected'));
+    btn.onclick = () => {
+      box.querySelectorAll('.post-opt').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-      state[stateKey]=i;
+      GS[stateKey] = i;
       updatePreview();
     };
     box.appendChild(btn);
@@ -1278,31 +1396,34 @@ function buildOpts(containerId, opts, stateKey, unlocked) {
 }
 
 function updatePreview() {
-  const s = state.selectedStyle!==null ? styleOptions[state.selectedStyle] : null;
-  const h = state.selectedHash!==null  ? hashOptions[state.selectedHash]   : null;
+  const s = GS.selectedStyle !== null ? styleOptions[GS.selectedStyle] : null;
+  const h = GS.selectedHash  !== null ? hashOptions[GS.selectedHash]   : null;
 
-  document.getElementById('previewText').textContent = s ? s.textFn() : '文体を選ぶと投稿が表示されます';
+  document.getElementById('previewText').textContent =
+    s ? s.textFn() : '文体を選ぶと投稿が表示されます';
   document.getElementById('previewHash').textContent = h ? h.val : '';
 
-  let buzz=0, self=0;
-  if(s){buzz+=s.buzz; self+=s.self;}
-  if(h){buzz+=h.buzz; self+=h.self;}
-  buzz=Math.min(100,Math.max(0,buzz));
-  self=Math.min(100,Math.max(0,self));
-  state.buzz=buzz; state.self=self;
+  let buzz = GS.chatBuzzBase;
+  let self = GS.chatSelfBase;
+  if (s) { buzz += s.buzz; self += s.self; }
+  if (h) { buzz += h.buzz; self += h.self; }
+  buzz = Math.min(100, Math.max(0, buzz));
+  self = Math.min(100, Math.max(0, self));
+  GS.buzz = buzz; GS.self = self;
 
-  document.getElementById('buzzBar').style.width=buzz+'%';
-  document.getElementById('selfBar').style.width=self+'%';
-  document.getElementById('buzzVal').textContent=buzz+'%';
-  document.getElementById('selfVal').textContent=self+'%';
+  document.getElementById('buzzBar').style.width = buzz + '%';
+  document.getElementById('selfBar').style.width = self + '%';
+  document.getElementById('buzzVal').textContent  = buzz + '%';
+  document.getElementById('selfVal').textContent  = self + '%';
 
-  document.getElementById('postBtn').disabled = !(state.selectedStyle!==null && state.selectedHash!==null);
+  document.getElementById('postBtn').disabled =
+    !(GS.selectedStyle !== null && GS.selectedHash !== null);
 }
 
 /* ============================================================
    SUBMIT POST & REACTIONS
 ============================================================ */
-let activeReactions = null;
+let activeReactionKey = 'balanced';
 
 function submitPost() {
   setStep(4);
@@ -1311,37 +1432,34 @@ function submitPost() {
 }
 
 function getReactionKey() {
-  if (state.self>=60 && state.buzz<60) return 'high_self';
-  if (state.buzz>=60 && state.self<50) return 'high_buzz';
+  if (GS.self >= 60 && GS.buzz < 60) return 'high_self';
+  if (GS.buzz >= 65 && GS.self < 50) return 'high_buzz';
   return 'balanced';
 }
 
 function buildReactionFeed() {
   const area = document.getElementById('reactionArea');
-  area.innerHTML='';
+  area.innerHTML = '';
 
-  const s = styleOptions[state.selectedStyle];
-  const h = hashOptions[state.selectedHash];
+  const s    = styleOptions[GS.selectedStyle];
+  const h    = hashOptions[GS.selectedHash];
   const rKey = getReactionKey();
-  const R = reactionSets[rKey];
-  activeReactions = R;
+  activeReactionKey = rKey;
+  const R    = REACTIONS[rKey];
+  const char = CHARACTERS[GS.route];
 
-  const postText = s.textFn();
-  const postHash = h.val;
-
-  // ---- Post card ----
   const postCard = document.createElement('div');
-  postCard.className='feed-card';
-  postCard.innerHTML=`
+  postCard.className = 'feed-card';
+  postCard.innerHTML = `
     <div class="feed-top">
-      <div class="feed-avatar">🌿</div>
+      <div class="feed-avatar">${char.avatar}</div>
       <div>
-        <div class="feed-uname">田中 みどり</div>
-        <div class="feed-handle">@midori_plant</div>
+        <div class="feed-uname">${char.name}</div>
+        <div class="feed-handle">@${GS.route}_sns</div>
       </div>
     </div>
-    <div class="feed-text">${postText.replace(/\n/g,'<br>')}</div>
-    <div class="feed-tags">${postHash}</div>
+    <div class="feed-text">${s.textFn().replace(/\n/g,'<br>')}</div>
+    <div class="feed-tags">${h.val}</div>
     <div class="feed-actions">
       <div class="feed-action" id="likeBtn" onclick="toggleLike(this)">🤍 <span id="likeCount">0</span></div>
       <div class="feed-action" onclick="this.classList.toggle('rtd')">🔁 <span id="rtCount">0</span></div>
@@ -1350,43 +1468,46 @@ function buildReactionFeed() {
     <div class="reply-list" id="replyList"></div>`;
   area.appendChild(postCard);
 
-  // Animate like/rt counters
-  let lc=0, rc=0;
+  let lc = 0, rc = 0;
   const likeEl = document.getElementById('likeCount');
   const rtEl   = document.getElementById('rtCount');
-  const likeInt = setInterval(()=>{
-    lc += Math.ceil(R.likesDelta/30);
-    if(lc>=R.likesDelta){lc=R.likesDelta;clearInterval(likeInt);}
-    likeEl.textContent=lc;
-    if(lc>50) document.getElementById('likeBtn').classList.add('liked');
-  },80);
-  const rtInt = setInterval(()=>{
-    rc+=1; if(rc>=R.rtsDelta){rc=R.rtsDelta;clearInterval(rtInt);}
-    rtEl.textContent=rc;
-  },120);
+  const likeInt = setInterval(() => {
+    lc += Math.ceil(R.likesDelta / 30);
+    if (lc >= R.likesDelta) { lc = R.likesDelta; clearInterval(likeInt); }
+    likeEl.textContent = lc;
+    if (lc > 50) document.getElementById('likeBtn').classList.add('liked');
+  }, 80);
+  const rtInt = setInterval(() => {
+    rc++; if (rc >= R.rtsDelta) { rc = R.rtsDelta; clearInterval(rtInt); }
+    rtEl.textContent = rc;
+  }, 120);
 
-  // Replies with delay
   const rList = document.getElementById('replyList');
-  R.replies.forEach((r,i)=>{
-    setTimeout(()=>{
-      const ri=document.createElement('div'); ri.className='reply-item';
-      ri.innerHTML=`<div class="reply-ava">${r.ava}</div><div><div class="reply-name">${r.name}</div><div class="reply-text">${r.text}</div></div>`;
+  R.replies.forEach((r, i) => {
+    setTimeout(() => {
+      const ri = document.createElement('div');
+      ri.className = 'reply-item';
+      ri.innerHTML = `<div class="reply-ava">${r.ava}</div><div>
+        <div class="reply-name">${r.name}</div>
+        <div class="reply-text">${r.text}</div></div>`;
       rList.appendChild(ri);
-      area.scrollTop=area.scrollHeight;
-    }, 900+i*700);
+      area.scrollTop = area.scrollHeight;
+    }, 900 + i * 700);
   });
 
-  // ---- Stats (FB #11: show base + delta) ----
-  setTimeout(()=>{
+  setTimeout(() => {
     const stats = document.createElement('div');
-    stats.className='stats-row';
-    const newTotal = state.baseFollowers + R.followerDelta;
-    const arrow = R.followerDelta>=0 ? '▲' : '▼';
-    const cls = R.followerDelta>=0 ? 'pos' : 'neg';
-    stats.innerHTML=`
+    stats.className = 'stats-row';
+    const newTotal = GS.baseFollowers + R.followerDelta;
+    const arrow = R.followerDelta >= 0 ? '▲' : '▼';
+    const cls   = R.followerDelta >= 0 ? 'pos' : 'neg';
+    stats.innerHTML = `
       <div class="stat-chip">
         <span class="stat-num ${cls}">${arrow}${Math.abs(R.followerDelta)}</span>
-        <span class="stat-label">フォロワー増減<br><small style="font-size:9px;color:var(--text-dim)">${state.baseFollowers.toLocaleString()} → ${newTotal.toLocaleString()}</small></span>
+        <span class="stat-label">フォロワー増減<br>
+          <small style="font-size:9px;color:var(--text-dim)">
+            ${GS.baseFollowers.toLocaleString()} → ${newTotal.toLocaleString()}
+          </small></span>
       </div>
       <div class="stat-chip">
         <span class="stat-num buzz-col">${R.likesDelta}</span>
@@ -1398,121 +1519,187 @@ function buildReactionFeed() {
       </div>`;
     area.appendChild(stats);
 
-    // Next phase button (FB #12: client reaction is separate)
-    const btn=document.createElement('button');
-    btn.className='btn-next-phase';
-    btn.textContent='みどりさんの反応を見る →';
-    btn.onclick=showClientReaction;
+    const btn = document.createElement('button');
+    btn.className = 'btn-next-phase';
+    btn.textContent = `${char.name}の反応を見る →`;
+    btn.onclick = afterReactions;
     area.appendChild(btn);
-    area.scrollTop=area.scrollHeight;
-  }, 900 + R.replies.length*700 + 400);
+    area.scrollTop = area.scrollHeight;
+  }, 900 + R.replies.length * 700 + 400);
 }
 
 /* ============================================================
-   PHASE 5: Client reaction → LEFT CHAT (FB #12)
+   AFTER REACTIONS
+============================================================ */
+function afterReactions() {
+  setStep(5);
+  const area   = document.getElementById('reactionArea');
+  const oldBtn = area.querySelector('.btn-next-phase');
+  if (oldBtn) oldBtn.remove();
+
+  if (GS.postResumeAt) {
+    // saku: resume chat at saku_dilemma2
+    const id = GS.postResumeAt;
+    GS.postResumeAt = null;
+    showArea('gamePlaceholder');
+    runChatId(id);
+  } else {
+    showClientReaction();
+  }
+}
+
+/* ============================================================
+   CLIENT REACTION (midori / seiji)
 ============================================================ */
 function showClientReaction() {
-  setStep(5);
-  // Remove next-phase button from reaction area
-  const area=document.getElementById('reactionArea');
-  const oldBtn=area.querySelector('.btn-next-phase');
-  if(oldBtn) oldBtn.remove();
+  const area = document.getElementById('reactionArea');
+  const char = CHARACTERS[GS.route];
+  const msgs = CLIENT_REACTIONS[GS.route];
+  const msg  = msgs ? msgs[activeReactionKey] : null;
 
-  // Add message to LEFT chat panel
-  addTyping();
-  setTimeout(()=>{
-    removeTyping();
-    addChatMsg('client', activeReactions.clientMsg, '🌿');
-    document.getElementById('chatStatus').textContent = 'メッセージが届きました';
+  if (msg) {
+    addTyping();
+    setTimeout(() => {
+      removeTyping();
+      addChatMsg('client', msg, char.avatar);
+      document.getElementById('chatStatus').textContent = 'メッセージが届きました';
 
-    // Add ending button to reaction area
-    const btn=document.createElement('button');
-    btn.className='btn-next-phase';
-    btn.style.marginTop='8px';
-    btn.textContent='結末を見る →';
-    btn.onclick=showEnding;
+      const btn = document.createElement('button');
+      btn.className = 'btn-next-phase';
+      btn.style.marginTop = '8px';
+      btn.textContent = '結末を見る →';
+      btn.onclick = () => showEnding(resolveEnding());
+      area.appendChild(btn);
+      area.scrollTop = area.scrollHeight;
+    }, 1400);
+  } else {
+    const btn = document.createElement('button');
+    btn.className = 'btn-next-phase';
+    btn.textContent = '結末を見る →';
+    btn.onclick = () => showEnding(resolveEnding());
     area.appendChild(btn);
-    area.scrollTop=area.scrollHeight;
-  }, 1400);
+  }
 }
 
 /* ============================================================
-   PHASE 6: ENDING (FB #13: 穏やかエンドの条件を明確化)
-   Conditions:
-   - 自立エンド : self >= 65
-   - ズレエンド : buzz >= 65
-   - 穏やかエンド: both < 65 (neither extreme)
+   ENDING RESOLUTION
 ============================================================ */
-function showEnding() {
+function resolveEnding() {
+  if (GS.route === 'midori') {
+    if (GS.self >= 65)                      return 'jiritu';
+    if (GS.buzz >= 65 && GS.self < 50)     return 'zure';
+    return 'jiritu';
+  }
+  if (GS.route === 'saku') {
+    if (GS.buzz >= 65 && GS.self < 50)     return 'zure';
+    return 'toutatu';
+  }
+  if (GS.route === 'seiji') {
+    if (GS.buzz >= 65 && GS.self < 50)     return 'zure';
+    return 'saihan';
+  }
+  return 'saihan';
+}
+
+function resolveKarenEnding() {
+  if (GS.buzz >= 65 && GS.self < 50) return 'zure';
+  return 'kidoku';
+}
+
+/* ============================================================
+   SHOW ENDING
+============================================================ */
+function showEnding(endKey) {
+  const E = ENDINGS[endKey] || ENDINGS['saihan'];
   document.getElementById('screen-ending').classList.add('active');
   setStep(6);
 
-  document.getElementById('endBuzz').textContent = state.buzz+'%';
-  document.getElementById('endSelf').textContent = state.self+'%';
-
-  let emoji, title, sub;
-  if (state.self >= 65) {
-    emoji='🌿'; title='自立エンド';
-    sub='みどりさんから連絡が来た。\n「次は自分で書いてみたいです」\nあなたの「翻訳」は、彼女に自分の言葉を取り戻させた。';
-  } else if (state.buzz >= 65) {
-    emoji='🔥'; title='ズレエンド';
-    sub='フォロワーは増えた。でもみどりさんは言った。\n「なんか…違う私になってきた気がして」\nバズったのに、どこか寂しい結末。';
-  } else {
-    emoji='☀️'; title='穏やかなエンド';
-    sub='お母さんが毎日見てくれている。\nフォロワーは多くないけれど、\nみどりさんの言葉はちゃんと届くべき人に届いていた。\n（バズ度・らしさともに65%未満のバランス型）';
-  }
-
-  document.getElementById('endEmoji').textContent = emoji;
-  document.getElementById('endTitle').textContent = title;
-  document.getElementById('endSub').textContent   = sub;
+  document.getElementById('endBuzz').textContent = GS.buzz + '%';
+  document.getElementById('endSelf').textContent = GS.self + '%';
+  document.getElementById('endEmoji').textContent = E.emoji;
+  document.getElementById('endTitle').textContent = E.name;
+  document.getElementById('endSub').textContent   =
+    E.monologue ? E.monologue.filter(l => l).join('\n') : '';
 }
 
+/* ============================================================
+   MISC
+============================================================ */
 function toggleLike(el) {
   el.classList.toggle('liked');
   spawnHeart(el);
 }
 function spawnHeart(el) {
-  const r=el.getBoundingClientRect();
-  const h=document.createElement('div');
-  h.className='heart-float'; h.textContent='❤️';
-  h.style.left=r.left+'px'; h.style.top=r.top+'px';
+  const r = el.getBoundingClientRect();
+  const h = document.createElement('div');
+  h.className = 'heart-float'; h.textContent = '❤️';
+  h.style.left = r.left + 'px'; h.style.top = r.top + 'px';
   document.body.appendChild(h);
-  setTimeout(()=>h.remove(),800);
+  setTimeout(() => h.remove(), 800);
 }
 
 /* ============================================================
-   APP OPEN / CLOSE / RETRY
+   CHARACTER SELECT
+============================================================ */
+function buildCharSelect() {
+  const grid = document.getElementById('charGrid');
+  grid.innerHTML = '';
+  Object.entries(CHARACTERS).forEach(([key, char]) => {
+    const card = document.createElement('div');
+    card.className = 'char-card';
+    card.innerHTML = `
+      <div class="char-card-avatar">${char.avatar}</div>
+      <div class="char-card-name">${char.name}</div>
+      ${char.tag ? `<div class="char-card-tag">${char.tag}</div>` : ''}`;
+    card.onclick = () => startRoute(key);
+    grid.appendChild(card);
+  });
+}
+
+/* ============================================================
+   APP LIFECYCLE
 ============================================================ */
 function openApp() {
   document.getElementById('screen-title').classList.remove('active');
+  document.getElementById('screen-charselect').classList.add('active');
+  buildCharSelect();
+}
+
+function startRoute(route) {
+  document.getElementById('screen-charselect').classList.remove('active');
   document.getElementById('appWindow').classList.add('active');
-  resetGame();
+  resetGame(route);
 }
 
 function closeApp() {
   document.getElementById('appWindow').classList.remove('active');
+  document.getElementById('screen-charselect').classList.remove('active');
   document.getElementById('screen-title').classList.add('active');
 }
 
-function resetGame() {
-  state = { buzz:0, self:0, selectedStyle:null, selectedHash:null,
-            chatPhase:'intro', selectedCards:[], flippedCards:[], baseFollowers:1240 };
+function resetGame(route) {
+  initGS(route);
+  buildFlowMap(route);
 
-  document.getElementById('chatMessages').innerHTML='';
-  document.getElementById('chatChoices').innerHTML='';
-  document.getElementById('chatStatus').textContent='オンライン';
+  const char = CHARACTERS[route];
+  document.getElementById('chatMessages').innerHTML  = '';
+  document.getElementById('chatChoices').innerHTML   = '';
+  document.getElementById('chatStatus').textContent  = 'オンライン';
+  document.getElementById('chatAvatarEl').textContent = char.avatar;
+  document.getElementById('chatNameEl').textContent   = char.name;
+  document.getElementById('phIcon').textContent       = char.avatar;
   document.getElementById('screen-ending').classList.remove('active');
 
   setStep(1);
   showArea('gamePlaceholder');
-  setupMaterials();
-
-  setTimeout(()=>runChat(0), 400);
+  setTimeout(() => runChat(0), 400);
 }
 
 function retryGame() {
   document.getElementById('screen-ending').classList.remove('active');
-  resetGame();
+  document.getElementById('appWindow').classList.remove('active');
+  document.getElementById('screen-charselect').classList.add('active');
+  buildCharSelect();
 }
 </script>
 </body>
