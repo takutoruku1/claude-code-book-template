@@ -96,61 +96,61 @@
   <div class="diagram-wrap">
     <div class="mermaid">
 flowchart TD
-    START([🎮 ゲーム開始]) --> ROUTE{ルート選択}
+    START([ゲーム開始]) --> ROUTE{ルート選択}
 
-    ROUTE --> M[🌿 みどりルート\nチュートリアル]
-    ROUTE --> S[🔧 朔ルート]
-    ROUTE --> SJ[☕ 誠司ルート]
-    ROUTE --> K[🌸 花蓮ルート\nキーパーソン]
+    ROUTE --> M[みどりルート\nチュートリアル]
+    ROUTE --> S[朔ルート]
+    ROUTE --> SJ[誠司ルート]
+    ROUTE --> K[花蓮ルート\nキーパーソン]
 
     M --> M_CHAT[チャットフェーズ\nお母さんへの想い]
-    M_CHAT --> M_QUIZ[クイズ\n本音読み取り]
+    M_CHAT --> M_QUIZ[クイズ 本音読み取り]
     M_QUIZ --> M_MAT[素材確認フェーズ]
-    M_MAT --> M_POST[投稿ビルダー\n反響フェーズ]
+    M_MAT --> M_POST[投稿ビルダー 反響フェーズ]
     M_POST --> M_END{スコア判定}
-    M_END -->|selfScore ≥ 65| JIRITU[🌿 自立エンド]
-    M_END -->|both &lt; 65| JIZOKU[🌱 継続エンド]
-    M_END -->|buzzScore ≥ 65\nself &lt; 50| ZURE[🔥 ズレエンド]
+    M_END -->|selfScore 65以上| JIRITU[自立エンド]
+    M_END -->|両方65未満| JIZOKU[継続エンド]
+    M_END -->|buzz65以上 self50未満| ZURE[ズレエンド]
 
     S --> S_CHAT[チャットフェーズ\nフラッシュバック2発火]
-    S_CHAT --> S_QUIZ[クイズ\n本音読み取り]
+    S_CHAT --> S_QUIZ[クイズ 本音読み取り]
     S_QUIZ --> S_MAT[素材確認フェーズ]
-    S_MAT --> S_D1[葛藤1: 写真の扱い方]
-    S_D1 --> S_POST[投稿ビルダー\n反響フェーズ]
-    S_POST --> S_D2[葛藤2: DMへの対応]
-    S_D2 -->|k_shinonoya フラグ| S_NAME[アカウント名を確認\negoPlus]
+    S_MAT --> S_D1[葛藤1 写真の扱い方]
+    S_D1 --> S_POST[投稿ビルダー 反響フェーズ]
+    S_POST --> S_D2[葛藤2 DMへの対応]
+    S_D2 -->|kShinonoya フラグ| S_NAME[アカウント名を確認\negoPlus]
     S_D2 --> S_END{スコア判定}
     S_NAME --> S_END
-    S_END -->|self ≥ 60\nkShinonoya=true| TOUTATU[🌙 到達エンド]
-    S_END -->|buzzScore ≥ 65\nself &lt; 50| ZURE
+    S_END -->|self60以上 kShinonoya=true| TOUTATU[到達エンド]
+    S_END -->|buzz65以上 self50未満| ZURE
 
     SJ --> SJ_CHAT[チャットフェーズ\n古い喫茶店の話]
-    SJ_CHAT --> SJ_QUIZ[クイズ\n本音読み取り]
+    SJ_CHAT --> SJ_QUIZ[クイズ 本音読み取り]
     SJ_QUIZ --> SJ_MAT[素材確認フェーズ]
-    SJ_MAT --> SJ_POST[投稿ビルダー\n反響フェーズ]
+    SJ_MAT --> SJ_POST[投稿ビルダー 反響フェーズ]
     SJ_POST --> SJ_END{スコア判定}
-    SJ_END -->|both &lt; 65| SAIHAN[☕ 再訪エンド]
-    SJ_END -->|buzzScore ≥ 65\nself &lt; 50| ZURE
+    SJ_END -->|両方65未満| SAIHAN[再訪エンド]
+    SJ_END -->|buzz65以上 self50未満| ZURE
 
-    K --> K_CHAT[チャットフェーズ\n生け花・姉への想い\n過去を知っている？]
-    K_CHAT --> K_QUIZ[クイズ\n本音読み取り]
+    K --> K_CHAT[チャットフェーズ\n生け花 姉への想い\n過去を知っている？]
+    K_CHAT --> K_QUIZ[クイズ 本音読み取り]
     K_QUIZ --> K_MAT[素材確認フェーズ\nk_memo → flashback3]
-    K_MAT --> K_MYS{mysteryClues ≥ 2?}
+    K_MAT --> K_MYS{mysteryClues 2件以上?}
     K_MYS -->|Yes| K_CHO{謎収束選択肢}
     K_MYS -->|No| K_FB[伏線未回収\nフォールバック]
-    K_CHO -->|告白する\negoPlus + zange flag| K_ZR[告白シーン]
+    K_CHO -->|告白する egoPlus+zange| K_ZR[告白シーン]
     K_CHO -->|何も言わない| K_END_NODE[終端]
     K_FB --> K_END_NODE
     K_ZR --> K_END_NODE
     K_END_NODE --> K_END{スコア判定}
-    K_END -->|self ≥ 65\nflashback ≥ 3| KIDOKU[🌸 既読エンド]
-    K_END -->|buzzScore ≥ 65\nself &lt; 50| ZURE
+    K_END -->|self65以上 flashback3以上| KIDOKU[既読エンド]
+    K_END -->|buzz65以上 self50未満| ZURE
 
     KIDOKU --> LAST{最後の選択}
-    LAST -->|「……よかった」と送る\negoPlus| EGO{egoScore判定}
+    LAST -->|よかった と送る egoPlus| EGO{egoScore判定}
     LAST -->|画面を閉じる| EGO
-    EGO -->|egoScore &gt; 0| ZANGE[🎭 贖罪エンド]
-    EGO -->|egoScore ≤ 0| CHINMOKU[🖤 沈黙エンド]
+    EGO -->|egoScore 0より大| ZANGE[贖罪エンド]
+    EGO -->|egoScore 0以下| CHINMOKU[沈黙エンド]
 
     style JIRITU  fill:#2d4a2d,stroke:#4a7a4a,color:#b8e0b8
     style TOUTATU fill:#1e2d4a,stroke:#3a5a8a,color:#b8d0f0
@@ -177,7 +177,7 @@ flowchart TD
   <div class="diagram-wrap">
     <div class="mermaid">
 flowchart TD
-    START([🌿 みどりルート開始\nチュートリアル]) --> HELLO
+    START([みどりルート開始 チュートリアル]) --> HELLO
 
     HELLO["client: はじめまして！SNS代行の件で…"]
     HELLO --> HELLO_R{選択肢}
@@ -191,11 +191,11 @@ flowchart TD
     PHOTO --> PHOTO_R{選択肢}
     PHOTO_R -->|どちらを選んでも| PLANT
 
-    PLANT["client: ゼラニウムが多いですね\n🔖 clippable: 毎朝見るのが好き"]
+    PLANT["client: ゼラニウムが多いですね\nclippable: 毎朝見るのが好き"]
     PLANT --> PLANT_R{選択肢}
     PLANT_R -->|どちらを選んでも| CANT
 
-    CANT["client: でも投稿しようとすると…\nずっとできなくて😢"]
+    CANT["client: でも投稿しようとすると…\nずっとできなくて"]
     CANT --> CANT_R{選択肢}
     CANT_R -->|どちらを選んでも| SENSE
 
@@ -211,26 +211,26 @@ flowchart TD
     REASON --> REASON_R{選択肢}
     REASON_R -->|どちらを選んでも| MOTHER
 
-    MOTHER["client: お母さんが最近、施設に入ったんです\n🔖 clippable: お母さんに届けたい"]
+    MOTHER["client: お母さんが最近、施設に入ったんです\nclippable: お母さんに届けたい"]
     MOTHER --> MOTHER_R{選択肢}
-    MOTHER_R -->|「お母さんに届く投稿を」\n✨ selfBonus+5| CLOSING
-    MOTHER_R -->|「素敵な理由ですね」| CLOSING
+    MOTHER_R -->|お母さんに届く投稿を selfBonus+5| CLOSING
+    MOTHER_R -->|素敵な理由ですね| CLOSING
 
     CLOSING["チャットクロージング\n→ 素材が届きました"]
     CLOSING --> TRIGGER[trigger: showMaterial]
 
-    TRIGGER --> QUIZ[❓ クイズ\nみどりさんが一番求めていることは？]
-    QUIZ -->|「お母さんに日常を届けたい」✅| MAT_PHASE
+    TRIGGER --> QUIZ["クイズ: みどりさんが一番求めていることは？"]
+    QUIZ -->|お母さんに日常を届けたい 正解| MAT_PHASE
     QUIZ -->|不正解| MAT_PHASE
 
-    MAT_PHASE["📦 素材確認フェーズ\nm_line / m_memo / m_plant / m_food"]
-    MAT_PHASE --> POST[🖊️ 投稿ビルダー\n文体 × 素材 → 投稿テキスト生成]
-    POST --> REACT[📣 反響フェーズ\nhigh_self / high_buzz / balanced]
+    MAT_PHASE["素材確認フェーズ\nm_line / m_memo / m_plant / m_food"]
+    MAT_PHASE --> POST["投稿ビルダー\n文体 × 素材 → 投稿テキスト生成"]
+    POST --> REACT["反響フェーズ\nhigh_self / high_buzz / balanced"]
 
     REACT --> SCORE{スコア判定}
-    SCORE -->|selfScore ≥ 65| JIRITU[🌿 自立エンド\n「お母さんから電話が来ました」]
-    SCORE -->|selfScore &lt; 65\nbuzzScore &lt; 65| JIZOKU[🌱 継続エンド\n毎朝植物に水をやるように]
-    SCORE -->|buzzScore ≥ 65\nselfScore &lt; 50| ZURE[🔥 ズレエンド\n「これ、私じゃない気がして」]
+    SCORE -->|selfScore 65以上| JIRITU["自立エンド\nお母さんから電話が来ました"]
+    SCORE -->|self65未満 buzz65未満| JIZOKU["継続エンド\n毎朝植物に水をやるように"]
+    SCORE -->|buzz65以上 self50未満| ZURE["ズレエンド\nこれ、私じゃない気がして"]
 
     style JIRITU  fill:#2d4a2d,stroke:#4a7a4a,color:#b8e0b8
     style JIZOKU  fill:#1e3a1e,stroke:#3a6a3a,color:#b8d8b8
@@ -247,51 +247,51 @@ flowchart TD
   <div class="diagram-wrap">
     <div class="mermaid">
 flowchart TD
-    START([🔧 朔ルート開始]) --> HELLO
+    START([朔ルート開始]) --> HELLO
 
-    HELLO["client: SNSやったことなくて\n🔖 clippable: なんか残したくて"]
+    HELLO["client: SNSやったことなくて\nclippable: なんか残したくて"]
     HELLO --> HELLO_R{選択肢}
-    HELLO_R -->|「残したいって、どんなもの？」| MODEL
-    HELLO_R -->|「素材を送ってもらえますか」| MODEL
+    HELLO_R -->|残したいって、どんなもの？| MODEL
+    HELLO_R -->|素材を送ってもらえますか| MODEL
 
-    MODEL["client: 模型、作ってます。ずっと一人で\n🔖 clippable: 誰かに見てもらいたい"]
+    MODEL["client: 模型、作ってます。ずっと一人で\nclippable: 誰かに見てもらいたい"]
 
-    MODEL --> FB2_PRE["system: — 主人公の記憶が揺れる —\n(pause 600ms)"]
-    FB2_PRE --> FB2[trigger: ⚡ flashback2\n演出発火 → モノローグ → endAnim]
+    MODEL --> FB2_PRE["system: 主人公の記憶が揺れる\npause 600ms"]
+    FB2_PRE --> FB2["trigger: flashback2\n演出発火 → モノローグ → endAnim"]
     FB2 --> FB2_AFTER["player: …残す、か\nじゃあ、何を残したいか聞かせてもらえますか"]
 
     FB2_AFTER --> SEND["client: 写真、何枚か送ります\nカレンが好きそうだと思って撮ったのも"]
-    SEND --> TRIGGER[trigger: showMaterial\nresumeAt: saku_dilemma1]
+    SEND --> TRIGGER["trigger: showMaterial\nresumeAt: saku_dilemma1"]
 
-    TRIGGER --> QUIZ[❓ クイズ\n朔さんが発信したい本当の理由は？]
-    QUIZ -->|「誰かに見ていてほしい」✅| MAT_PHASE
+    TRIGGER --> QUIZ["クイズ: 朔さんが発信したい本当の理由は？"]
+    QUIZ -->|誰かに見ていてほしい 正解| MAT_PHASE
     QUIZ -->|不正解| MAT_PHASE
 
-    MAT_PHASE["📦 素材確認フェーズ\ns_desk🔖karen / s_light / s_model🔖yukiwarisou / s_memo"]
+    MAT_PHASE["素材確認フェーズ\ns_desk mysteryFlag:karen\ns_light / s_model mysteryFlag:yukiwarisou\ns_memo"]
 
     MAT_PHASE --> DILEMMA1["client: これ…使えないですよね\nぼけてるし、でも捨てられなくて"]
     DILEMMA1 --> D1_R{葛藤1 選択肢}
-    D1_R -->|「捨てなくていい。朔さんの視点です」\n✨ selfBonus+10| D1_END
-    D1_R -->|「撮り直すと多くの人に届きますよ」\n📊 buzzBonus+5| D1_END
+    D1_R -->|捨てなくていい 朔さんの視点です selfBonus+10| D1_END
+    D1_R -->|撮り直すと多くの人に届く buzzBonus+5| D1_END
 
     D1_END["client: …そうですね。じゃあ、出してみます"]
-    D1_END --> POST_TRIGGER[trigger: showPost\nresumeAt: saku_dilemma2]
+    D1_END --> POST_TRIGGER["trigger: showPost\nresumeAt: saku_dilemma2"]
 
-    POST_TRIGGER --> POST[🖊️ 投稿ビルダー + 反響フェーズ]
-    POST --> DILEMMA2["client: あの…DMきてて\n「模型、すごく好きです」\nどう返せばいいですか"]
+    POST_TRIGGER --> POST["投稿ビルダー + 反響フェーズ"]
+    POST --> DILEMMA2["client: あの…DMきてて\n模型、すごく好きです\nどう返せばいいですか"]
     DILEMMA2 --> D2_R{葛藤2 選択肢}
 
-    D2_R -->|「そのまま、ありがとうと伝えてみて」| D2_END
-    D2_R -->|「…そのアカウント名、教えてもらえますか」\n😈 egoPlus + kShinonoya flag| DM_NAME
-    D2_R -->|「（何も言わず、次の投稿の話をする）」| D2_END
+    D2_R -->|そのまま、ありがとうと伝えてみて| D2_END
+    D2_R -->|アカウント名を教えて egoPlus kShinonoya| DM_NAME
+    D2_R -->|何も言わず次の投稿の話をする| D2_END
 
     DM_NAME["client: え…k_shinonoya、って\n知り合いですか？"]
     DM_NAME --> DM_NAME_R["player: …いえ。\n知らない人だと思います。\n気にしないでください。"]
     DM_NAME_R --> D2_END
 
     D2_END[終端マーカー] --> SCORE{スコア判定}
-    SCORE -->|self ≥ 60 & kShinonoya=true| TOUTATU[🌙 到達エンド\n237時間の屋根がはまった]
-    SCORE -->|buzzScore ≥ 65 & self &lt; 50| ZURE[🔥 ズレエンド]
+    SCORE -->|self60以上 kShinonoya=true| TOUTATU["到達エンド\n237時間の屋根がはまった"]
+    SCORE -->|buzz65以上 self50未満| ZURE[ズレエンド]
 
     style TOUTATU fill:#1e2d4a,stroke:#3a5a8a,color:#b8d0f0
     style ZURE    fill:#3a1e1e,stroke:#8a3a3a,color:#f0b8b8
@@ -308,32 +308,32 @@ flowchart TD
   <div class="diagram-wrap">
     <div class="mermaid">
 flowchart TD
-    START([☕ 誠司ルート開始]) --> HELLO
+    START([誠司ルート開始]) --> HELLO
 
     HELLO["client: 突然すみません。喫茶店やってるんですが\nSNSやったほうがいいよって言われて…"]
     HELLO --> HELLO_R{選択肢}
-    HELLO_R -->|「どんなお店ですか？」| SHOP
-    HELLO_R -->|「インスタ映えを意識してみますか」| SHOP
+    HELLO_R -->|どんなお店ですか？| SHOP
+    HELLO_R -->|インスタ映えを意識してみますか| SHOP
 
-    SHOP["client: 古い商店街の中の、古い店です笑\n常連さんは元気なんですけど、若い人に来てほしくて\n🔖 clippable: 若い人に来てほしい"]
+    SHOP["client: 古い商店街の中の、古い店です\n常連さんは元気なんですけど、若い人に来てほしくて\nclippable: 若い人に来てほしい"]
     SHOP --> SHOP_R{選択肢}
-    SHOP_R -->|「その『古さ』が強みかもしれません」\n✨ selfBonus+5| SEND
-    SHOP_R -->|「インスタ映えを意識してみますか」\n📊 buzzBonus+5| SEND
+    SHOP_R -->|その古さが強みかもしれません selfBonus+5| SEND
+    SHOP_R -->|インスタ映えを意識してみますか buzzBonus+5| SEND
 
-    SEND["client: あ、そっちの方がいいかも。写真送りますね\n🔖 clippable: 映える店じゃない"]
-    SEND --> TRIGGER["system: → 素材が届きました\ntrigger: showMaterial"]
+    SEND["client: あ、そっちの方がいいかも。写真送りますね\nclippable: 映える店じゃない"]
+    SEND --> TRIGGER["system: 素材が届きました\ntrigger: showMaterial"]
 
-    TRIGGER --> QUIZ[❓ クイズ\n誠司さんがSNSを始める本当の目的は？]
-    QUIZ -->|「この店の空気を、知ってほしい人に届けたい」✅| MAT_PHASE
+    TRIGGER --> QUIZ["クイズ: 誠司さんがSNSを始める本当の目的は？"]
+    QUIZ -->|この店の空気を知ってほしい人に届けたい 正解| MAT_PHASE
     QUIZ -->|不正解| MAT_PHASE
 
-    MAT_PHASE["📦 素材確認フェーズ\nsj_menu / sj_sign🔖yukiwarisou / sj_memo"]
-    MAT_PHASE --> POST[🖊️ 投稿ビルダー\n文体 × 素材 → 投稿テキスト生成]
-    POST --> REACT[📣 反響フェーズ]
+    MAT_PHASE["素材確認フェーズ\nsj_menu / sj_sign mysteryFlag:yukiwarisou / sj_memo"]
+    MAT_PHASE --> POST["投稿ビルダー\n文体 × 素材 → 投稿テキスト生成"]
+    POST --> REACT[反響フェーズ]
 
     REACT --> SCORE{スコア判定}
-    SCORE -->|buzzScore &lt; 65 & selfScore &lt; 65| SAIHAN[☕ 再訪エンド\n「また来ます」は小さい言葉だ]
-    SCORE -->|buzzScore ≥ 65 & selfScore &lt; 50| ZURE[🔥 ズレエンド\n「これ、私じゃない気がして」]
+    SCORE -->|buzz65未満 self65未満| SAIHAN["再訪エンド\nまた来ますは小さい言葉だ"]
+    SCORE -->|buzz65以上 self50未満| ZURE["ズレエンド\nこれ、私じゃない気がして"]
 
     style SAIHAN fill:#3a2a1e,stroke:#7a5a3a,color:#f0d8b8
     style ZURE   fill:#3a1e1e,stroke:#8a3a3a,color:#f0b8b8
@@ -350,59 +350,59 @@ flowchart TD
   <div class="diagram-wrap">
     <div class="mermaid">
 flowchart TD
-    START([🌸 花蓮ルート開始\nキーパーソン]) --> HELLO
+    START([花蓮ルート開始 キーパーソン]) --> HELLO
 
     HELLO["client: はじめまして。篠宮 花蓮といいます\nお二人から紹介していただいて"]
     HELLO --> HELLO_R["player: どんな発信を考えていますか？"]
 
-    HELLO_R --> FLOWER["client: 花が好きで。生け花、少しやっています\nあと…姉に、見ていてほしくて\n🔖 clippable: 姉に見ていてほしい"]
+    HELLO_R --> FLOWER["client: 花が好きで。生け花、少しやっています\nあと…姉に、見ていてほしくて\nclippable: 姉に見ていてほしい"]
 
-    FLOWER --> QUESTION["client: あなたって…昔、ライターさんでしたか？\n🔖 clippable: 過去を知っている"]
+    FLOWER --> QUESTION["client: あなたって…昔、ライターさんでしたか？\nclippable: 過去を知っている"]
 
     QUESTION --> Q_R{選択肢}
-    Q_R -->|「…はい。でも、もう書いていません。」\n😈 egoPlus| K_SYS
-    Q_R -->|「なぜそう思うんですか？」| K_SYS
-    Q_R -->|「（黙って素材の確認を続ける）」| K_SYS
+    Q_R -->|はい でも もう書いていません egoPlus| K_SYS
+    Q_R -->|なぜそう思うんですか？| K_SYS
+    Q_R -->|黙って素材の確認を続ける| K_SYS
 
-    K_SYS["system: → 素材が届きました\ntrigger: showMaterial\nresumeAt: karen_mystery_choice"]
+    K_SYS["system: 素材が届きました\ntrigger: showMaterial\nresumeAt: karen_mystery_choice"]
 
-    K_SYS --> QUIZ[❓ クイズ\n花蓮さんが発信を始めた本当の理由は？]
-    QUIZ -->|「姉に、自分の日常を見ていてほしい」✅| MAT_PHASE
+    K_SYS --> QUIZ["クイズ: 花蓮さんが発信を始めた本当の理由は？"]
+    QUIZ -->|姉に 自分の日常を見ていてほしい 正解| MAT_PHASE
     QUIZ -->|不正解| MAT_PHASE
 
-    MAT_PHASE["📦 素材確認フェーズ"]
-    MAT_PHASE --> K_FLOWER["k_flower\n🔖 mysteryFlag: yukiwarisou"]
-    MAT_PHASE --> K_LINE["k_line\n姉へのLINE（既読なし）"]
-    MAT_PHASE --> K_MEMO["k_memo\n依頼の理由メモ\n⚡ flashback3Trigger: true"]
+    MAT_PHASE["素材確認フェーズ"]
+    MAT_PHASE --> K_FLOWER["k_flower\nmysteryFlag: yukiwarisou"]
+    MAT_PHASE --> K_LINE["k_line\n姉へのLINE 既読なし"]
+    MAT_PHASE --> K_MEMO["k_memo\n依頼の理由メモ\nflashback3Trigger: true"]
 
     K_FLOWER --> MYSTERY_CHECK
     K_LINE --> MYSTERY_CHECK
     K_MEMO --> MYSTERY_CHECK
 
-    MYSTERY_CHECK{mysteryClues ≥ 2?}
+    MYSTERY_CHECK{mysteryClues 2件以上?}
 
-    MYSTERY_CHECK -->|Yes| K_CHOICE{謎収束選択肢\ncondition: mysteryClues.length ≥ 2}
-    MYSTERY_CHECK -->|No| K_FALLBACK["system: — 花蓮の依頼の真意は、まだわからない —\ncondition: mysteryClues.length &lt; 2"]
+    MYSTERY_CHECK -->|Yes| K_CHOICE{謎収束選択肢}
+    MYSTERY_CHECK -->|No| K_FALLBACK["system: 花蓮の依頼の真意は、まだわからない\ncondition: mysteryClues.length < 2"]
 
-    K_CHOICE -->|「あなたのお姉さんに…記事を書いたのは私です」\n😈 egoPlus + 🚩 zange flag| ZANGE_SCENE
-    K_CHOICE -->|「（何も言わない）」| K_END_NODE
+    K_CHOICE -->|記事を書いたのは私です egoPlus+zange| ZANGE_SCENE
+    K_CHOICE -->|何も言わない| K_END_NODE
 
-    ZANGE_SCENE["client: 知っていました。\n(pause 8000ms)\nだから、頼みました。"]
+    ZANGE_SCENE["client: 知っていました。\npause 8000ms\nだから、頼みました。"]
     ZANGE_SCENE --> K_END_NODE
 
     K_FALLBACK --> K_END_NODE[終端マーカー]
 
     K_END_NODE --> SCORE{スコア判定}
-    SCORE -->|selfScore ≥ 65 & flashbackPhase ≥ 3| KIDOKU[🌸 既読エンド\n「姉のLINE、今朝、既読がついていました」]
-    SCORE -->|buzzScore ≥ 65 & selfScore &lt; 50| ZURE[🔥 ズレエンド]
+    SCORE -->|self65以上 flashback3以上| KIDOKU["既読エンド\n姉のLINE、今朝、既読がついていました"]
+    SCORE -->|buzz65以上 self50未満| ZURE[ズレエンド]
 
     KIDOKU --> LAST{最後の選択}
-    LAST -->|「……よかった」とだけ送る\n😈 egoPlus| EGO_CHECK
-    LAST -->|「（画面を閉じる）」| EGO_CHECK
+    LAST -->|よかった とだけ送る egoPlus| EGO_CHECK
+    LAST -->|画面を閉じる| EGO_CHECK
 
     EGO_CHECK{egoScore 判定}
-    EGO_CHECK -->|egoScore &gt; 0| ZANGE_END[🎭 贖罪エンド\n「だから、頼みました。」の意味が、まだわからない]
-    EGO_CHECK -->|egoScore ≤ 0| CHINMOKU[🖤 沈黙エンド\n「——カ」ミステリーメッセージ]
+    EGO_CHECK -->|egoScore 0より大| ZANGE_END["贖罪エンド\nだから、頼みました の意味が、まだわからない"]
+    EGO_CHECK -->|egoScore 0以下| CHINMOKU["沈黙エンド\nカ ミステリーメッセージ"]
 
     style KIDOKU   fill:#3a1e3a,stroke:#7a3a7a,color:#f0b8f0
     style ZURE     fill:#3a1e1e,stroke:#8a3a3a,color:#f0b8b8
@@ -412,7 +412,7 @@ flowchart TD
   </div>
   <div class="note">
     mysteryClues は朔・誠司・花蓮ルートの素材カードをめくることで蓄積される（karen / yukiwarisou）。<br>
-    k_memo をめくると flashback3 が即時発火する。flashbackPhase ≥ 3 が既読エンドの必須条件。
+    k_memo をめくると flashback3 が即時発火する。flashbackPhase 3以上が既読エンドの必須条件。
   </div>
 </div>
 
@@ -425,17 +425,17 @@ flowchart LR
 
     CHECK{エンド判定}
 
-    CHECK -->|みどりルート\nselfScore ≥ 65| JIRITU["🌿 自立エンド\nbgm: ending_piano\nfade: 6s / blackout: 4s\n「翻訳というのは本当は消えることだと思う」"]
-    CHECK -->|みどりルート\nboth &lt; 65| JIZOKU["🌱 継続エンド\nbgm: ending_piano\nfade: 4s / blackout: 2s\n「届いている。たぶん、それで十分だ。」"]
-    CHECK -->|朔ルート\nself ≥ 60 & kShinonoya=true| TOUTATU["🌙 到達エンド\nbgm: ending_strings\nfade: 8s / blackout: 3s\n「届いた。誰に届いたか、朔さんはきっと知らない。」"]
-    CHECK -->|誠司ルート\nboth &lt; 65| SAIHAN["☕ 再訪エンド\nbgm: ending_piano\nfade: 4s / blackout: 2s\n「また来ますを言わせる場所は、ずっとそこにある」"]
-    CHECK -->|花蓮ルート\nself ≥ 65 & phase ≥ 3| KIDOKU["🌸 既読エンド\nbgm: ending_piano\nfade: 12s / blackout: 6s\n「わからないまま、明日も仕事をする」"]
-    CHECK -->|任意ルート\nbuzz ≥ 65 & self &lt; 50| ZURE["🔥 ズレエンド\nbgm: なし\n暗転なし\n「同じ問いだ。」"]
+    CHECK -->|みどり self65以上| JIRITU["自立エンド\nbgm: ending_piano\nfade:6s / blackout:4s\n翻訳というのは本当は消えることだと思う"]
+    CHECK -->|みどり 両方65未満| JIZOKU["継続エンド\nbgm: ending_piano\nfade:4s / blackout:2s\n届いている。たぶん、それで十分だ。"]
+    CHECK -->|朔 self60以上 kShinonoya| TOUTATU["到達エンド\nbgm: ending_strings\nfade:8s / blackout:3s\n届いた。誰に届いたか、朔さんはきっと知らない。"]
+    CHECK -->|誠司 両方65未満| SAIHAN["再訪エンド\nbgm: ending_piano\nfade:4s / blackout:2s\nまた来ますを言わせる場所は、ずっとそこにある"]
+    CHECK -->|花蓮 self65以上 phase3以上| KIDOKU["既読エンド\nbgm: ending_piano\nfade:12s / blackout:6s\nわからないまま、明日も仕事をする"]
+    CHECK -->|任意 buzz65以上 self50未満| ZURE["ズレエンド\nbgm: なし 暗転なし\n同じ問いだ。"]
 
-    KIDOKU --> LAST_CHOICE["最後の選択\n「……よかった」or「画面を閉じる」"]
+    KIDOKU --> LAST_CHOICE["最後の選択\nよかった or 画面を閉じる"]
     LAST_CHOICE --> EGO{egoScore}
-    EGO -->|egoScore &gt; 0| ZANGE["🎭 贖罪エンド\nbgm: ending_strings\nfade: 10s / blackout: 5s\nタイピング演出あり\n「だから、頼みました。」"]
-    EGO -->|egoScore ≤ 0| CHINMOKU["🖤 沈黙エンド\nbgm: なし / 完全無音 10s\nappIconFade: true\nミステリーメッセージ「翻訳、ありがとうございました。」"]
+    EGO -->|egoScore 0より大| ZANGE["贖罪エンド\nbgm: ending_strings\nfade:10s / blackout:5s\nタイピング演出あり\nだから、頼みました。"]
+    EGO -->|egoScore 0以下| CHINMOKU["沈黙エンド\nbgm: なし 完全無音10s\nappIconFade: true\nミステリーメッセージ: 翻訳、ありがとうございました。"]
 
     style JIRITU   fill:#2d4a2d,stroke:#4a7a4a,color:#b8e0b8
     style JIZOKU   fill:#1e3a1e,stroke:#3a6a3a,color:#b8d8b8
@@ -448,14 +448,14 @@ flowchart LR
     </div>
   </div>
   <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:#4a7a4a"></div>自立エンド — みどり / selfScore ≥ 65</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#3a6a3a"></div>継続エンド — みどり / both &lt; 65</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#3a5a8a"></div>到達エンド — 朔 / self ≥ 60 + kShinonoya</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#7a5a3a"></div>再訪エンド — 誠司 / both &lt; 65</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#7a3a7a"></div>既読エンド — 花蓮 / self ≥ 65 + phase ≥ 3</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#8a3a3a"></div>ズレエンド — 全ルート / buzz ≥ 65 + self &lt; 50</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#6a6a3a"></div>贖罪エンド — kidoku後 / egoScore &gt; 0</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#4a4a4a"></div>沈黙エンド — kidoku後 / egoScore ≤ 0</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4a7a4a"></div>自立エンド — みどり / selfScore 65以上</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3a6a3a"></div>継続エンド — みどり / 両方65未満</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3a5a8a"></div>到達エンド — 朔 / self60以上 + kShinonoya</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#7a5a3a"></div>再訪エンド — 誠司 / 両方65未満</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#7a3a7a"></div>既読エンド — 花蓮 / self65以上 + phase3以上</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#8a3a3a"></div>ズレエンド — 全ルート / buzz65以上 self50未満</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6a6a3a"></div>贖罪エンド — kidoku後 / egoScore 0より大</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4a4a4a"></div>沈黙エンド — kidoku後 / egoScore 0以下</div>
   </div>
   <div class="note" style="margin-top:16px">
     贖罪エンド / 沈黙エンドは既読エンド（kidoku）を経由した場合のみ到達可能。直接到達するパスは存在しない。<br>
