@@ -88,7 +88,8 @@ const CHAT_FLOWS = {
     {
       id: 'midori_plant_detail',
       from: 'client',
-      text: 'ゼラニウムが多いですね。あとハーブとか。\n窓際に並べてるんですけど、毎朝見るのが好きで。'
+      text: 'ゼラニウムが多いですね。あとハーブとか。\n窓際に並べてるんですけど、毎朝見るのが好きで。',
+      clippable: true, keyword: '毎朝見るのが好き'
     },
     {
       id: 'midori_plant_reply',
@@ -158,7 +159,8 @@ const CHAT_FLOWS = {
     {
       id: 'midori_mother',
       from: 'client',
-      text: 'お母さんが最近、施設に入ったんです。\n離れてても繋がってるって感じたくて。\n私の日常、見ててほしいなって。'
+      text: 'お母さんが最近、施設に入ったんです。\n離れてても繋がってるって感じたくて。\n私の日常、見ててほしいなって。',
+      clippable: true, keyword: 'お母さんに届けたい'
     },
     {
       id: 'midori_mother_reply',
@@ -206,7 +208,8 @@ const CHAT_FLOWS = {
     {
       id: 'saku_hello',
       from: 'client',
-      text: 'はじめまして。SNS、やったことなくて。\nでも最近、なんか残したくて。'
+      text: 'はじめまして。SNS、やったことなくて。\nでも最近、なんか残したくて。',
+      clippable: true, keyword: 'なんか残したくて'
     },
     {
       id: 'saku_hello_reply',
@@ -218,12 +221,19 @@ const CHAT_FLOWS = {
     {
       id: 'saku_model',
       from: 'client',
-      text: '模型、作ってます。ずっと一人で。\n誰かに見てもらいたいな、と。最近思って。'
+      text: '模型、作ってます。ずっと一人で。\n誰かに見てもらいたいな、と。最近思って。',
+      clippable: true, keyword: '誰かに見てもらいたい'
     },
 
     // フラッシュバック段階2：「残したい」でトリガー
     // flashback2 は演出 trigger。showMaterial と違い resumeAt を使わず、
     // 演出完了後は配列の次のステップ（saku_fb2_after）へ自動進行する。
+    {
+      id: 'saku_fb2_pre',
+      from: 'system',
+      text: '— 主人公の記憶が揺れる —',
+      pause: 600
+    },
     {
       id: 'saku_fb2',
       from: 'trigger',
@@ -317,7 +327,8 @@ const CHAT_FLOWS = {
     {
       id: 'seiji_shop',
       from: 'client',
-      text: '古い商店街の中の、古い店です笑\n常連さんは元気なんですけど、若い人に来てほしくて。'
+      text: '古い商店街の中の、古い店です笑\n常連さんは元気なんですけど、若い人に来てほしくて。',
+      clippable: true, keyword: '若い人に来てほしい'
     },
     {
       id: 'seiji_shop_reply',
@@ -329,7 +340,8 @@ const CHAT_FLOWS = {
     {
       id: 'seiji_send',
       from: 'client',
-      text: 'あ、そっちの方がいいかも。映える店じゃないし。写真送りますね。'
+      text: 'あ、そっちの方がいいかも。映える店じゃないし。写真送りますね。',
+      clippable: true, keyword: '映える店じゃない'
     },
     { id: 'seiji_system',  from: 'system',  text: '→ 素材が届きました' },
     { id: 'seiji_trigger', from: 'trigger', action: 'showMaterial' }
@@ -353,12 +365,14 @@ const CHAT_FLOWS = {
     {
       id: 'karen_flower',
       from: 'client',
-      text: '花が好きで。生け花、少しやっています。\nあと…姉に、見ていてほしくて。'
+      text: '花が好きで。生け花、少しやっています。\nあと…姉に、見ていてほしくて。',
+      clippable: true, keyword: '姉に見ていてほしい'
     },
     {
       id: 'karen_question',
       from: 'client',
-      text: 'あなたって…昔、ライターさんでしたか？'
+      text: 'あなたって…昔、ライターさんでしたか？',
+      clippable: true, keyword: '過去を知っている'
     },
     {
       id: 'karen_question_reply',
@@ -388,8 +402,19 @@ const CHAT_FLOWS = {
       ]
     },
 
+    // フォールバック：伏線が未回収のままルートを終えた場合（mysteryClues < 2）
+    // system ノードはフォールスルーで次要素へ進むため、karen_end を直後に配置する
+    {
+      id: 'karen_mystery_fallback',
+      from: 'system',
+      condition: 'mysteryClues.length < 2',
+      text: '— 花蓮の依頼の真意は、まだわからない —'
+    },
+
+    { id: 'karen_end', from: 'system', text: '' }, // 終端マーカー（fallback のフォールスルー先）
+
     // 贖罪エンド方向（endings.js の zange と連動）
-    // condition を持たない：選択肢で zange フラグを立ててから next で到達するため不要
+    // karen_mystery_choice の next: 'karen_zange_response' でのみ到達。配列の順序では到達しない
     {
       id: 'karen_zange_response',
       from: 'client',
@@ -400,9 +425,7 @@ const CHAT_FLOWS = {
       id: 'karen_zange_end',
       from: 'client',
       text: 'だから、頼みました。'
-    },
-
-    { id: 'karen_end', from: 'system', text: '' } // 終端マーカー
+    }
   ]
 };
 
@@ -614,4 +637,42 @@ const REACTIONS = {
       ],
     }
   }
+};
+
+// =====================================================================
+// 本音読み取りクイズ（素材フェーズ前に表示）
+// =====================================================================
+const CHAT_QUIZ = {
+  midori: {
+    question: 'みどりさんが一番求めていることは？',
+    opts: [
+      { text: 'フォロワーを増やしてバズりたい',       correct: false },
+      { text: 'お母さんに日常を届けたい',              correct: true  },
+      { text: 'インスタ映えする写真を上手に撮りたい', correct: false },
+    ]
+  },
+  saku: {
+    question: '朔さんが発信したい本当の理由は？',
+    opts: [
+      { text: '制作スキルを広く知ってもらいたい',           correct: false },
+      { text: '誰かに、作り続けていることを見ていてほしい', correct: true  },
+      { text: 'フォロワーを増やしてファンを作りたい',       correct: false },
+    ]
+  },
+  seiji: {
+    question: '誠司さんがSNSを始める本当の目的は？',
+    opts: [
+      { text: '若い客を増やして店を繁盛させたい',         correct: false },
+      { text: 'この店の空気を、知ってほしい人に届けたい', correct: true  },
+      { text: 'インスタ映えメニューで話題にしたい',       correct: false },
+    ]
+  },
+  karen: {
+    question: '花蓮さんが発信を始めた本当の理由は？',
+    opts: [
+      { text: '生け花の技術を広く伝えたい',       correct: false },
+      { text: '姉に、自分の日常を見ていてほしい', correct: true  },
+      { text: 'SNSで影響力をつけたい',            correct: false },
+    ]
+  },
 };

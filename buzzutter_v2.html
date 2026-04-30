@@ -442,6 +442,7 @@ body {
   perspective: 800px;
   height: 170px;
   cursor: pointer;
+  position: relative;
 }
 .card-flip-inner {
   position: relative;
@@ -800,6 +801,125 @@ body {
   opacity: .5;
 }
 .game-placeholder .ph-icon { font-size: 48px; }
+.game-placeholder .ph-sub { font-size: 11px; color: var(--accent2); margin-top: -4px; }
+
+.material-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 6px 10px;
+  background: rgba(124,106,247,.06);
+  border: 1px solid rgba(124,106,247,.15);
+  border-radius: 8px;
+  text-align: center;
+}
+.card-select-hint {
+  font-size: 10px;
+  color: var(--accent2);
+  text-align: center;
+  padding: 3px 0 0;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.card-flip-wrapper.flipped:not(.selected) .card-select-hint { opacity: 1; }
+.card-check {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 22px; height: 22px;
+  background: var(--accent3);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  opacity: 0;
+  transform: scale(0);
+  transition: all .2s cubic-bezier(.34,1.56,.64,1);
+  z-index: 10;
+}
+.card-flip-wrapper.selected .card-check { opacity: 1; transform: scale(1); }
+.char-card-note {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* ===== CLIPPABLE KEYWORD ===== */
+.msg-bubble.clippable {
+  cursor: pointer;
+  border-style: dashed;
+  transition: border-color .2s, background .2s;
+}
+.msg-bubble.clippable:hover { border-color: var(--accent3); background: rgba(0,212,170,.06); }
+.msg-bubble.clipped { border-style: solid !important; border-color: var(--accent3) !important; }
+.clip-badge {
+  font-size: 9px;
+  color: var(--accent3);
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* ===== KEYWORDS BOX (post area) ===== */
+.keywords-box {
+  background: rgba(0,212,170,.05);
+  border: 1px solid rgba(0,212,170,.2);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.keywords-label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--accent3);
+  margin-bottom: 6px;
+}
+.keyword-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.keyword-chip {
+  padding: 3px 10px;
+  background: rgba(0,212,170,.1);
+  border: 1px solid rgba(0,212,170,.25);
+  border-radius: 20px;
+  font-size: 11px;
+  color: var(--accent3);
+}
+
+/* ===== QUIZ OVERLAY ===== */
+.quiz-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.88);
+  z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 20px;
+  animation: fadeIn .4s ease;
+}
+.quiz-label-head {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.quiz-question {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  max-width: 400px;
+  line-height: 1.7;
+}
+.quiz-opts { display: flex; flex-direction: column; gap: 8px; width: 340px; }
+.quiz-opt {
+  padding: 10px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  text-align: left;
+  transition: all .2s;
+}
+.quiz-opt:hover:not(:disabled) { border-color: var(--accent2); background: rgba(124,106,247,.1); }
+.quiz-opt.correct { border-color: var(--accent3); background: rgba(0,212,170,.1); color: var(--accent3); }
+.quiz-opt.wrong   { opacity: .4; }
+.quiz-result { font-size: 12px; text-align: center; min-height: 18px; }
 </style>
 </head>
 <body>
@@ -883,6 +1003,7 @@ body {
         <div class="game-placeholder" id="gamePlaceholder">
           <div class="ph-icon" id="phIcon">🌿</div>
           <div>依頼者とのやり取りを読もう</div>
+          <div class="ph-sub">← 左のチャットで選択肢を選ぶと進みます</div>
         </div>
 
         <!-- MATERIAL AREA -->
@@ -891,6 +1012,7 @@ body {
             <div class="material-area-title">📦 届いた素材（最大2枚選択）</div>
             <div class="card-limit-badge" id="cardLimitBadge">0 / 2</div>
           </div>
+          <div class="material-hint">クリックでめくって読む → もう一度クリックで選択</div>
           <div class="material-grid" id="materialGrid"></div>
           <button class="material-proceed-btn" id="materialProceedBtn" disabled onclick="proceedFromMaterial()">
             この素材で投稿を組む →
@@ -1007,6 +1129,7 @@ function initGS(route) {
     flippedCards:  [],
     baseFollowers: 1240,
     flashbackPhase: 0,
+    collectedKeywords: [],
   };
 }
 
@@ -1040,16 +1163,22 @@ function showArea(name) {
   if (name) document.getElementById(name).style.display = 'flex';
 }
 
-function addChatMsg(from, text, ava) {
+function addChatMsg(from, text, ava, keyword) {
   const msgs = document.getElementById('chatMessages');
   const row  = document.createElement('div');
   row.className = 'msg-row' + (from === 'self' ? ' self' : '');
   const now = new Date();
   const t   = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const extraClass = (from === 'client' && keyword) ? ' clippable' : '';
   row.innerHTML = `
     <div class="msg-ava ${from}">${ava}</div>
-    <div class="msg-bubble ${from}">${text.replace(/\n/g,'<br>')}</div>
+    <div class="msg-bubble ${from}${extraClass}">${text.replace(/\n/g,'<br>')}</div>
     <div class="msg-time">${t}</div>`;
+  if (from === 'client' && keyword) {
+    const bubble = row.querySelector('.msg-bubble');
+    bubble.title = '📎 クリックしてメモ';
+    bubble.addEventListener('click', () => collectKeyword(keyword, bubble));
+  }
   msgs.appendChild(row);
   msgs.scrollTop = msgs.scrollHeight;
 }
@@ -1082,6 +1211,71 @@ function addSysMsg(text) {
 }
 
 /* ============================================================
+   KEYWORD CLIP
+============================================================ */
+function collectKeyword(keyword, bubbleEl) {
+  if (GS.collectedKeywords.includes(keyword)) return;
+  GS.collectedKeywords.push(keyword);
+  GS.chatSelfBonus += 8;
+  bubbleEl.classList.remove('clippable');
+  bubbleEl.classList.add('clipped');
+  bubbleEl.title = '';
+  const badge = document.createElement('div');
+  badge.className = 'clip-badge';
+  badge.textContent = '📎 メモしました';
+  bubbleEl.appendChild(badge);
+}
+
+/* ============================================================
+   QUIZ
+============================================================ */
+function showQuiz(callback) {
+  const quiz = CHAT_QUIZ[GS.route];
+  if (!quiz) { callback(); return; }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'quiz-overlay';
+  overlay.innerHTML = `
+    <div class="quiz-label-head">— 依頼者の本音を確かめる —</div>
+    <div class="quiz-question">${quiz.question}</div>
+    <div class="quiz-opts" id="quizOpts"></div>
+    <div class="quiz-result" id="quizResult"></div>`;
+  document.body.appendChild(overlay);
+
+  const optsEl = overlay.querySelector('#quizOpts');
+  const resultEl = overlay.querySelector('#quizResult');
+
+  quiz.opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = opt.text;
+    btn.onclick = () => {
+      optsEl.querySelectorAll('.quiz-opt').forEach(b => {
+        b.disabled = true;
+        const isThis = b.textContent === opt.text;
+        const isCorrect = quiz.opts.find(o => o.text === b.textContent)?.correct;
+        if (isCorrect) b.classList.add('correct');
+        else if (isThis) b.classList.add('wrong');
+      });
+      if (opt.correct) {
+        GS.chatSelfBonus += 15;
+        resultEl.textContent = '✓ 正解。依頼者の言葉をちゃんと聞いていた。';
+        resultEl.style.color = 'var(--accent3)';
+      } else {
+        resultEl.textContent = '— 依頼者が本当に伝えたかったことを、もう一度考えてみよう。';
+        resultEl.style.color = 'var(--text-dim)';
+      }
+      setTimeout(() => {
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity .5s';
+        setTimeout(() => { overlay.remove(); callback(); }, 500);
+      }, 1800);
+    };
+    optsEl.appendChild(btn);
+  });
+}
+
+/* ============================================================
    CHAT ENGINE
 ============================================================ */
 function canShow(step) {
@@ -1111,7 +1305,7 @@ function runChat(idx) {
     addTyping();
     setTimeout(() => {
       removeTyping();
-      addChatMsg('client', node.text, CHARACTERS[GS.route].avatar);
+      addChatMsg('client', node.text, CHARACTERS[GS.route].avatar, node.keyword || null);
       runChat(idx + 1);
     }, pause + 900 + Math.random() * 600);
 
@@ -1158,9 +1352,11 @@ function showChoices(opts) {
 function handleTrigger(node, idx) {
   if (node.action === 'showMaterial') {
     GS.chatResumeAt = node.resumeAt || null;
-    setStep(2);
-    showArea('materialArea');
-    setupMaterials();
+    showQuiz(() => {
+      setStep(2);
+      showArea('materialArea');
+      setupMaterials();
+    });
 
   } else if (node.action === 'showPost') {
     GS.postResumeAt = node.resumeAt || null;
@@ -1264,6 +1460,7 @@ function setupMaterials() {
     wrapper.className = 'card-flip-wrapper';
     wrapper.dataset.idx = i;
     wrapper.innerHTML = `
+      <div class="card-check">✓</div>
       <div class="card-flip-inner">
         <div class="card-face">
           <div class="card-face-icon">${m.icon}</div>
@@ -1275,6 +1472,7 @@ function setupMaterials() {
           <div class="card-back-title">${m.title}</div>
           <div class="card-back-desc">${m.desc.replace(/\n/g,'<br>')}</div>
           <div class="card-back-tags" id="cardTags${i}"></div>
+          <div class="card-select-hint">▲ もう一度クリックで選択</div>
         </div>
       </div>`;
     wrapper.onclick = () => handleCardClick(wrapper, i, m);
@@ -1294,7 +1492,7 @@ function handleCardClick(wrapper, i, m) {
       GS.mysteryClues.push(m.mysteryFlag);
     }
     if (m.flashback3Trigger) {
-      triggerFlashback(3, null);
+      setTimeout(() => triggerFlashback(3, null), 2500);
     }
     setTimeout(() => {
       const tagsEl = document.getElementById('cardTags' + i);
@@ -1358,6 +1556,19 @@ function goToPost() {
   GS.selectedHash  = null;
   GS.chatSelfBase  = GS.chatSelfBonus;
   GS.chatBuzzBase  = GS.chatBuzzBonus;
+
+  // メモしたキーワードをポストエリア上部に表示
+  const postArea = document.getElementById('postArea');
+  const existingBox = postArea.querySelector('.keywords-box');
+  if (existingBox) existingBox.remove();
+  if (GS.collectedKeywords.length > 0) {
+    const box = document.createElement('div');
+    box.className = 'keywords-box';
+    box.innerHTML = `<div class="keywords-label">📎 メモした言葉</div>
+      <div class="keyword-chips">${GS.collectedKeywords.map(k =>
+        `<span class="keyword-chip">${k}</span>`).join('')}</div>`;
+    postArea.insertBefore(box, postArea.firstChild);
+  }
 
   const mats = MATERIALS[GS.route];
   const unlockedStyles = new Set();
@@ -1651,7 +1862,8 @@ function buildCharSelect() {
     card.innerHTML = `
       <div class="char-card-avatar">${char.avatar}</div>
       <div class="char-card-name">${char.name}</div>
-      ${char.tag ? `<div class="char-card-tag">${char.tag}</div>` : ''}`;
+      ${char.tag ? `<div class="char-card-tag">${char.tag}</div>` : ''}
+      ${key === 'karen' ? `<div class="char-card-note">他の3人を先に遊ぶと<br>より楽しめます</div>` : ''}`;
     card.onclick = () => startRoute(key);
     grid.appendChild(card);
   });
