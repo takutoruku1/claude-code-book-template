@@ -318,6 +318,43 @@ const ENDINGS = {
       '…………',
       '明日も、仕事がある。'
     ]
+  },
+
+  // ----------------------------------------------------------------
+  jizoku: {
+    emoji: '🌱', name: '継続エンド',
+    condition: 'みどりルート / selfScore < 65 かつ buzzScore < 65',
+    requires: null,
+
+    bgmTrack: 'ending_piano',
+    fadeDuration: 4,
+    blackoutDuration: 2,
+    noBlackout: false,
+    monologueInterval: 1600,
+    bgmNote: null,
+    bgmDelay: null,
+
+    clientMessage: null,
+    noReplyEffect: true,
+    lastChoice: null,
+    typingText: null, typingRetry: false,
+    karenResponse: null, karenTypingLoops: 0,
+    appIconFade: false,
+    silenceDuration: null, retryButtonDelay: 5000,
+    mysteryMessage: null,
+
+    monologue: [
+      '大きくなくていい、と',
+      '誰かが言っていた。',
+      '',
+      '毎朝、植物に水をやる。',
+      'それと同じことを、',
+      '今日もSNSでやっている。',
+      '',
+      '…………',
+      '届いている。',
+      'たぶん、それで十分だ。'
+    ]
   }
 
 };

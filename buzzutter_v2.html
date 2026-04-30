@@ -1360,8 +1360,8 @@ function goToPost() {
   GS.chatBuzzBase  = GS.chatBuzzBonus;
 
   const mats = MATERIALS[GS.route];
-  const unlockedStyles = new Set([2]);
-  const unlockedHash   = new Set([2]);
+  const unlockedStyles = new Set();
+  const unlockedHash   = new Set();
   GS.selectedCards.forEach(ci => {
     if (mats[ci]) {
       mats[ci].styleUnlock.forEach(x => unlockedStyles.add(x));
@@ -1369,8 +1369,8 @@ function goToPost() {
     }
   });
 
-  buildOpts('optsStyle', styleOptions, 'selectedStyle', unlockedStyles);
-  buildOpts('optsHash',  hashOptions,  'selectedHash',  unlockedHash);
+  buildOpts('optsStyle', styleOptions,              'selectedStyle', unlockedStyles);
+  buildOpts('optsHash',  getHashOptions(GS.route),  'selectedHash',  unlockedHash);
   updatePreview();
 }
 
@@ -1397,7 +1397,7 @@ function buildOpts(containerId, opts, stateKey, unlocked) {
 
 function updatePreview() {
   const s = GS.selectedStyle !== null ? styleOptions[GS.selectedStyle] : null;
-  const h = GS.selectedHash  !== null ? hashOptions[GS.selectedHash]   : null;
+  const h = GS.selectedHash  !== null ? getHashOptions(GS.route)[GS.selectedHash] : null;
 
   document.getElementById('previewText').textContent =
     s ? s.textFn() : '文体を選ぶと投稿が表示されます';
@@ -1442,11 +1442,12 @@ function buildReactionFeed() {
   area.innerHTML = '';
 
   const s    = styleOptions[GS.selectedStyle];
-  const h    = hashOptions[GS.selectedHash];
-  const rKey = getReactionKey();
+  const h    = getHashOptions(GS.route)[GS.selectedHash];
+  const rKey   = getReactionKey();
   activeReactionKey = rKey;
-  const R    = REACTIONS[rKey];
-  const char = CHARACTERS[GS.route];
+  const R      = REACTIONS[rKey];
+  const replies = R.replies[GS.route] ?? R.replies.midori;
+  const char   = CHARACTERS[GS.route];
 
   const postCard = document.createElement('div');
   postCard.className = 'feed-card';
@@ -1463,7 +1464,7 @@ function buildReactionFeed() {
     <div class="feed-actions">
       <div class="feed-action" id="likeBtn" onclick="toggleLike(this)">🤍 <span id="likeCount">0</span></div>
       <div class="feed-action" onclick="this.classList.toggle('rtd')">🔁 <span id="rtCount">0</span></div>
-      <div class="feed-action">💬 ${R.replies.length}</div>
+      <div class="feed-action">💬 ${replies.length}</div>
     </div>
     <div class="reply-list" id="replyList"></div>`;
   area.appendChild(postCard);
@@ -1483,7 +1484,7 @@ function buildReactionFeed() {
   }, 120);
 
   const rList = document.getElementById('replyList');
-  R.replies.forEach((r, i) => {
+  replies.forEach((r, i) => {
     setTimeout(() => {
       const ri = document.createElement('div');
       ri.className = 'reply-item';
@@ -1525,7 +1526,7 @@ function buildReactionFeed() {
     btn.onclick = afterReactions;
     area.appendChild(btn);
     area.scrollTop = area.scrollHeight;
-  }, 900 + R.replies.length * 700 + 400);
+  }, 900 + replies.length * 700 + 400);
 }
 
 /* ============================================================
@@ -1586,9 +1587,9 @@ function showClientReaction() {
 ============================================================ */
 function resolveEnding() {
   if (GS.route === 'midori') {
-    if (GS.self >= 65)                      return 'jiritu';
-    if (GS.buzz >= 65 && GS.self < 50)     return 'zure';
-    return 'jiritu';
+    if (GS.self >= 65)                  return 'jiritu';
+    if (GS.buzz >= 65 && GS.self < 50) return 'zure';
+    return 'jizoku';
   }
   if (GS.route === 'saku') {
     if (GS.buzz >= 65 && GS.self < 50)     return 'zure';

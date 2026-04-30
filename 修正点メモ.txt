@@ -1,0 +1,36 @@
+20260430の修正まとめ
+1. 投稿テキストのキャラ・素材連動化
+postOptions.js
+
+textFn をキャラ × 文体 × 選択素材で動的生成に変更（4キャラ × 4文体）
+ハッシュタグをキャラ別に変更（#植物のある暮らし / #ジオラマ #模型制作 / #喫茶店 #純喫茶 / #生け花 #いけばな）
+buzzutter_v2.html
+
+goToPost() のハッシュタグ構築を getHashOptions(GS.route) に変更
+2. バズ選択肢のデフォルト解放を削除
+scenario.js
+
+朔 s_model・誠司 sj_menu・花蓮 k_flower の unlock に index 2 を追加（バズ選択肢の解放カードを整備）
+buzzutter_v2.html
+
+new Set([2]) → new Set() に変更（素材を選ばないとバズ選択肢が出なくなった）
+3. みどりルートのエンディング分岐バグ修正
+endings.js
+
+jizoku（🌱 継続エンド）を新規追加
+buzzutter_v2.html
+
+resolveEnding() のデフォルト return 'jiritu' → return 'jizoku' に変更
+みどりが self高・ズレ・継続の3分岐に
+4. ハッシュタグ表示バグ修正（3で生じた新バグ）
+buzzutter_v2.html
+
+updatePreview() と buildReactionFeed() の hashOptions[GS.selectedHash] を getHashOptions(GS.route)[GS.selectedHash] に変更
+5. 反響フィードのキャラ別化
+scenario.js
+
+REACTIONS の replies をキャラ別オブジェクト { midori, saku, seiji, karen } に変更
+各キャラの文脈に合ったコメントを設定（朔には模型ファン、誠司には喫茶店ファン、花蓮には生け花ファン）
+buzzutter_v2.html
+
+R.replies → replies（R.replies[GS.route] で取り出した配列）に統一（3箇所）

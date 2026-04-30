@@ -468,7 +468,7 @@ const MATERIALS = {
       id: 's_model', icon: '📷', type: '写真', title: '完成品の模型（全体）',
       desc: '背景に「ゆきわりそう」の看板がさりげなく見える。',
       tags: ['制作感', '完成'],
-      styleUnlock: [1, 3], hashUnlock: [1, 3],
+      styleUnlock: [1, 2, 3], hashUnlock: [1, 2, 3],
       mysteryFlag: 'yukiwarisou', // めくった時に mysteryClues に 'yukiwarisou' を push
       flashback3Trigger: false, imgSrc: null
     },
@@ -486,7 +486,7 @@ const MATERIALS = {
       id: 'sj_menu', icon: '📷', type: '写真', title: '手書きメニューボード',
       desc: '字が少し歪んでいる。「今日のおすすめ：気分次第」という一行がある。',
       tags: ['ユーモア', 'らしさ'],
-      styleUnlock: [0, 1, 3], hashUnlock: [0, 1, 3],
+      styleUnlock: [0, 1, 2, 3], hashUnlock: [0, 1, 2, 3],
       mysteryFlag: null, flashback3Trigger: false, imgSrc: null
     },
     {
@@ -511,7 +511,7 @@ const MATERIALS = {
       id: 'k_flower', icon: '🌸', type: '写真', title: '生け花の作品（白・淡紅）',
       desc: '背景に遠景で「ゆきわりそう」の看板。「姉に見せたくて活けた」メモ付き。',
       tags: ['温かみ', '家族へ', '植物愛'],
-      styleUnlock: [0, 1], hashUnlock: [0, 1, 3],
+      styleUnlock: [0, 1, 2], hashUnlock: [0, 1, 2, 3],
       mysteryFlag: 'yukiwarisou', // めくった時に mysteryClues に 'yukiwarisou' を push
       flashback3Trigger: false, imgSrc: null
     },
@@ -537,33 +537,81 @@ const MATERIALS = {
 // =====================================================================
 // 反響データ
 // =====================================================================
-// condition: この反響パターンを使う条件（score.js の resolveReaction() が参照する）
+// replies はキャラクター別オブジェクト。buildReactionFeed() で GS.route をキーに参照する。
 const REACTIONS = {
   high_self: {
-    condition: 'selfScore >= 60 && buzzScore < 60', // 追加：対応条件を明示
     likesDelta: 47, rtsDelta: 8, followerDelta: 12,
-    replies: [
-      { ava: '🌷', name: 'hanako_garden', text: 'こういう投稿大好きです…ゆっくり見てしまった' },
-      { ava: '👩', name: 'midori_mama',   text: 'みどりちゃん！お母さんだよ！みてるよ💕' },
-      { ava: '🌿', name: 'slow_life_log', text: '完璧じゃないのがかえっていい。また来ます' }
-    ]
+    replies: {
+      midori: [
+        { ava: '🌷', name: 'hanako_garden', text: 'こういう投稿大好きです…ゆっくり見てしまった' },
+        { ava: '👩', name: 'midori_mama',   text: 'みどりちゃん！お母さんだよ！みてるよ💕' },
+        { ava: '🌿', name: 'slow_life_log', text: '完璧じゃないのがかえっていい。また来ます' },
+      ],
+      saku: [
+        { ava: '🔧', name: 'craft_memo',    text: '作業台の写真、好きです。工具の並びに性格が出る気がして' },
+        { ava: '🏗️', name: 'diorama_fan',  text: '237時間…尊敬します。屋根、絶対はまりますよ' },
+        { ava: '📷', name: 'quiet_record',  text: 'こういう記録系のアカウント大好きです。フォローしました' },
+      ],
+      seiji: [
+        { ava: '☕', name: 'cafe_hopper',    text: 'こういうお店、大好きです。今度行ってみます' },
+        { ava: '🏘️', name: 'shotengai_fan', text: '商店街の喫茶店、なんか落ち着く。また来たくなる投稿' },
+        { ava: '📖', name: 'slow_morning',   text: '「気分次第」のメニュー、いいですね。それが一番正直' },
+      ],
+      karen: [
+        { ava: '🌸', name: 'ikebana_note',  text: 'この生け花、白と淡紅のバランスが美しい…' },
+        { ava: '🌺', name: 'hana_log',      text: '「姉に見せたくて」という言葉が刺さりました。また来ます' },
+        { ava: '🕊️', name: 'flower_quiet', text: 'こういう投稿、ゆっくり見てしまいます' },
+      ],
+    }
   },
   high_buzz: {
-    condition: 'buzzScore >= 65 && selfScore < 50', // 追加
     likesDelta: 318, rtsDelta: 102, followerDelta: 234,
-    replies: [
-      { ava: '🔥', name: 'buzz_hunter',   text: '100日チャレンジ応援！フォローしました！' },
-      { ava: '📱', name: 'insta_tips99',  text: 'リールも作るといいですよ！伸びます' },
-      { ava: '🤖', name: 'follow4follow', text: 'フォローバックお願いします！！' }
-    ]
+    replies: {
+      midori: [
+        { ava: '🔥', name: 'buzz_hunter',   text: '100日チャレンジ応援！フォローしました！' },
+        { ava: '📱', name: 'insta_tips99',  text: 'リールも作るといいですよ！伸びます' },
+        { ava: '🤖', name: 'follow4follow', text: 'フォローバックお願いします！！' },
+      ],
+      saku: [
+        { ava: '🔥', name: 'buzz_hunter',   text: '超大作ジオラマ応援！フォローしました！' },
+        { ava: '📱', name: 'insta_tips99',  text: 'タイムラプス動画にするともっと伸びますよ！' },
+        { ava: '🤖', name: 'follow4follow', text: 'フォローバックお願いします！！' },
+      ],
+      seiji: [
+        { ava: '🔥', name: 'buzz_hunter',   text: '映えない喫茶店、むしろ話題！フォローしました！' },
+        { ava: '📱', name: 'insta_tips99',  text: 'レトロ系は今トレンドですよ！リールも試してみては' },
+        { ava: '🤖', name: 'follow4follow', text: 'フォローバックお願いします！！' },
+      ],
+      karen: [
+        { ava: '🔥', name: 'buzz_hunter',   text: '伝統美の発信、応援してます！フォローしました！' },
+        { ava: '📱', name: 'insta_tips99',  text: '生け花はリール映えしますよ！ぜひ動画も' },
+        { ava: '🤖', name: 'follow4follow', text: 'フォローバックお願いします！！' },
+      ],
+    }
   },
   balanced: {
-    condition: 'その他（上記条件に該当しない場合）', // 追加
     likesDelta: 89, rtsDelta: 23, followerDelta: 41,
-    replies: [
-      { ava: '🌸', name: 'petit_garden', text: 'ぶれた写真もそれはそれで味わいあります🌿' },
-      { ava: '👩', name: 'midori_mama',  text: 'かわいい！お母さん毎日見てるよ〜！' },
-      { ava: '☕', name: 'morning_log',  text: 'フォローしました！ゆっくり読む系のアカウント好きです' }
-    ]
+    replies: {
+      midori: [
+        { ava: '🌸', name: 'petit_garden', text: 'ぶれた写真もそれはそれで味わいあります🌿' },
+        { ava: '👩', name: 'midori_mama',  text: 'かわいい！お母さん毎日見てるよ〜！' },
+        { ava: '☕', name: 'morning_log',  text: 'フォローしました！ゆっくり読む系のアカウント好きです' },
+      ],
+      saku: [
+        { ava: '🛠️', name: 'model_lover',  text: '完成品、楽しみにしています。ゆっくり見てしまった' },
+        { ava: '📝', name: 'solo_maker',   text: '一人で作ってる感じ、伝わってきます' },
+        { ava: '🌙', name: 'night_craft',  text: 'フォローしました。また来ます' },
+      ],
+      seiji: [
+        { ava: '☕', name: 'coffee_diary', text: 'ゆっくりできそうなお店。行ってみたいです' },
+        { ava: '🌿', name: 'local_walk',   text: '商店街のお店、こういう投稿好きです。フォローしました' },
+        { ava: '📋', name: 'morning_log',  text: '字の歪み、味があります。また来ます' },
+      ],
+      karen: [
+        { ava: '🌸', name: 'season_flower', text: 'こういう静かな生け花、好きです。また来ます' },
+        { ava: '🌿', name: 'hana_memo',     text: 'お姉さんに届くといいですね。フォローしました' },
+        { ava: '📷', name: 'morning_still', text: 'ゆっくり見てしまいました。また来ます' },
+      ],
+    }
   }
 };
