@@ -35,15 +35,33 @@ function startTimingGame(onComplete) {
   
   // ゲージのリセット
   const gauge = document.getElementById('timingGauge');
+  const gaugeBg = document.getElementById('timingGaugeBg');
   const clickZone = document.getElementById('timingClickZone');
   const indicator = document.getElementById('timingIndicator');
   const result = document.getElementById('timingResult');
+  const feedbackEl = document.getElementById('timingFeedback');
   
   if (gauge) {
     gauge.style.height = '0%';
+  }
+  if (indicator) {
+    indicator.className = 'timing-indicator';
+  }
+  if (gaugeBg) {
+    gaugeBg.classList.remove('peak-window', 'celebrate-perfect', 'celebrate-good', 'celebrate-ok', 'celebrate-miss');
+  }
+  if (clickZone) {
+    clickZone.className = 'timing-click-zone';
+  }
+  if (result) {
     result.textContent = '';
-    result.className = '';
+    result.className = 'timing-result';
     result.style.opacity = '0';
+    result.style.transform = 'translateY(12px)';
+  }
+  if (feedbackEl) {
+    feedbackEl.textContent = '';
+    feedbackEl.className = 'timing-feedback';
   }
   
   // ゲージアニメーション開始
@@ -84,12 +102,21 @@ function animateTimingGauge() {
   gauge.style.height = (height * 100) + '%';
   
   // ピークの光を表示
+  const indicator = document.getElementById('timingIndicator');
   if (progress > 0.45 && progress < 0.55) {
-    document.getElementById('timingIndicator')?.classList.add('peak-glow');
+    indicator?.classList.add('peak-glow');
   } else {
-    document.getElementById('timingIndicator')?.classList.remove('peak-glow');
+    indicator?.classList.remove('peak-glow');
   }
   
+  const gaugeBg = document.getElementById('timingGaugeBg');
+  if (gaugeBg) {
+    if (progress > 0.45 && progress < 0.55) {
+      gaugeBg.classList.add('peak-window');
+    } else {
+      gaugeBg.classList.remove('peak-window');
+    }
+  }
   if (TIMING_GAME.isRunning && progress < 1) {
     requestAnimationFrame(animateTimingGauge);
   }
@@ -121,6 +148,24 @@ function onTimingClick() {
   // 結果表示
   showTimingResult(accuracy, buzzBonus, selfBonus);
   
+  // クリックエフェクト
+  const clickZone = document.getElementById('timingClickZone');
+  if (clickZone) {
+    clickZone.classList.add('clicked');
+    if (accuracy > 0.85) {
+      clickZone.classList.add('hit-perfect');
+    } else if (accuracy > 0.6) {
+      clickZone.classList.add('hit-good');
+    } else if (accuracy > 0.3) {
+      clickZone.classList.add('hit-ok');
+    } else {
+      clickZone.classList.add('hit-miss');
+    }
+    setTimeout(() => {
+      clickZone.classList.remove('clicked', 'hit-perfect', 'hit-good', 'hit-ok', 'hit-miss');
+    }, 360);
+  }
+  
   // ゲーム停止
   TIMING_GAME.isRunning = false;
   
@@ -140,23 +185,50 @@ function showTimingResult(accuracy, buzzBonus, selfBonus) {
   let message = '';
   let className = '';
   
+  let feedbackText = '';
+  let status = '';
   if (accuracy > 0.85) {
     message = `🎯 パーフェクト！\n+${buzzBonus} buzz\n+${selfBonus} らしさ`;
     className = 'result-perfect';
+    feedbackText = 'PERFECT!';
+    status = 'perfect';
   } else if (accuracy > 0.6) {
     message = `✨ グッド！\n+${buzzBonus} buzz\n+${selfBonus} らしさ`;
     className = 'result-good';
+    feedbackText = 'GOOD!';
+    status = 'good';
   } else if (accuracy > 0.3) {
     message = `👍 OK\n+${buzzBonus} buzz\n+${selfBonus} らしさ`;
     className = 'result-ok';
+    feedbackText = 'OK';
+    status = 'ok';
   } else {
     message = `😅 ミス…\n+${buzzBonus} buzz\n+${selfBonus} らしさ`;
     className = 'result-miss';
+    feedbackText = 'MISS';
+    status = 'miss';
   }
   
   resultEl.textContent = message;
-  resultEl.className = className;
+  resultEl.className = `timing-result ${className}`;
   resultEl.style.opacity = '1';
+  resultEl.style.transform = 'translateY(0)';
+
+  const feedbackEl = document.getElementById('timingFeedback');
+  const gaugeBg = document.getElementById('timingGaugeBg');
+  if (feedbackEl) {
+    feedbackEl.textContent = feedbackText;
+    feedbackEl.className = `timing-feedback ${className} active`;
+    setTimeout(() => {
+      feedbackEl.classList.remove('active');
+    }, 900);
+  }
+  if (gaugeBg && status) {
+    gaugeBg.classList.add(`celebrate-${status}`);
+    setTimeout(() => {
+      gaugeBg.classList.remove(`celebrate-${status}`);
+    }, 500);
+  }
 }
 
 /**

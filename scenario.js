@@ -197,26 +197,13 @@ const CHAT_FLOWS = {
       text: '…ありがとうございます🌿'
     },
     { id: 'midori_system',  from: 'system',  text: '→ 素材が届きました' },
-    { id: 'midori_trigger', from: 'trigger', action: 'showMaterial', resumeAt: 'midori_timing_intro' },
+    { id: 'midori_trigger', from: 'trigger', action: 'showMaterial', resumeAt: 'midori_post_reaction' },
 
-    // ---- タイミングゲーム ----
-    {
-      id: 'midori_timing_intro',
-      from: 'player',
-      text: 'では素材をもとに、投稿を作りましょう。\nただ、SNSは投稿のタイミングも重要なんです。\n試しに、ベストタイミングを狙う練習をしてみませんか？'
-    },
-    {
-      id: 'midori_timing_game',
-      from: 'trigger',
-      action: 'timingGame',
-      resumeAt: 'midori_post_reaction'
-    },
-
-    // ---- タイミングゲーム後の反応 ----
+    // ---- タイミングゲーム削除 → 直接投稿ステップへ ----
     {
       id: 'midori_post_reaction',
       from: 'player',
-      text: 'いいですね。このタイミング感を覚えておいてください。\nでは、投稿を作ってみましょう。'
+      text: 'では、投稿を作ってみましょう。'
     },
     { id: 'midori_post_trigger', from: 'trigger', action: 'showPost', resumeAt: 'midori_post_end' },
 

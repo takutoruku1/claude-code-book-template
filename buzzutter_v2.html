@@ -204,11 +204,107 @@ body {
   animation: windowOpen .3s cubic-bezier(.34,1.4,.64,1);
   overflow: hidden;
 }
-.app-window.active { display: flex; }
+.app-window.active, .note-window.active { display: flex; }
 
 @keyframes windowOpen {
   from { opacity: 0; transform: scale(.94) translateY(10px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.note-window {
+  position: fixed;
+  inset: 8vh 10vw 8vh 10vw;
+  width: auto;
+  max-width: 780px;
+  height: auto;
+  max-height: 70vh;
+  background: rgba(22,22,31,0.98);
+  border: 1px solid var(--win-border);
+  border-radius: 18px;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 32px 90px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.04);
+  animation: windowOpen .3s cubic-bezier(.34,1.4,.64,1);
+  overflow: hidden;
+  z-index: 100;
+  backdrop-filter: blur(16px);
+}
+
+.note-window::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(22,22,31,.96), rgba(20,20,33,.94));
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.note-window .titlebar {
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+.note-window-content {
+  flex: 1;
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.note-window-header {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.note-window-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.note-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.note-item {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.note-item-keyword {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent2);
+  margin-bottom: 6px;
+}
+
+.note-item-text {
+  font-size: 13px;
+  color: var(--text);
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.note-empty {
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 18px 12px;
+  background: rgba(124,106,247,.08);
+  border: 1px dashed rgba(124,106,247,.24);
+  border-radius: 12px;
 }
 
 .titlebar {
@@ -834,12 +930,30 @@ body {
   position: relative;
   width: 100%;
   height: 200px;
-  background: linear-gradient(to right, rgba(124,106,247,.1), rgba(255,107,157,.1));
+  background: linear-gradient(to right, rgba(124,106,247,.08), rgba(255,107,157,.08));
   border: 1px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
   display: flex;
   align-items: flex-end;
+}
+
+.timing-gauge-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 40px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle at 50% 50%, rgba(255,107,157,.14), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.timing-gauge-bg.peak-window::before {
+  opacity: 1;
 }
 
 .timing-gauge {
@@ -860,17 +974,75 @@ body {
   transform: translateX(-50%);
   font-size: 20px;
   opacity: 0.3;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, transform 0.2s, text-shadow 0.2s;
 }
 
 .timing-indicator.peak-glow {
   opacity: 1;
-  animation: timingPulse 0.4s ease;
+  transform: translateX(-50%) scale(1.2);
+  text-shadow: 0 0 20px rgba(255,255,255,.8);
+  animation: timingPulse 0.4s ease infinite;
 }
 
 @keyframes timingPulse {
   0%, 100% { transform: translateX(-50%) scale(1); }
-  50% { transform: translateX(-50%) scale(1.2); }
+  50% { transform: translateX(-50%) scale(1.4); }
+}
+
+.timing-feedback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  opacity: 0;
+  transform: scale(0.97);
+  pointer-events: none;
+  text-align: center;
+  color: rgba(255,255,255,0.95);
+  text-shadow: 0 0 18px rgba(255,255,255,.55);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.timing-feedback.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.timing-feedback.result-perfect {
+  color: #7cffb4;
+}
+
+.timing-feedback.result-good {
+  color: #c9b0ff;
+}
+
+.timing-feedback.result-ok {
+  color: #9ad8ff;
+}
+
+.timing-feedback.result-miss {
+  color: #ff9a9a;
+}
+
+.timing-gauge-bg.celebrate-perfect {
+  animation: gaugeCelebrate 0.5s ease;
+}
+
+.timing-gauge-bg.celebrate-good {
+  animation: gaugeCelebrate 0.45s ease;
+}
+
+.timing-gauge-bg.celebrate-ok {
+  animation: gaugeCelebrate 0.4s ease;
+}
+
+@keyframes gaugeCelebrate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
 }
 
 .timing-click-zone {
@@ -880,11 +1052,32 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .timing-click-zone:hover {
   background: rgba(255,107,157,.08);
+}
+
+.timing-click-zone.clicked {
+  transform: scale(0.98);
+  background: rgba(255,107,157,.16);
+}
+
+.timing-click-zone.hit-perfect {
+  box-shadow: 0 0 30px rgba(0,255,136,.45);
+}
+
+.timing-click-zone.hit-good {
+  box-shadow: 0 0 26px rgba(124,106,247,.45);
+}
+
+.timing-click-zone.hit-ok {
+  box-shadow: 0 0 20px rgba(255,107,157,.35);
+}
+
+.timing-click-zone.hit-miss {
+  box-shadow: 0 0 16px rgba(255,107,107,.35);
 }
 
 .timing-result {
@@ -896,7 +1089,8 @@ body {
   text-align: right;
   line-height: 1.4;
   opacity: 0;
-  transition: opacity 0.3s;
+  transform: translateY(12px);
+  transition: opacity 0.3s, transform 0.3s;
   color: var(--accent3);
 }
 
@@ -1056,7 +1250,37 @@ body {
 .quiz-opt:hover:not(:disabled) { border-color: var(--accent2); background: rgba(124,106,247,.1); }
 .quiz-opt.correct { border-color: var(--accent3); background: rgba(0,212,170,.1); color: var(--accent3); }
 .quiz-opt.wrong   { opacity: .4; }
-.quiz-result { font-size: 12px; text-align: center; min-height: 18px; }
+.quiz-result {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.quiz-result-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  transition: transform .3s ease, color .3s ease;
+}
+.quiz-result.correct .quiz-result-icon {
+  color: var(--accent3);
+  animation: resultIconPop 0.5s ease;
+}
+.quiz-result.wrong .quiz-result-icon {
+  color: var(--accent2);
+  animation: resultIconShake 0.5s ease;
+}
+@keyframes resultIconPop {
+  0% { transform: scale(0.7); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+@keyframes resultIconShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
 </style>
 </head>
 <body>
@@ -1067,6 +1291,10 @@ body {
     <div class="desktop-icon" onclick="openApp()">
       <div class="icon-img">📱</div>
       <div class="icon-label">ばずったー</div>
+    </div>
+    <div class="desktop-icon" onclick="openMemoApp()">
+      <div class="icon-img">📝</div>
+      <div class="icon-label">メモ帳</div>
     </div>
   </div>
 
@@ -1193,8 +1421,9 @@ body {
           <div class="timing-title">📤 投稿タイミングを狙う！</div>
           <div class="timing-title-sub">グラフのピークでクリック</div>
           <div class="timing-game-container">
-            <div class="timing-gauge-bg">
+            <div class="timing-gauge-bg" id="timingGaugeBg">
               <div class="timing-gauge" id="timingGauge"></div>
+              <div class="timing-feedback" id="timingFeedback"></div>
               <div class="timing-indicator" id="timingIndicator">✨</div>
               <div class="timing-click-zone" id="timingClickZone"></div>
               <div class="timing-result" id="timingResult"></div>
@@ -1208,7 +1437,26 @@ body {
       </div><!-- /game-panel -->
     </div><!-- /main-layout -->
   </div><!-- /app-window -->
+
 </div><!-- /desktop -->
+
+  <!-- MEMO APP WINDOW -->
+  <div class="app-window note-window" id="memoAppWindow">
+    <div class="titlebar">
+      <div class="titlebar-dots">
+        <div class="titlebar-dot red" onclick="closeMemoApp()"></div>
+        <div class="titlebar-dot yellow"></div>
+        <div class="titlebar-dot green"></div>
+      </div>
+      <div class="titlebar-title">メモ帳</div>
+    </div>
+    <div class="note-window-content">
+      <div class="note-window-header">保存したメモ</div>
+      <div class="note-window-sub">チャットでクリップしたキーワードと内容を確認できます。</div>
+      <div class="note-list" id="noteList"></div>
+      <div class="note-empty" id="noteEmpty">まだメモがありません。チャットの吹き出しをタップするとメモできます。</div>
+    </div>
+  </div>
 
 <!-- ENDING -->
 <div id="screen-ending">
@@ -1282,6 +1530,7 @@ function initGS(route) {
     baseFollowers: 1240,
     flashbackPhase: 0,
     collectedKeywords: [],
+    collectedNotes: [],
   };
 }
 
@@ -1373,7 +1622,9 @@ function addSysMsg(text) {
 ============================================================ */
 function collectKeyword(keyword, bubbleEl) {
   if (GS.collectedKeywords.includes(keyword)) return;
+  const originalText = bubbleEl.textContent || keyword;
   GS.collectedKeywords.push(keyword);
+  GS.collectedNotes.push({ keyword, text: originalText });
   GS.chatSelfBonus += 8;
   bubbleEl.classList.remove('clippable');
   bubbleEl.classList.add('clipped');
@@ -1382,6 +1633,10 @@ function collectKeyword(keyword, bubbleEl) {
   badge.className = 'clip-badge';
   badge.textContent = '📎 メモしました';
   bubbleEl.appendChild(badge);
+
+  if (document.getElementById('memoAppWindow')?.classList.contains('active')) {
+    renderMemoNotes();
+  }
 }
 
 /* ============================================================
@@ -1417,11 +1672,11 @@ function showQuiz(callback) {
       });
       if (opt.correct) {
         GS.chatSelfBonus += 15;
-        resultEl.textContent = '✓ 正解。依頼者の言葉をちゃんと聞いていた。';
-        resultEl.style.color = 'var(--accent3)';
+        resultEl.innerHTML = '<span class="quiz-result-icon">✨</span>';
+        resultEl.className = 'quiz-result correct';
       } else {
-        resultEl.textContent = '— 依頼者が本当に伝えたかったことを、もう一度考えてみよう。';
-        resultEl.style.color = 'var(--text-dim)';
+        resultEl.innerHTML = '<span class="quiz-result-icon">🔎</span>';
+        resultEl.className = 'quiz-result wrong';
       }
       setTimeout(() => {
         overlay.style.opacity = '0';
@@ -1814,9 +2069,18 @@ function updatePreview() {
 let activeReactionKey = 'balanced';
 
 function submitPost() {
-  setStep(4);
-  showArea('reactionArea');
-  buildReactionFeed();
+  // タイミングゲーム開始
+  showArea('timingGameArea');
+  startTimingGame((result) => {
+    // ボーナス適用
+    if (result) {
+      applyBonus(result.selfBonus, result.buzzBonus);
+    }
+    // リアクション画面に遷移
+    setStep(4);
+    showArea('reactionArea');
+    buildReactionFeed();
+  });
 }
 
 function getReactionKey() {
@@ -2063,8 +2327,39 @@ function startRoute(route) {
 
 function closeApp() {
   document.getElementById('appWindow').classList.remove('active');
+  document.getElementById('memoAppWindow').classList.remove('active');
   document.getElementById('screen-charselect').classList.remove('active');
   document.getElementById('screen-title').classList.add('active');
+}
+
+function openMemoApp() {
+  document.getElementById('memoAppWindow').classList.add('active');
+  renderMemoNotes();
+}
+
+function closeMemoApp() {
+  document.getElementById('memoAppWindow').classList.remove('active');
+}
+
+function renderMemoNotes() {
+  const list = document.getElementById('noteList');
+  const empty = document.getElementById('noteEmpty');
+  if (!list || !empty) return;
+  list.innerHTML = '';
+  if (!GS.collectedNotes || GS.collectedNotes.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  GS.collectedNotes.forEach(note => {
+    const item = document.createElement('div');
+    item.className = 'note-item';
+    item.innerHTML = `
+      <div class="note-item-keyword">${note.keyword}</div>
+      <div class="note-item-text">${note.text}</div>
+    `;
+    list.appendChild(item);
+  });
 }
 
 function resetGame(route) {
