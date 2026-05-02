@@ -380,6 +380,108 @@ body {
   z-index: 50;
 }
 
+/* ===== SNAP PREVIEW OVERLAY ===== */
+#snapPreview {
+  position: fixed;
+  background: rgba(0, 120, 215, 0.20);
+  border: 2px solid rgba(0, 120, 215, 0.55);
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 9998;
+  display: none;
+  transition: left .1s, top .1s, width .1s, height .1s;
+}
+
+/* ===== SNAP LAYOUTS POPUP ===== */
+.snap-btn-wrap {
+  position: relative;
+  display: flex;
+}
+.snap-layouts {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30, 30, 34, 0.96);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  padding: 14px 10px 8px;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10000;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
+  min-width: 116px;
+}
+.snap-layouts-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: center;
+  margin-bottom: 5px;
+  white-space: nowrap;
+}
+.snap-layouts-row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+.snap-layout-cell {
+  width: 30px;
+  height: 22px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background .1s, border-color .1s;
+  background: rgba(255,255,255,.06);
+}
+.snap-layout-cell:hover {
+  background: rgba(0, 120, 215, 0.45);
+  border-color: rgb(0, 120, 215);
+}
+.snap-layout-cell .snap-ind {
+  position: absolute;
+  top: 2px; bottom: 2px;
+  border-radius: 2px;
+  background: rgba(255,255,255,.45);
+}
+.snap-layout-cell:hover .snap-ind { background: rgba(255,255,255,.85); }
+.snap-layout-cell.snapleft  .snap-ind { left: 2px; width: 44%; }
+.snap-layout-cell.snapfull  .snap-ind { left: 2px; right: 2px; }
+.snap-layout-cell.snapright .snap-ind { right: 2px; width: 44%; }
+.snap-btn-wrap:hover .snap-layouts { display: flex; }
+
+/* 現在アクティブなスナップレイアウトを常時ハイライト */
+.snap-btn-wrap[data-snap="left"]  .snapleft,
+.snap-btn-wrap[data-snap="right"] .snapright,
+.snap-btn-wrap[data-snap="full"]  .snapfull {
+  background: rgba(0, 120, 215, 0.55);
+  border-color: rgba(0, 120, 215, 0.9);
+}
+.snap-btn-wrap[data-snap="left"]  .snapleft  .snap-ind,
+.snap-btn-wrap[data-snap="right"] .snapright .snap-ind,
+.snap-btn-wrap[data-snap="full"]  .snapfull  .snap-ind { background: rgba(255,255,255,.9); }
+
+/* ===== RESIZE HANDLES ===== */
+.resize-handle {
+  position: absolute;
+  z-index: 200;
+  user-select: none;
+}
+.app-window.maximized .resize-handle,
+.note-window.maximized .resize-handle,
+.chat-window.maximized .resize-handle { display: none; }
+.rh-n  { top:    0; left: 8px; right: 8px; height: 5px; cursor: n-resize; }
+.rh-s  { bottom: 0; left: 8px; right: 8px; height: 5px; cursor: s-resize; }
+.rh-e  { right:  0; top: 8px; bottom: 8px; width:  5px; cursor: e-resize; }
+.rh-w  { left:   0; top: 8px; bottom: 8px; width:  5px; cursor: w-resize; }
+.rh-nw { top:    0; left:  0; width: 10px; height: 10px; cursor: nw-resize; }
+.rh-ne { top:    0; right: 0; width: 10px; height: 10px; cursor: ne-resize; }
+.rh-sw { bottom: 0; left:  0; width: 10px; height: 10px; cursor: sw-resize; }
+.rh-se { bottom: 0; right: 0; width: 10px; height: 10px; cursor: se-resize; }
+
 /* ===== チャトル CHAT WINDOW ===== */
 .chat-window {
   position: fixed;
@@ -1423,7 +1525,17 @@ body {
       <div class="titlebar-title">ばずったー — SNS運用代行ADV</div>
       <div class="titlebar-winbtns">
         <div class="titlebar-winbtn min" onclick="taskbarToggleApp()">&#x2500;</div>
-        <div class="titlebar-winbtn max" id="maxBtnApp" onclick="toggleMaximize('appWindow','maxBtnApp')">&#x25A1;</div>
+        <div class="snap-btn-wrap">
+          <div class="titlebar-winbtn max" id="maxBtnApp" onclick="toggleMaximize('appWindow','maxBtnApp')">&#x25A1;</div>
+          <div class="snap-layouts">
+            <div class="snap-layouts-label">スナップレイアウト</div>
+            <div class="snap-layouts-row">
+              <div class="snap-layout-cell snapleft"  onclick="snapLayout('appWindow','left',event)"  title="左半分"><div class="snap-ind"></div></div>
+              <div class="snap-layout-cell snapfull"  onclick="snapLayout('appWindow','full',event)"  title="最大化"><div class="snap-ind"></div></div>
+              <div class="snap-layout-cell snapright" onclick="snapLayout('appWindow','right',event)" title="右半分"><div class="snap-ind"></div></div>
+            </div>
+          </div>
+        </div>
         <div class="titlebar-winbtn close" onclick="closeApp()">&#x2715;</div>
       </div>
     </div>
@@ -1539,7 +1651,17 @@ body {
     <div class="titlebar-title">💬 チャトル</div>
     <div class="titlebar-winbtns">
       <div class="titlebar-winbtn min" onclick="taskbarToggleChat()">&#x2500;</div>
-      <div class="titlebar-winbtn max" id="maxBtnChat" onclick="toggleMaximize('chatWindow','maxBtnChat')">&#x25A1;</div>
+      <div class="snap-btn-wrap">
+        <div class="titlebar-winbtn max" id="maxBtnChat" onclick="toggleMaximize('chatWindow','maxBtnChat')">&#x25A1;</div>
+        <div class="snap-layouts">
+          <div class="snap-layouts-label">スナップレイアウト</div>
+          <div class="snap-layouts-row">
+            <div class="snap-layout-cell snapleft"  onclick="snapLayout('chatWindow','left',event)"  title="左半分"><div class="snap-ind"></div></div>
+            <div class="snap-layout-cell snapfull"  onclick="snapLayout('chatWindow','full',event)"  title="最大化"><div class="snap-ind"></div></div>
+            <div class="snap-layout-cell snapright" onclick="snapLayout('chatWindow','right',event)" title="右半分"><div class="snap-ind"></div></div>
+          </div>
+        </div>
+      </div>
       <div class="titlebar-winbtn close" onclick="closeApp()">&#x2715;</div>
     </div>
   </div>
@@ -1585,7 +1707,17 @@ body {
       <div class="titlebar-title">メモ帳</div>
       <div class="titlebar-winbtns">
         <div class="titlebar-winbtn min" onclick="taskbarToggleMemo()">&#x2500;</div>
-        <div class="titlebar-winbtn max" id="maxBtnMemo" onclick="toggleMaximize('memoAppWindow','maxBtnMemo')">&#x25A1;</div>
+        <div class="snap-btn-wrap">
+          <div class="titlebar-winbtn max" id="maxBtnMemo" onclick="toggleMaximize('memoAppWindow','maxBtnMemo')">&#x25A1;</div>
+          <div class="snap-layouts">
+            <div class="snap-layouts-label">スナップレイアウト</div>
+            <div class="snap-layouts-row">
+              <div class="snap-layout-cell snapleft"  onclick="snapLayout('memoAppWindow','left',event)"  title="左半分"><div class="snap-ind"></div></div>
+              <div class="snap-layout-cell snapfull"  onclick="snapLayout('memoAppWindow','full',event)"  title="最大化"><div class="snap-ind"></div></div>
+              <div class="snap-layout-cell snapright" onclick="snapLayout('memoAppWindow','right',event)" title="右半分"><div class="snap-ind"></div></div>
+            </div>
+          </div>
+        </div>
         <div class="titlebar-winbtn close" onclick="closeMemoApp()">&#x2715;</div>
       </div>
     </div>
@@ -1615,6 +1747,7 @@ body {
   <button class="btn-retry" onclick="retryGame()">もう一度プレイする</button>
 </div>
 
+<div id="snapPreview"></div>
 <script src="scenario.js"></script>
 <script src="postOptions.js"></script>
 <script src="endings.js"></script>
@@ -2514,6 +2647,7 @@ function toggleMaximize(windowId, btnId) {
   const btn = document.getElementById(btnId);
   const isMax = win.classList.toggle('maximized');
   btn.innerHTML = isMax ? '&#x29C9;' : '&#x25A1;';
+  if (!isMax) setSnapBtnState(win, null);
 }
 
 function taskbarToggleApp() {
@@ -2714,6 +2848,100 @@ document.addEventListener('click', function() {
   document.getElementById('calPopup').classList.remove('active');
 });
 
+/* ===== SNAP FEATURE ===== */
+const preSnapData = new WeakMap();
+const snapPreviewEl = document.getElementById('snapPreview');
+let currentSnapZone = null;
+
+function getSnapZone(x, y) {
+  const W = window.innerWidth;
+  const EDGE = 14;
+  if (y <= 2)          return 'full';
+  if (x <= EDGE)       return 'left';
+  if (x >= W - EDGE)   return 'right';
+  return null;
+}
+
+function getSnapRect(zone) {
+  const th = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--taskbar-height')) || 48;
+  const H = window.innerHeight - th;
+  const W = window.innerWidth;
+  if (zone === 'left')  return { left: 0,     top: 0, width: W / 2, height: H };
+  if (zone === 'right') return { left: W / 2, top: 0, width: W / 2, height: H };
+  if (zone === 'full')  return { left: 0,     top: 0, width: W,     height: H };
+  return null;
+}
+
+function showSnapPreview(zone) {
+  if (zone === currentSnapZone) return;
+  currentSnapZone = zone;
+  const r = getSnapRect(zone);
+  if (!r) { hideSnapPreview(); return; }
+  snapPreviewEl.style.left   = r.left   + 'px';
+  snapPreviewEl.style.top    = r.top    + 'px';
+  snapPreviewEl.style.width  = r.width  + 'px';
+  snapPreviewEl.style.height = r.height + 'px';
+  snapPreviewEl.style.display = 'block';
+}
+
+function hideSnapPreview() {
+  currentSnapZone = null;
+  snapPreviewEl.style.display = 'none';
+}
+
+function setSnapBtnState(windowEl, zone) {
+  const btnId = windowEl.id === 'appWindow'    ? 'maxBtnApp'  :
+                windowEl.id === 'chatWindow'    ? 'maxBtnChat' :
+                windowEl.id === 'memoAppWindow' ? 'maxBtnMemo' : null;
+  if (!btnId) return;
+  const wrap = document.getElementById(btnId).closest('.snap-btn-wrap');
+  if (!wrap) return;
+  if (zone) wrap.setAttribute('data-snap', zone);
+  else wrap.removeAttribute('data-snap');
+}
+
+function applySnap(windowEl, zone) {
+  if (zone === 'full') {
+    windowEl.classList.add('maximized');
+    const btnId = windowEl.id === 'appWindow'    ? 'maxBtnApp'  :
+                  windowEl.id === 'chatWindow'    ? 'maxBtnChat' :
+                  windowEl.id === 'memoAppWindow' ? 'maxBtnMemo' : null;
+    if (btnId) document.getElementById(btnId).innerHTML = '&#x29C9;';
+    windowEl.removeAttribute('data-snapped');
+    setSnapBtnState(windowEl, 'full');
+    return;
+  }
+  // maximized クラスの !important が inline スタイルを上書きするので先に外す
+  if (windowEl.classList.contains('maximized')) {
+    const btnId = windowEl.id === 'appWindow'    ? 'maxBtnApp'  :
+                  windowEl.id === 'chatWindow'    ? 'maxBtnChat' :
+                  windowEl.id === 'memoAppWindow' ? 'maxBtnMemo' : null;
+    windowEl.classList.remove('maximized');
+    if (btnId) document.getElementById(btnId).innerHTML = '&#x25A1;';
+  }
+  const r = getSnapRect(zone);
+  windowEl.style.position = 'fixed';
+  windowEl.style.margin   = '0';
+  windowEl.style.right    = 'auto';
+  windowEl.style.bottom   = 'auto';
+  windowEl.style.left     = r.left   + 'px';
+  windowEl.style.top      = r.top    + 'px';
+  windowEl.style.width    = r.width  + 'px';
+  windowEl.style.height   = r.height + 'px';
+  windowEl.setAttribute('data-snapped', zone);
+  setSnapBtnState(windowEl, zone);
+}
+
+function snapLayout(windowId, zone, e) {
+  e.stopPropagation();
+  const win = document.getElementById(windowId);
+  if (!win.getAttribute('data-snapped')) {
+    const r = win.getBoundingClientRect();
+    preSnapData.set(win, { left: r.left, top: r.top, width: r.width, height: r.height });
+  }
+  applySnap(win, zone);
+}
+
 /* ===== DRAGGABLE WINDOWS ===== */
 function makeDraggable(windowEl) {
   const titlebar = windowEl.querySelector('.titlebar');
@@ -2726,20 +2954,40 @@ function makeDraggable(windowEl) {
     if (e.target.closest('.titlebar-winbtn')) return;
     if (windowEl.classList.contains('maximized')) return;
 
+    const isSnapped = windowEl.getAttribute('data-snapped');
     const rect = windowEl.getBoundingClientRect();
-    // inset より先に left/top を確定させてからショートハンドの副作用を防ぐ
-    windowEl.style.position = 'fixed';
-    windowEl.style.margin   = '0';
-    windowEl.style.right    = 'auto';
-    windowEl.style.bottom   = 'auto';
-    windowEl.style.width    = rect.width + 'px';
-    windowEl.style.left     = rect.left + 'px';
-    windowEl.style.top      = rect.top  + 'px';
 
-    ox = e.clientX - rect.left;
-    oy = e.clientY - rect.top;
+    if (isSnapped) {
+      const pre = preSnapData.get(windowEl);
+      const restoreW = pre ? pre.width  : rect.width;
+      const restoreH = pre ? pre.height : rect.height;
+      const relX = (e.clientX - rect.left) / rect.width;
+      const newLeft = e.clientX - relX * restoreW;
+      windowEl.style.position = 'fixed';
+      windowEl.style.margin   = '0';
+      windowEl.style.right    = 'auto';
+      windowEl.style.bottom   = 'auto';
+      windowEl.style.width    = restoreW + 'px';
+      windowEl.style.height   = restoreH + 'px';
+      windowEl.style.left     = newLeft + 'px';
+      windowEl.style.top      = rect.top + 'px';
+      windowEl.removeAttribute('data-snapped');
+      setSnapBtnState(windowEl, null);
+      ox = e.clientX - newLeft;
+      oy = e.clientY - rect.top;
+    } else {
+      windowEl.style.position = 'fixed';
+      windowEl.style.margin   = '0';
+      windowEl.style.right    = 'auto';
+      windowEl.style.bottom   = 'auto';
+      windowEl.style.width    = rect.width  + 'px';
+      windowEl.style.left     = rect.left   + 'px';
+      windowEl.style.top      = rect.top    + 'px';
+      ox = e.clientX - rect.left;
+      oy = e.clientY - rect.top;
+    }
+
     dragging = true;
-
     titlebar.style.cursor = 'grabbing';
     document.body.style.userSelect = 'none';
     e.preventDefault();
@@ -2748,21 +2996,103 @@ function makeDraggable(windowEl) {
   document.addEventListener('mousemove', (e) => {
     if (!dragging) return;
     const x = e.clientX - ox;
-    const y = Math.max(0, e.clientY - oy); // 上端は画面外に出さない
+    const y = Math.max(0, e.clientY - oy);
     windowEl.style.left = x + 'px';
     windowEl.style.top  = y + 'px';
+    const zone = getSnapZone(e.clientX, e.clientY);
+    if (zone) showSnapPreview(zone);
+    else hideSnapPreview();
   });
 
-  document.addEventListener('mouseup', () => {
+  document.addEventListener('mouseup', (e) => {
     if (!dragging) return;
     dragging = false;
     titlebar.style.cursor = '';
     document.body.style.userSelect = '';
+    const zone = getSnapZone(e.clientX, e.clientY);
+    if (zone) {
+      const r = windowEl.getBoundingClientRect();
+      preSnapData.set(windowEl, { left: r.left, top: r.top, width: r.width, height: r.height });
+      applySnap(windowEl, zone);
+    }
+    hideSnapPreview();
   });
 }
 
 ['appWindow', 'chatWindow', 'memoAppWindow'].forEach(id => {
   makeDraggable(document.getElementById(id));
+});
+
+/* ===== RESIZABLE WINDOWS ===== */
+function makeResizable(windowEl) {
+  const DIRS = ['n','ne','e','se','s','sw','w','nw'];
+  const MIN_W = 280, MIN_H = 200;
+
+  DIRS.forEach(dir => {
+    const handle = document.createElement('div');
+    handle.className = `resize-handle rh-${dir}`;
+    windowEl.appendChild(handle);
+
+    handle.addEventListener('mousedown', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (windowEl.classList.contains('maximized')) return;
+
+      const sx = e.clientX, sy = e.clientY;
+      const r  = windowEl.getBoundingClientRect();
+
+      windowEl.style.position = 'fixed';
+      windowEl.style.margin   = '0';
+      windowEl.style.right    = 'auto';
+      windowEl.style.bottom   = 'auto';
+      windowEl.style.left     = r.left   + 'px';
+      windowEl.style.top      = r.top    + 'px';
+      windowEl.style.width    = r.width  + 'px';
+      windowEl.style.height   = r.height + 'px';
+
+      document.body.style.userSelect = 'none';
+      const prevCursor = document.body.style.cursor;
+      document.body.style.cursor = getComputedStyle(handle).cursor;
+
+      function onMove(ev) {
+        const dx = ev.clientX - sx, dy = ev.clientY - sy;
+        let l = r.left, t = r.top, w = r.width, h = r.height;
+
+        if (dir.includes('e')) w = Math.max(MIN_W, r.width + dx);
+        if (dir.includes('s')) h = Math.max(MIN_H, r.height + dy);
+        if (dir.includes('w')) {
+          w = Math.max(MIN_W, r.width - dx);
+          l = r.left + r.width - w;
+        }
+        if (dir.includes('n')) {
+          h = Math.max(MIN_H, r.height - dy);
+          t = Math.max(0, r.top + r.height - h);
+          if (t === 0) h = r.top + r.height;
+        }
+
+        windowEl.style.left   = l + 'px';
+        windowEl.style.top    = t + 'px';
+        windowEl.style.width  = w + 'px';
+        windowEl.style.height = h + 'px';
+      }
+
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.body.style.userSelect = '';
+        document.body.style.cursor = prevCursor;
+        windowEl.removeAttribute('data-snapped');
+        setSnapBtnState(windowEl, null);
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
+['appWindow', 'chatWindow', 'memoAppWindow'].forEach(id => {
+  makeResizable(document.getElementById(id));
 });
 </script>
 </body>
