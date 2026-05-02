@@ -1594,15 +1594,6 @@ body {
       </div>
     </div>
 
-    <!-- Step bar -->
-    <div class="step-bar">
-      <div class="step-item" id="s1">① 依頼受付</div>
-      <div class="step-item" id="s2">② 素材を読む</div>
-      <div class="step-item" id="s3">③ 投稿を組む</div>
-      <div class="step-item" id="s4">④ 反響を見る</div>
-      <div class="step-item" id="s5">⑤ 投稿者の反応</div>
-      <div class="step-item" id="s6">⑥ 結末</div>
-    </div>
 
     <!-- 2-column layout -->
     <div class="main-layout">
@@ -1941,48 +1932,7 @@ function collectKeyword(keyword, bubbleEl) {
    QUIZ
 ============================================================ */
 function showQuiz(callback) {
-  const quiz = CHAT_QUIZ[GS.route];
-  if (!quiz) { callback(); return; }
-
-  const overlay = document.createElement('div');
-  overlay.className = 'quiz-overlay';
-  overlay.innerHTML = `
-    <div class="quiz-question">${quiz.question}</div>
-    <div class="quiz-opts" id="quizOpts"></div>
-    <div class="quiz-result" id="quizResult"></div>`;
-  document.body.appendChild(overlay);
-
-  const optsEl = overlay.querySelector('#quizOpts');
-  const resultEl = overlay.querySelector('#quizResult');
-
-  quiz.opts.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'quiz-opt';
-    btn.textContent = opt.text;
-    btn.onclick = () => {
-      optsEl.querySelectorAll('.quiz-opt').forEach(b => {
-        b.disabled = true;
-        const isThis = b.textContent === opt.text;
-        const isCorrect = quiz.opts.find(o => o.text === b.textContent)?.correct;
-        if (isCorrect) b.classList.add('correct');
-        else if (isThis) b.classList.add('wrong');
-      });
-      if (opt.correct) {
-        GS.chatSelfBonus += 15;
-        resultEl.innerHTML = '<span class="quiz-result-icon">✨</span>';
-        resultEl.className = 'quiz-result correct';
-      } else {
-        resultEl.innerHTML = '<span class="quiz-result-icon">🔎</span>';
-        resultEl.className = 'quiz-result wrong';
-      }
-      setTimeout(() => {
-        overlay.style.opacity = '0';
-        overlay.style.transition = 'opacity .5s';
-        setTimeout(() => { overlay.remove(); callback(); }, 500);
-      }, 1800);
-    };
-    optsEl.appendChild(btn);
-  });
+  callback();
 }
 
 /* ============================================================
