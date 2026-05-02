@@ -1315,12 +1315,118 @@ body {
   align-items: flex-end;
   justify-content: center;
   height: 100%;
-  cursor: default;
+  cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
   transition: background .12s;
 }
-.taskbar-tray:hover { background: rgba(255,255,255,.08); }
+.taskbar-tray:hover { background: rgba(255,255,255,.10); }
+
+/* ===== WIN11 CALENDAR POPUP ===== */
+.cal-popup {
+  position: fixed;
+  bottom: calc(var(--taskbar-height) + 8px);
+  right: 8px;
+  width: 284px;
+  background: rgba(22,22,36,0.97);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  box-shadow: 0 12px 40px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.04);
+  z-index: 10000;
+  padding: 18px 16px 14px;
+  display: none;
+  animation: calPopIn .18s cubic-bezier(.34,1.4,.64,1);
+}
+.cal-popup.active { display: block; }
+@keyframes calPopIn {
+  from { opacity:0; transform:translateY(10px) scale(.97); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.cal-month-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color .12s;
+}
+.cal-month-label:hover { color: var(--accent2); }
+.cal-nav { display: flex; gap: 2px; }
+.cal-nav-btn {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-dim);
+  transition: background .12s, color .12s;
+  line-height: 1;
+}
+.cal-nav-btn:hover { background: rgba(255,255,255,.10); color: var(--text); }
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+.cal-weekday {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 4px 0;
+  font-weight: 500;
+}
+.cal-weekday.sun { color: #ff7b7b; }
+.cal-weekday.sat { color: #7baeff; }
+.cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--text);
+  transition: background .12s;
+}
+.cal-day:hover:not(.today) { background: rgba(255,255,255,.10); }
+.cal-day.other-month { color: rgba(255,255,255,.25); pointer-events: none; }
+.cal-day.sun:not(.other-month) { color: #ff7b7b; }
+.cal-day.sat:not(.other-month) { color: #7baeff; }
+.cal-day.today {
+  background: var(--accent2);
+  color: #fff;
+  font-weight: 700;
+}
+.cal-day.today:hover { background: #6a59e0; }
+.cal-separator {
+  height: 1px;
+  background: rgba(255,255,255,.08);
+  margin: 12px 0 10px;
+}
+.cal-today-btn {
+  text-align: center;
+  font-size: 12px;
+  color: var(--accent2);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 6px;
+  transition: background .12s;
+}
+.cal-today-btn:hover { background: rgba(124,106,247,.14); }
 .taskbar-tray-time {
   font-size: 12px;
   color: var(--text);
@@ -1573,13 +1679,36 @@ body {
       <div class="taskbar-icon" id="taskbarIconApp" onclick="openApp()">📱</div>
       <div class="taskbar-icon" id="taskbarIconMemo" onclick="openMemoApp()">📝</div>
     </div>
-    <div class="taskbar-tray">
+    <div class="taskbar-tray" onclick="toggleCalendar(event)">
       <div class="taskbar-tray-time" id="taskbarTime"></div>
       <div class="taskbar-tray-date" id="taskbarDate"></div>
     </div>
   </div>
 
 </div><!-- /desktop -->
+
+<!-- WIN11 CALENDAR POPUP -->
+<div class="cal-popup" id="calPopup">
+  <div class="cal-header">
+    <div class="cal-month-label" id="calMonthLabel"></div>
+    <div class="cal-nav">
+      <div class="cal-nav-btn" id="calPrev">&#8249;</div>
+      <div class="cal-nav-btn" id="calNext">&#8250;</div>
+    </div>
+  </div>
+  <div class="cal-weekdays">
+    <div class="cal-weekday sun">日</div>
+    <div class="cal-weekday">月</div>
+    <div class="cal-weekday">火</div>
+    <div class="cal-weekday">水</div>
+    <div class="cal-weekday">木</div>
+    <div class="cal-weekday">金</div>
+    <div class="cal-weekday sat">土</div>
+  </div>
+  <div class="cal-days" id="calDays"></div>
+  <div class="cal-separator"></div>
+  <div class="cal-today-btn" id="calTodayBtn">今日に移動</div>
+</div>
 
   <!-- MEMO APP WINDOW -->
   <div class="app-window note-window" id="memoAppWindow">
@@ -2581,6 +2710,90 @@ function updateTaskbarClock() {
 }
 updateTaskbarClock();
 setInterval(updateTaskbarClock, 10000);
+
+/* ===== WIN11 CALENDAR POPUP ===== */
+let calYear, calMonth;
+
+function toggleCalendar(e) {
+  e.stopPropagation();
+  const popup = document.getElementById('calPopup');
+  if (popup.classList.contains('active')) {
+    popup.classList.remove('active');
+  } else {
+    const today = new Date();
+    calYear  = today.getFullYear();
+    calMonth = today.getMonth();
+    renderCal();
+    popup.classList.add('active');
+  }
+}
+
+function renderCal() {
+  const today = new Date();
+  const todayY = today.getFullYear();
+  const todayM = today.getMonth();
+  const todayD = today.getDate();
+
+  document.getElementById('calMonthLabel').textContent = `${calYear}年${calMonth + 1}月`;
+
+  const grid = document.getElementById('calDays');
+  grid.innerHTML = '';
+
+  const firstDow    = new Date(calYear, calMonth, 1).getDay();       // 0=Sun
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+  const totalCells  = Math.ceil((firstDow + daysInMonth) / 7) * 7;
+
+  for (let i = 0; i < totalCells; i++) {
+    const col = i % 7; // 0=Sun, 6=Sat
+    const cell = document.createElement('div');
+    cell.className = 'cal-day';
+
+    let dateNum, isOther = false;
+    if (i < firstDow) {
+      dateNum = daysInPrev - firstDow + i + 1;
+      isOther = true;
+    } else if (i < firstDow + daysInMonth) {
+      dateNum = i - firstDow + 1;
+    } else {
+      dateNum = i - firstDow - daysInMonth + 1;
+      isOther = true;
+    }
+
+    cell.textContent = dateNum;
+    if (isOther) cell.classList.add('other-month');
+    if (col === 0) cell.classList.add('sun');
+    if (col === 6) cell.classList.add('sat');
+    if (!isOther && calYear === todayY && calMonth === todayM && dateNum === todayD) {
+      cell.classList.add('today');
+    }
+    grid.appendChild(cell);
+  }
+}
+
+document.getElementById('calPrev').addEventListener('click', function(e) {
+  e.stopPropagation();
+  if (--calMonth < 0) { calMonth = 11; calYear--; }
+  renderCal();
+});
+document.getElementById('calNext').addEventListener('click', function(e) {
+  e.stopPropagation();
+  if (++calMonth > 11) { calMonth = 0; calYear++; }
+  renderCal();
+});
+document.getElementById('calTodayBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  const today = new Date();
+  calYear  = today.getFullYear();
+  calMonth = today.getMonth();
+  renderCal();
+});
+document.getElementById('calPopup').addEventListener('click', function(e) {
+  e.stopPropagation();
+});
+document.addEventListener('click', function() {
+  document.getElementById('calPopup').classList.remove('active');
+});
 </script>
 </body>
 </html>
