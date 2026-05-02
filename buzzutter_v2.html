@@ -363,6 +363,7 @@ body {
   flex-shrink: 0;
   letter-spacing: 0;
 }
+.titlebar { cursor: grab; }
 .titlebar-winbtn:hover { background: rgba(255,255,255,.10); color: var(--text); }
 .titlebar-winbtn.close:hover { background: var(--win11-close-hover); color: #fff; }
 
@@ -2952,6 +2953,56 @@ document.getElementById('calPopup').addEventListener('click', function(e) {
 });
 document.addEventListener('click', function() {
   document.getElementById('calPopup').classList.remove('active');
+});
+
+/* ===== DRAGGABLE WINDOWS ===== */
+function makeDraggable(windowEl) {
+  const titlebar = windowEl.querySelector('.titlebar');
+  if (!titlebar) return;
+
+  let dragging = false;
+  let ox = 0, oy = 0;
+
+  titlebar.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.titlebar-winbtn')) return;
+    if (windowEl.classList.contains('maximized')) return;
+
+    const rect = windowEl.getBoundingClientRect();
+    // スナップして fixed 配置に切り替え
+    windowEl.style.position = 'fixed';
+    windowEl.style.left     = rect.left + 'px';
+    windowEl.style.top      = rect.top  + 'px';
+    windowEl.style.width    = rect.width + 'px';
+    windowEl.style.margin   = '0';
+    windowEl.style.inset    = 'unset';
+
+    ox = e.clientX - rect.left;
+    oy = e.clientY - rect.top;
+    dragging = true;
+
+    titlebar.style.cursor = 'grabbing';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const x = e.clientX - ox;
+    const y = Math.max(0, e.clientY - oy); // 上端は画面外に出さない
+    windowEl.style.left = x + 'px';
+    windowEl.style.top  = y + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    titlebar.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+}
+
+['appWindow', 'chatWindow', 'memoAppWindow'].forEach(id => {
+  makeDraggable(document.getElementById(id));
 });
 </script>
 </body>
