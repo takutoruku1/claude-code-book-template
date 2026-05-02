@@ -367,7 +367,8 @@ body {
 .titlebar-winbtn.close:hover { background: var(--win11-close-hover); color: #fff; }
 
 .app-window.maximized,
-.note-window.maximized {
+.note-window.maximized,
+.chat-window.maximized {
   position: fixed !important;
   inset: 0 0 var(--taskbar-height) 0 !important;
   width: 100vw !important;
@@ -376,6 +377,33 @@ body {
   max-height: none !important;
   border-radius: 0 !important;
   z-index: 50;
+}
+
+/* ===== チャトル CHAT WINDOW ===== */
+.chat-window {
+  position: fixed;
+  left: 90px;
+  top: 8px;
+  width: 340px;
+  height: calc(100vh - var(--taskbar-height) - 16px);
+  min-height: 400px;
+  background: var(--surface);
+  border: 1px solid var(--win-border);
+  border-radius: 12px;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+  animation: windowOpen .3s cubic-bezier(.34,1.4,.64,1);
+  overflow: hidden;
+  z-index: 40;
+}
+.chat-window.active { display: flex; }
+.chat-window .chat-panel {
+  flex: 1;
+  min-height: 0;
+  width: auto;
+  min-width: 0;
+  border-right: none;
 }
 
 /* ===== STEP BAR ===== */
@@ -1574,6 +1602,10 @@ body {
       <div class="icon-img">📱</div>
       <div class="icon-label">ばずったー</div>
     </div>
+    <div class="desktop-icon" onclick="openChatApp()">
+      <div class="icon-img">💬</div>
+      <div class="icon-label">チャトル</div>
+    </div>
     <div class="desktop-icon" onclick="openMemoApp()">
       <div class="icon-img">📝</div>
       <div class="icon-label">メモ帳</div>
@@ -1622,29 +1654,16 @@ body {
     </div>
 
 
-    <!-- 2-column layout -->
+    <!-- Game Panel only (chat moved to チャトル window) -->
     <div class="main-layout">
 
-      <!-- LEFT: Chat -->
-      <div class="chat-panel">
-        <div class="chat-panel-header">
-          <div class="chat-avatar" id="chatAvatarEl">🌿</div>
-          <div>
-            <div class="chat-name" id="chatNameEl">田中 みどり</div>
-            <div class="chat-status" id="chatStatus">オンライン</div>
-          </div>
-        </div>
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-choices" id="chatChoices"></div>
-      </div>
-
-      <!-- RIGHT: Game Panel -->
+      <!-- Game Panel -->
       <div class="game-panel" id="gamePanel">
 
         <div class="game-placeholder" id="gamePlaceholder">
           <div class="ph-icon" id="phIcon">🌿</div>
           <div>依頼者とのやり取りを読もう</div>
-          <div class="ph-sub">← 左のチャットで選択肢を選ぶと進みます</div>
+          <div class="ph-sub">💬 チャトルで選択肢を選ぶと進みます</div>
         </div>
 
         <!-- MATERIAL AREA -->
@@ -1728,6 +1747,7 @@ body {
         </div>
       </div>
       <div class="taskbar-icon" id="taskbarIconApp" onclick="taskbarToggleApp()">📱</div>
+      <div class="taskbar-icon" id="taskbarIconChat" onclick="taskbarToggleChat()">💬</div>
       <div class="taskbar-icon" id="taskbarIconMemo" onclick="taskbarToggleMemo()">📝</div>
     </div>
     <div class="taskbar-tray" onclick="toggleCalendar(event)">
@@ -1737,6 +1757,29 @@ body {
   </div>
 
 </div><!-- /desktop -->
+
+<!-- チャトル CHAT WINDOW -->
+<div class="chat-window" id="chatWindow">
+  <div class="titlebar">
+    <div class="titlebar-title">💬 チャトル</div>
+    <div class="titlebar-winbtns">
+      <div class="titlebar-winbtn min" onclick="taskbarToggleChat()">&#x2500;</div>
+      <div class="titlebar-winbtn max" id="maxBtnChat" onclick="toggleMaximize('chatWindow','maxBtnChat')">&#x25A1;</div>
+      <div class="titlebar-winbtn close" onclick="closeApp()">&#x2715;</div>
+    </div>
+  </div>
+  <div class="chat-panel">
+    <div class="chat-panel-header">
+      <div class="chat-avatar" id="chatAvatarEl">🌿</div>
+      <div>
+        <div class="chat-name" id="chatNameEl">田中 みどり</div>
+        <div class="chat-status" id="chatStatus">オンライン</div>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-choices" id="chatChoices"></div>
+  </div>
+</div>
 
 <!-- WIN11 CALENDAR POPUP -->
 <div class="cal-popup" id="calPopup">
@@ -2599,8 +2642,10 @@ function buildCharSelect() {
 function openApp(isDebugMode) {
   document.getElementById('screen-title').classList.remove('active');
   window.IS_DEBUG_MODE = isDebugMode;
-  window.appIsRunning = true;
-  window.appMinimized = false;
+  window.appIsRunning  = true;
+  window.appMinimized  = false;
+  window.chatMinimized = false;
+  document.getElementById('chatWindow').classList.add('active');
   if (isDebugMode) {
     // デバッグモード：依頼者選択画面を表示
     document.getElementById('screen-charselect').classList.add('active');
@@ -2635,8 +2680,10 @@ function closeApp() {
   window.IS_DEBUG_MODE = null;
   window.MAIN_MODE_ROUTES = null;
   window.MAIN_MODE_ROUTE_INDEX = null;
+  document.getElementById('chatWindow').classList.remove('active');
   window.appIsRunning  = false;
   window.appMinimized  = false;
+  window.chatMinimized = false;
   window.memoMinimized = false;
   updateTaskbarIndicators();
 }
@@ -2657,15 +2704,44 @@ function closeMemoApp() {
 /* ===== TASKBAR WINDOW TOGGLE ===== */
 window.appIsRunning  = false;
 window.appMinimized  = false;
+window.chatMinimized = false;
 window.memoMinimized = false;
 
 function updateTaskbarIndicators() {
   const iconApp  = document.getElementById('taskbarIconApp');
+  const iconChat = document.getElementById('taskbarIconChat');
   const iconMemo = document.getElementById('taskbarIconMemo');
   iconApp .classList.toggle('running', window.appIsRunning);
+  iconChat.classList.toggle('running',
+    window.appIsRunning &&
+    (document.getElementById('chatWindow').classList.contains('active') || window.chatMinimized)
+  );
   iconMemo.classList.toggle('running',
     document.getElementById('memoAppWindow').classList.contains('active') || window.memoMinimized
   );
+}
+
+function taskbarToggleChat() {
+  const chatWin = document.getElementById('chatWindow');
+  if (window.chatMinimized) {
+    chatWin.classList.add('active');
+    window.chatMinimized = false;
+  } else if (chatWin.classList.contains('active')) {
+    minimizeWin(chatWin);
+    window.chatMinimized = true;
+  } else if (window.appIsRunning) {
+    chatWin.classList.add('active');
+    window.chatMinimized = false;
+  }
+  updateTaskbarIndicators();
+}
+
+function openChatApp() {
+  if (!window.appIsRunning) {
+    openApp(false);
+  } else {
+    taskbarToggleChat();
+  }
 }
 
 function minimizeWin(el) {
