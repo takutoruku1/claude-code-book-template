@@ -139,6 +139,19 @@ body {
 }
 .btn-start:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(255,107,157,.6); }
 
+.title-button-group {
+  z-index: 1;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-start-debug {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 8px 32px rgba(102,126,234,.3);
+}
+
 /* ===== CHARACTER SELECT ===== */
 #screen-charselect {
   display: none;
@@ -1312,7 +1325,10 @@ body {
       <h1>ば<span>ず</span>ったー</h1>
       <div class="catch">「この人らしさ」を翻訳せよ</div>
     </div>
-    <button class="btn-start" onclick="openApp()">▶ ゲームをはじめる</button>
+    <div class="title-button-group">
+      <button class="btn-start" onclick="openApp(false)">▶ メインモード</button>
+      <button class="btn-start btn-start-debug" onclick="openApp(true)">🔧 デバッグモード</button>
+    </div>
   </div>
 
   <!-- CHARACTER SELECT -->
@@ -1989,6 +2005,12 @@ function goToPost() {
   GS.chatSelfBase  = GS.chatSelfBonus;
   GS.chatBuzzBase  = GS.chatBuzzBonus;
 
+  // メインモード時はスコア表示を非表示にする
+  const scoreRow = document.querySelector('.score-row');
+  if (scoreRow) {
+    scoreRow.style.display = (window.IS_DEBUG_MODE !== false) ? 'flex' : 'none';
+  }
+
   // メモしたキーワードをポストエリア上部に表示
   const postArea = document.getElementById('postArea');
   const existingBox = postArea.querySelector('.keywords-box');
@@ -2313,10 +2335,25 @@ function buildCharSelect() {
 /* ============================================================
    APP LIFECYCLE
 ============================================================ */
-function openApp() {
+function openApp(isDebugMode) {
   document.getElementById('screen-title').classList.remove('active');
-  document.getElementById('screen-charselect').classList.add('active');
-  buildCharSelect();
+  window.IS_DEBUG_MODE = isDebugMode;
+  if (isDebugMode) {
+    // デバッグモード：依頼者選択画面を表示
+    document.getElementById('screen-charselect').classList.add('active');
+    buildCharSelect();
+  } else {
+    // メインモード：自動ルート進行を開始
+    startMainModeAutoRoute();
+  }
+}
+
+function startMainModeAutoRoute() {
+  const routes = ['midori', 'saku', 'seiji', 'karen'];
+  window.MAIN_MODE_ROUTES = routes;
+  window.MAIN_MODE_ROUTE_INDEX = 0;
+  document.getElementById('appWindow').classList.add('active');
+  resetGame(routes[0]);
 }
 
 function startRoute(route) {
@@ -2330,6 +2367,9 @@ function closeApp() {
   document.getElementById('memoAppWindow').classList.remove('active');
   document.getElementById('screen-charselect').classList.remove('active');
   document.getElementById('screen-title').classList.add('active');
+  window.IS_DEBUG_MODE = null;
+  window.MAIN_MODE_ROUTES = null;
+  window.MAIN_MODE_ROUTE_INDEX = null;
 }
 
 function openMemoApp() {
@@ -2383,8 +2423,26 @@ function resetGame(route) {
 function retryGame() {
   document.getElementById('screen-ending').classList.remove('active');
   document.getElementById('appWindow').classList.remove('active');
-  document.getElementById('screen-charselect').classList.add('active');
-  buildCharSelect();
+  
+  if (window.IS_DEBUG_MODE) {
+    // デバッグモード：依頼者選択画面に戻す
+    document.getElementById('screen-charselect').classList.add('active');
+    buildCharSelect();
+  } else {
+    // メインモード：次のルートへ自動進行
+    window.MAIN_MODE_ROUTE_INDEX++;
+    if (window.MAIN_MODE_ROUTE_INDEX < window.MAIN_MODE_ROUTES.length) {
+      const nextRoute = window.MAIN_MODE_ROUTES[window.MAIN_MODE_ROUTE_INDEX];
+      document.getElementById('appWindow').classList.add('active');
+      resetGame(nextRoute);
+    } else {
+      // 全ルート完了：タイトル画面に戻す
+      document.getElementById('screen-title').classList.add('active');
+      window.IS_DEBUG_MODE = null;
+      window.MAIN_MODE_ROUTES = null;
+      window.MAIN_MODE_ROUTE_INDEX = null;
+    }
+  }
 }
 </script>
 </body>
