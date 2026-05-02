@@ -22,9 +22,12 @@
   --line-green: #06c755;
   --buzz-blue: #1d9bf0;
   --heart: #f91880;
-  --win-border: #3a3a5a;
-  --win-header: #252535;
-  --win-titlebar: #1a1a28;
+  --win-border: #2e2e42;
+  --win-header: #202030;
+  --win-titlebar: #141420;
+  --taskbar-bg: rgba(22,22,34,0.92);
+  --taskbar-height: 48px;
+  --win11-close-hover: #c42b1c;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,16 +41,18 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-bottom: var(--taskbar-height);
 }
 
-/* ===== DESKTOP BG ===== */
+/* ===== DESKTOP BG (Windows 11 style) ===== */
 .desktop {
   width: 100vw;
   height: 100vh;
   background:
-    radial-gradient(ellipse at 20% 30%, rgba(124,106,247,.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 70%, rgba(255,107,157,.08) 0%, transparent 50%),
-    #080810;
+    radial-gradient(ellipse at 50% 110%, rgba(0,100,200,.30) 0%, transparent 55%),
+    radial-gradient(ellipse at 15% 60%, rgba(0,60,140,.18) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 20%, rgba(20,80,180,.12) 0%, transparent 40%),
+    linear-gradient(175deg, #0a1628 0%, #0e1f40 45%, #091428 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,11 +61,11 @@ body {
 
 .desktop-icons {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  top: 12px;
+  left: 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 4px;
   z-index: 1;
 }
 .desktop-icon {
@@ -69,14 +74,14 @@ body {
   align-items: center;
   gap: 4px;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: background .15s;
-  width: 64px;
+  padding: 8px 6px 6px;
+  border-radius: 4px;
+  transition: background .12s;
+  width: 72px;
 }
-.desktop-icon:hover { background: rgba(255,255,255,.08); }
-.desktop-icon .icon-img { font-size: 28px; }
-.desktop-icon .icon-label { font-size: 10px; color: rgba(255,255,255,.7); text-align: center; text-shadow: 0 1px 3px #000; }
+.desktop-icon:hover { background: rgba(255,255,255,.10); outline: 1px solid rgba(255,255,255,.18); }
+.desktop-icon .icon-img { font-size: 32px; }
+.desktop-icon .icon-label { font-size: 11px; color: rgba(255,255,255,.88); text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
 
 /* ===== TITLE SCREEN ===== */
 #screen-title {
@@ -323,34 +328,42 @@ body {
 .titlebar {
   background: var(--win-titlebar);
   border-bottom: 1px solid var(--win-border);
-  padding: 0 16px;
-  height: 40px;
+  padding: 0 0 0 12px;
+  height: 32px;
   display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
   user-select: none;
 }
-.titlebar-dots { display: flex; gap: 6px; }
-.titlebar-dot {
-  width: 12px; height: 12px;
-  border-radius: 50%;
-  cursor: pointer;
-}
-.titlebar-dot.red   { background: #ff5f57; }
-.titlebar-dot.yellow { background: #febc2e; }
-.titlebar-dot.green { background: #28c840; }
-.titlebar-dot.red:hover   { background: #ff3b30; }
-.titlebar-dot.yellow:hover { background: #f5a623; }
-.titlebar-dot.green:hover { background: #1ab72d; }
 .titlebar-title {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-dim);
-  margin-left: auto;
-  margin-right: auto;
-  font-family: 'DotGothic16', monospace;
-  letter-spacing: 1px;
+  font-family: 'Noto Sans JP', sans-serif;
+  letter-spacing: 0;
+  flex: 1;
 }
+.titlebar-winbtns {
+  display: flex;
+  height: 32px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.titlebar-winbtn {
+  width: 46px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background .12s, color .12s;
+  flex-shrink: 0;
+  letter-spacing: 0;
+}
+.titlebar-winbtn:hover { background: rgba(255,255,255,.10); color: var(--text); }
+.titlebar-winbtn.close:hover { background: var(--win11-close-hover); color: #fff; }
 
 /* ===== STEP BAR ===== */
 .step-bar {
@@ -1225,6 +1238,101 @@ body {
   color: var(--accent3);
 }
 
+/* ===== WINDOWS 11 TASKBAR ===== */
+.taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--taskbar-height);
+  background: var(--taskbar-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+.taskbar-center {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.taskbar-start {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .12s;
+  margin-right: 6px;
+}
+.taskbar-start:hover { background: rgba(255,255,255,.10); }
+.win-grid-icon {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5px;
+  width: 15px;
+  height: 15px;
+}
+.win-grid-icon span {
+  background: rgba(255,255,255,.80);
+  border-radius: 1px;
+  display: block;
+}
+.taskbar-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background .12s;
+  position: relative;
+}
+.taskbar-icon:hover { background: rgba(255,255,255,.10); }
+.taskbar-icon.running::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--accent2);
+  border-radius: 50%;
+}
+.taskbar-tray {
+  position: absolute;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+  cursor: default;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background .12s;
+}
+.taskbar-tray:hover { background: rgba(255,255,255,.08); }
+.taskbar-tray-time {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.3;
+  font-weight: 400;
+}
+.taskbar-tray-date {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.3;
+}
+
 /* ===== QUIZ OVERLAY ===== */
 .quiz-overlay {
   position: fixed; inset: 0;
@@ -1344,12 +1452,12 @@ body {
   <div class="app-window" id="appWindow">
     <!-- Titlebar -->
     <div class="titlebar">
-      <div class="titlebar-dots">
-        <div class="titlebar-dot red" onclick="closeApp()"></div>
-        <div class="titlebar-dot yellow"></div>
-        <div class="titlebar-dot green"></div>
-      </div>
       <div class="titlebar-title">ばずったー — SNS運用代行ADV</div>
+      <div class="titlebar-winbtns">
+        <div class="titlebar-winbtn min">&#x2500;</div>
+        <div class="titlebar-winbtn max">&#x25A1;</div>
+        <div class="titlebar-winbtn close" onclick="closeApp()">&#x2715;</div>
+      </div>
     </div>
 
     <!-- Step bar -->
@@ -1454,17 +1562,34 @@ body {
     </div><!-- /main-layout -->
   </div><!-- /app-window -->
 
+  <!-- WINDOWS 11 TASKBAR -->
+  <div class="taskbar">
+    <div class="taskbar-center">
+      <div class="taskbar-start">
+        <div class="win-grid-icon">
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="taskbar-icon" id="taskbarIconApp" onclick="openApp()">📱</div>
+      <div class="taskbar-icon" id="taskbarIconMemo" onclick="openMemoApp()">📝</div>
+    </div>
+    <div class="taskbar-tray">
+      <div class="taskbar-tray-time" id="taskbarTime"></div>
+      <div class="taskbar-tray-date" id="taskbarDate"></div>
+    </div>
+  </div>
+
 </div><!-- /desktop -->
 
   <!-- MEMO APP WINDOW -->
   <div class="app-window note-window" id="memoAppWindow">
     <div class="titlebar">
-      <div class="titlebar-dots">
-        <div class="titlebar-dot red" onclick="closeMemoApp()"></div>
-        <div class="titlebar-dot yellow"></div>
-        <div class="titlebar-dot green"></div>
-      </div>
       <div class="titlebar-title">メモ帳</div>
+      <div class="titlebar-winbtns">
+        <div class="titlebar-winbtn min">&#x2500;</div>
+        <div class="titlebar-winbtn max">&#x25A1;</div>
+        <div class="titlebar-winbtn close" onclick="closeMemoApp()">&#x2715;</div>
+      </div>
     </div>
     <div class="note-window-content">
       <div class="note-window-header">保存したメモ</div>
@@ -1665,7 +1790,6 @@ function showQuiz(callback) {
   const overlay = document.createElement('div');
   overlay.className = 'quiz-overlay';
   overlay.innerHTML = `
-    <div class="quiz-label-head">— 依頼者の本音を確かめる —</div>
     <div class="quiz-question">${quiz.question}</div>
     <div class="quiz-opts" id="quizOpts"></div>
     <div class="quiz-result" id="quizResult"></div>`;
@@ -2444,6 +2568,19 @@ function retryGame() {
     }
   }
 }
+
+/* ===== TASKBAR CLOCK ===== */
+function updateTaskbarClock() {
+  const now = new Date();
+  const time = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+  const date = now.toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' });
+  const timeEl = document.getElementById('taskbarTime');
+  const dateEl = document.getElementById('taskbarDate');
+  if (timeEl) timeEl.textContent = time;
+  if (dateEl) dateEl.textContent = date;
+}
+updateTaskbarClock();
+setInterval(updateTaskbarClock, 10000);
 </script>
 </body>
 </html>
