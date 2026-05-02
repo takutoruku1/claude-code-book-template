@@ -365,6 +365,18 @@ body {
 .titlebar-winbtn:hover { background: rgba(255,255,255,.10); color: var(--text); }
 .titlebar-winbtn.close:hover { background: var(--win11-close-hover); color: #fff; }
 
+.app-window.maximized,
+.note-window.maximized {
+  position: fixed !important;
+  inset: 0 0 var(--taskbar-height) 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: calc(100vh - var(--taskbar-height)) !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+  z-index: 50;
+}
+
 /* ===== STEP BAR ===== */
 .step-bar {
   display: flex;
@@ -905,10 +917,26 @@ body {
   z-index: 999;
 }
 
+@keyframes winMinimize {
+  from { opacity:1; transform:scale(1) translateY(0); }
+  to   { opacity:0; transform:scale(.88) translateY(28px); }
+}
+.app-window.minimizing {
+  animation: winMinimize .16s ease forwards;
+  pointer-events: none;
+}
 @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 @keyframes pop { 0%{transform:scale(.8);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes winMinimize {
+  from { opacity:1; transform:scale(1) translateY(0); }
+  to   { opacity:0; transform:scale(.88) translateY(28px); }
+}
+.app-window.minimizing {
+  animation: winMinimize .16s ease forwards;
+  pointer-events: none;
+}
 @keyframes heartFloat { 0%{transform:translateY(0) scale(1);opacity:1} 100%{transform:translateY(-60px) scale(1.5);opacity:0} }
 
 .sys-msg {
@@ -1560,8 +1588,8 @@ body {
     <div class="titlebar">
       <div class="titlebar-title">ばずったー — SNS運用代行ADV</div>
       <div class="titlebar-winbtns">
-        <div class="titlebar-winbtn min">&#x2500;</div>
-        <div class="titlebar-winbtn max">&#x25A1;</div>
+        <div class="titlebar-winbtn min" onclick="taskbarToggleApp()">&#x2500;</div>
+        <div class="titlebar-winbtn max" id="maxBtnApp" onclick="toggleMaximize('appWindow','maxBtnApp')">&#x25A1;</div>
         <div class="titlebar-winbtn close" onclick="closeApp()">&#x2715;</div>
       </div>
     </div>
@@ -1676,8 +1704,8 @@ body {
           <span></span><span></span><span></span><span></span>
         </div>
       </div>
-      <div class="taskbar-icon" id="taskbarIconApp" onclick="openApp()">📱</div>
-      <div class="taskbar-icon" id="taskbarIconMemo" onclick="openMemoApp()">📝</div>
+      <div class="taskbar-icon" id="taskbarIconApp" onclick="taskbarToggleApp()">📱</div>
+      <div class="taskbar-icon" id="taskbarIconMemo" onclick="taskbarToggleMemo()">📝</div>
     </div>
     <div class="taskbar-tray" onclick="toggleCalendar(event)">
       <div class="taskbar-tray-time" id="taskbarTime"></div>
@@ -1715,8 +1743,8 @@ body {
     <div class="titlebar">
       <div class="titlebar-title">メモ帳</div>
       <div class="titlebar-winbtns">
-        <div class="titlebar-winbtn min">&#x2500;</div>
-        <div class="titlebar-winbtn max">&#x25A1;</div>
+        <div class="titlebar-winbtn min" onclick="taskbarToggleMemo()">&#x2500;</div>
+        <div class="titlebar-winbtn max" id="maxBtnMemo" onclick="toggleMaximize('memoAppWindow','maxBtnMemo')">&#x25A1;</div>
         <div class="titlebar-winbtn close" onclick="closeMemoApp()">&#x2715;</div>
       </div>
     </div>
@@ -2591,6 +2619,8 @@ function buildCharSelect() {
 function openApp(isDebugMode) {
   document.getElementById('screen-title').classList.remove('active');
   window.IS_DEBUG_MODE = isDebugMode;
+  window.appIsRunning = true;
+  window.appMinimized = false;
   if (isDebugMode) {
     // デバッグモード：依頼者選択画面を表示
     document.getElementById('screen-charselect').classList.add('active');
@@ -2599,6 +2629,7 @@ function openApp(isDebugMode) {
     // メインモード：自動ルート進行を開始
     startMainModeAutoRoute();
   }
+  updateTaskbarIndicators();
 }
 
 function startMainModeAutoRoute() {
@@ -2612,6 +2643,7 @@ function startMainModeAutoRoute() {
 function startRoute(route) {
   document.getElementById('screen-charselect').classList.remove('active');
   document.getElementById('appWindow').classList.add('active');
+  window.appMinimized = false;
   resetGame(route);
 }
 
@@ -2623,15 +2655,86 @@ function closeApp() {
   window.IS_DEBUG_MODE = null;
   window.MAIN_MODE_ROUTES = null;
   window.MAIN_MODE_ROUTE_INDEX = null;
+  window.appIsRunning  = false;
+  window.appMinimized  = false;
+  window.memoMinimized = false;
+  updateTaskbarIndicators();
 }
 
 function openMemoApp() {
   document.getElementById('memoAppWindow').classList.add('active');
+  window.memoMinimized = false;
   renderMemoNotes();
+  updateTaskbarIndicators();
 }
 
 function closeMemoApp() {
   document.getElementById('memoAppWindow').classList.remove('active');
+  window.memoMinimized = false;
+  updateTaskbarIndicators();
+}
+
+/* ===== TASKBAR WINDOW TOGGLE ===== */
+window.appIsRunning  = false;
+window.appMinimized  = false;
+window.memoMinimized = false;
+
+function updateTaskbarIndicators() {
+  const iconApp  = document.getElementById('taskbarIconApp');
+  const iconMemo = document.getElementById('taskbarIconMemo');
+  iconApp .classList.toggle('running', window.appIsRunning);
+  iconMemo.classList.toggle('running',
+    document.getElementById('memoAppWindow').classList.contains('active') || window.memoMinimized
+  );
+}
+
+function minimizeWin(el) {
+  el.classList.add('minimizing');
+  setTimeout(() => el.classList.remove('active', 'minimizing'), 160);
+}
+
+function toggleMaximize(windowId, btnId) {
+  const win = document.getElementById(windowId);
+  const btn = document.getElementById(btnId);
+  const isMax = win.classList.toggle('maximized');
+  btn.innerHTML = isMax ? '&#x29C9;' : '&#x25A1;';
+}
+
+function taskbarToggleApp() {
+  const appWin    = document.getElementById('appWindow');
+  const charselEl = document.getElementById('screen-charselect');
+
+  if (!window.appIsRunning) {
+    openApp(false);
+    return;
+  }
+  if (window.appMinimized) {
+    appWin.classList.add('active');
+    window.appMinimized = false;
+  } else if (appWin.classList.contains('active') || charselEl.classList.contains('active')) {
+    charselEl.classList.remove('active');
+    minimizeWin(appWin);
+    window.appMinimized = true;
+  } else {
+    appWin.classList.add('active');
+    window.appMinimized = false;
+  }
+  updateTaskbarIndicators();
+}
+
+function taskbarToggleMemo() {
+  const memoWin = document.getElementById('memoAppWindow');
+  if (window.memoMinimized) {
+    memoWin.classList.add('active');
+    window.memoMinimized = false;
+    updateTaskbarIndicators();
+  } else if (memoWin.classList.contains('active')) {
+    minimizeWin(memoWin);
+    window.memoMinimized = true;
+    updateTaskbarIndicators();
+  } else {
+    openMemoApp();
+  }
 }
 
 function renderMemoNotes() {
