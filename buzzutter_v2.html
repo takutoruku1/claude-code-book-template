@@ -739,6 +739,32 @@ body {
 .score-fill.self { background: var(--accent3); }
 .score-val { font-size: 11px; font-weight: 700; margin-top: 4px; }
 
+/* ===== TIME SELECTION ===== */
+.time-options {
+  display: flex;
+  gap: 8px;
+}
+.time-opt {
+  flex: 1;
+  padding: 10px 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  transition: all .18s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.time-opt:hover { border-color: var(--accent2); background: rgba(124,106,247,.1); }
+.time-opt.selected { background: rgba(124,106,247,.2); border-color: var(--accent2); box-shadow: 0 0 0 1px var(--accent2); }
+.time-opt-icon { font-size: 20px; }
+.time-opt-label { font-size: 13px; font-weight: 700; }
+.time-opt-sub { font-size: 10px; color: var(--text-dim); }
+
 .btn-post {
   width: 100%;
   padding: 13px;
@@ -1662,22 +1688,27 @@ body {
               <div class="score-val" id="selfVal" style="color:var(--accent3)">0%</div>
             </div>
           </div>
-          <button class="btn-post" id="postBtn" disabled onclick="submitPost()">この投稿を発信する 📤</button>
-        </div>
-
-        <!-- TIMING GAME AREA -->
-        <div class="timing-game-area" id="timingGameArea">
-          <div class="timing-title">📤 投稿タイミングを狙う！</div>
-          <div class="timing-title-sub">グラフのピークでクリック</div>
-          <div class="timing-game-container">
-            <div class="timing-gauge-bg" id="timingGaugeBg">
-              <div class="timing-gauge" id="timingGauge"></div>
-              <div class="timing-feedback" id="timingFeedback"></div>
-              <div class="timing-indicator" id="timingIndicator">✨</div>
-              <div class="timing-click-zone" id="timingClickZone"></div>
-              <div class="timing-result" id="timingResult"></div>
+          <div>
+            <div class="section-label">投稿時間帯を選ぶ</div>
+            <div class="time-options" id="optsTime">
+              <button class="time-opt" data-time="morning" onclick="selectTime(this,'morning')">
+                <span class="time-opt-icon">🌅</span>
+                <span class="time-opt-label">朝</span>
+                <span class="time-opt-sub">6〜10時</span>
+              </button>
+              <button class="time-opt" data-time="noon" onclick="selectTime(this,'noon')">
+                <span class="time-opt-icon">☀️</span>
+                <span class="time-opt-label">昼</span>
+                <span class="time-opt-sub">11〜15時</span>
+              </button>
+              <button class="time-opt" data-time="evening" onclick="selectTime(this,'evening')">
+                <span class="time-opt-icon">🌙</span>
+                <span class="time-opt-label">晩</span>
+                <span class="time-opt-sub">18〜22時</span>
+              </button>
             </div>
           </div>
+          <button class="btn-post" id="postBtn" disabled onclick="submitPost()">この投稿を発信する 📤</button>
         </div>
 
         <!-- REACTION AREA -->
@@ -1814,6 +1845,7 @@ function initGS(route) {
     postResumeAt: null,
     selectedStyle: null,
     selectedHash:  null,
+    selectedTime:  null,
     selectedCards: [],
     flippedCards:  [],
     baseFollowers: 1240,
@@ -1853,7 +1885,7 @@ function setStep(n) {
 }
 
 function showArea(name) {
-  ['gamePlaceholder','materialArea','postArea','timingGameArea','reactionArea'].forEach(id => {
+  ['gamePlaceholder','materialArea','postArea','reactionArea'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
   if (name) document.getElementById(name).style.display = 'flex';
@@ -2023,23 +2055,14 @@ function handleTrigger(node, idx) {
     goToPost();
 
   } else if (node.action === 'timingGame') {
-    GS.timingGameResumeAt = node.resumeAt || null;
-    showArea('timingGameArea');
-    startTimingGame((result) => {
-      // ボーナス適用
-      if (result) {
-        applyBonus(result.selfBonus, result.buzzBonus);
-      }
-      // resumeAt があれば指定位置から再開、なければ次へ
-      if (GS.timingGameResumeAt) {
-        const resumeIdx = CHAT_FLOWS[GS.route].findIndex(s => s.id === GS.timingGameResumeAt);
-        if (resumeIdx >= 0) {
-          runChat(resumeIdx);
-        }
-      } else {
-        runChat(idx + 1);
-      }
-    });
+    // タイミングゲームは廃止 → そのまま次へ進む
+    const resumeId = node.resumeAt || null;
+    if (resumeId) {
+      const resumeIdx = CHAT_FLOWS[GS.route].findIndex(s => s.id === resumeId);
+      if (resumeIdx >= 0) { runChat(resumeIdx); }
+    } else {
+      runChat(idx + 1);
+    }
 
   } else if (node.action === 'flashback2') {
     triggerFlashback(2, () => runChat(idx + 1));
@@ -2313,7 +2336,7 @@ function updatePreview() {
   document.getElementById('selfVal').textContent  = self + '%';
 
   document.getElementById('postBtn').disabled =
-    !(GS.selectedStyle !== null && GS.selectedHash !== null);
+    !(GS.selectedStyle !== null && GS.selectedHash !== null && GS.selectedTime !== null);
 }
 
 /* ============================================================
@@ -2321,19 +2344,25 @@ function updatePreview() {
 ============================================================ */
 let activeReactionKey = 'balanced';
 
+const TIME_BONUSES = {
+  morning: { self: 10, buzz:  5 },
+  noon:    { self:  0, buzz: 15 },
+  evening: { self:  5, buzz: 10 },
+};
+
+function selectTime(btn, time) {
+  document.querySelectorAll('#optsTime .time-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  GS.selectedTime = time;
+  updatePreview();
+}
+
 function submitPost() {
-  // タイミングゲーム開始
-  showArea('timingGameArea');
-  startTimingGame((result) => {
-    // ボーナス適用
-    if (result) {
-      applyBonus(result.selfBonus, result.buzzBonus);
-    }
-    // リアクション画面に遷移
-    setStep(4);
-    showArea('reactionArea');
-    buildReactionFeed();
-  });
+  const bonus = TIME_BONUSES[GS.selectedTime] || { self: 0, buzz: 0 };
+  applyBonus(bonus.self, bonus.buzz);
+  setStep(4);
+  showArea('reactionArea');
+  buildReactionFeed();
 }
 
 function getReactionKey() {
