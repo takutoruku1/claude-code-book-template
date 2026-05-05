@@ -136,6 +136,7 @@ function openMemoApp() {
   window.memoMinimized = false;
   renderMemoNotes();
   updateTaskbarIndicators();
+  setDesktopNotif('notifMemo', false);
 }
 
 function closeMemoApp() {
@@ -215,14 +216,15 @@ function _renderNotifList() {
   }
   list.innerHTML = _notifications.map(n => {
     const t = `${String(n.time.getHours()).padStart(2,'0')}:${String(n.time.getMinutes()).padStart(2,'0')}`;
-    return `<div class="notif-item">
+    const openFn = n.appId === 'app' ? 'openApp()' : 'openChatApp()';
+    return `<div class="notif-item" onclick="closeAllPopups();${openFn}">
       <div class="notif-item-icon">${n.appIcon}</div>
       <div class="notif-item-body">
         <div class="notif-item-app">${n.appName}</div>
         <div class="notif-item-msg">${n.message}</div>
         <div class="notif-item-time">${t}</div>
       </div>
-      <button class="notif-item-dismiss" onclick="removeNotification(${n.id})">✕</button>
+      <button class="notif-item-dismiss" onclick="event.stopPropagation();removeNotification(${n.id})">✕</button>
     </div>`;
   }).join('');
 }
@@ -243,9 +245,11 @@ function _showToast(notif) {
     <div class="toast-header">
       <span class="toast-icon">${notif.appIcon}</span>
       <span class="toast-app">${notif.appName}</span>
-      <button class="toast-close-btn" onclick="_dismissToast(this.closest('.toast'))">✕</button>
+      <button class="toast-close-btn" onclick="event.stopPropagation();_dismissToast(this.closest('.toast'))">✕</button>
     </div>
     <div class="toast-body">${notif.message}</div>`;
+  const openFn = notif.appId === 'app' ? openApp : openChatApp;
+  toast.addEventListener('click', () => { _dismissToast(toast); openFn(); });
   container.appendChild(toast);
   toast._timer = setTimeout(() => _dismissToast(toast), 5000);
 }
@@ -258,26 +262,24 @@ function _dismissToast(toast) {
 }
 
 /* ===== DESKTOP NOTIF ===== */
-window._notifPending = { notifApp: false, notifChat: false };
+window._notifPending = { notifApp: false, notifChat: false, notifMemo: false };
+
+const _notifConfig = {
+  notifApp:  { winId: 'appWindow',      appId: 'app',  appName: 'ばずったー', appIcon: '📱', msg: 'ばずったーに通知がきています' },
+  notifChat: { winId: 'chatWindow',     appId: 'chat', appName: 'チャトル',   appIcon: '💬', msg: 'チャトルに通知がきています' },
+  notifMemo: { winId: 'memoAppWindow',  appId: 'memo', appName: 'メモ帳',     appIcon: '📝', msg: 'メモ帳にメモが追加されました' },
+};
 
 function setDesktopNotif(id, show) {
   window._notifPending[id] = show;
   _applyDesktopNotif(id);
-  const isApp = id === 'notifApp';
+  const cfg = _notifConfig[id];
+  if (!cfg) return;
   if (show) {
-    const winId = isApp ? 'appWindow' : 'chatWindow';
-    const winOpen = document.getElementById(winId)?.classList.contains('active');
-    if (!winOpen) {
-      addNotification(
-        isApp ? 'app' : 'chat',
-        isApp ? 'ばずったー' : 'チャトル',
-        isApp ? '📱' : '💬',
-        isApp ? 'ばずったーに通知がきています' : 'チャトルに通知がきています'
-      );
-    }
+    const winOpen = document.getElementById(cfg.winId)?.classList.contains('active');
+    if (!winOpen) addNotification(cfg.appId, cfg.appName, cfg.appIcon, cfg.msg);
   } else {
-    const appId = isApp ? 'app' : 'chat';
-    _notifications = _notifications.filter(n => n.appId !== appId);
+    _notifications = _notifications.filter(n => n.appId !== cfg.appId);
     _renderNotifList();
     _updateNotifBadge();
   }
@@ -286,14 +288,13 @@ function setDesktopNotif(id, show) {
 function _applyDesktopNotif(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  const winId  = id === 'notifApp' ? 'appWindow' : 'chatWindow';
-  const winOpen = document.getElementById(winId)?.classList.contains('active');
+  const cfg = _notifConfig[id];
+  const winOpen = cfg && document.getElementById(cfg.winId)?.classList.contains('active');
   el.classList.toggle('on', window._notifPending[id] && !winOpen);
 }
 
 function refreshDesktopNotifs() {
-  _applyDesktopNotif('notifApp');
-  _applyDesktopNotif('notifChat');
+  Object.keys(_notifConfig).forEach(_applyDesktopNotif);
 }
 
 function resetGame(route) {
@@ -445,7 +446,9 @@ function taskbarToggleMemo() {
   const memoWin = document.getElementById('memoAppWindow');
   if (window.memoMinimized) {
     memoWin.classList.add('active');
+    bringToFront(memoWin);
     window.memoMinimized = false;
+    setDesktopNotif('notifMemo', false);
     updateTaskbarIndicators();
   } else if (memoWin.classList.contains('active')) {
     minimizeWin(memoWin);

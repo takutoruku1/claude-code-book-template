@@ -17,6 +17,8 @@ function collectKeyword(keyword, bubbleEl) {
 
   if (document.getElementById('memoAppWindow')?.classList.contains('active')) {
     renderMemoNotes();
+  } else {
+    setDesktopNotif('notifMemo', true);
   }
 }
 
