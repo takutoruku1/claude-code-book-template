@@ -174,6 +174,29 @@ function openMinesweeper() {
   alert('マインスイーパーは準備中です');
 }
 
+function showWindowFromNotif(appId) {
+  closeAllPopups();
+  if (appId === 'app') {
+    if (!window.appIsRunning) { openApp(false); return; }
+    const win = document.getElementById('appWindow');
+    win.classList.add('active');
+    bringToFront(win);
+    window.appMinimized = false;
+    updateTaskbarIndicators();
+    refreshDesktopNotifs();
+  } else if (appId === 'chat') {
+    if (!window.appIsRunning) { openApp(false); return; }
+    const win = document.getElementById('chatWindow');
+    win.classList.add('active');
+    bringToFront(win);
+    window.chatMinimized = false;
+    updateTaskbarIndicators();
+    refreshDesktopNotifs();
+  } else if (appId === 'memo') {
+    openMemoApp();
+  }
+}
+
 /* ===== NOTIFICATION CENTER ===== */
 let _notifications = [];
 let _notifIdCnt = 0;
@@ -216,8 +239,7 @@ function _renderNotifList() {
   }
   list.innerHTML = _notifications.map(n => {
     const t = `${String(n.time.getHours()).padStart(2,'0')}:${String(n.time.getMinutes()).padStart(2,'0')}`;
-    const openFn = n.appId === 'app' ? 'openApp()' : 'openChatApp()';
-    return `<div class="notif-item" onclick="closeAllPopups();${openFn}">
+    return `<div class="notif-item" onclick="showWindowFromNotif('${n.appId}')"
       <div class="notif-item-icon">${n.appIcon}</div>
       <div class="notif-item-body">
         <div class="notif-item-app">${n.appName}</div>
@@ -248,8 +270,7 @@ function _showToast(notif) {
       <button class="toast-close-btn" onclick="event.stopPropagation();_dismissToast(this.closest('.toast'))">✕</button>
     </div>
     <div class="toast-body">${notif.message}</div>`;
-  const openFn = notif.appId === 'app' ? openApp : openChatApp;
-  toast.addEventListener('click', () => { _dismissToast(toast); openFn(); });
+  toast.addEventListener('click', () => { _dismissToast(toast); showWindowFromNotif(notif.appId); });
   container.appendChild(toast);
   toast._timer = setTimeout(() => _dismissToast(toast), 5000);
 }
