@@ -505,6 +505,22 @@
   </div>
 </div>
 
+<!-- MINESWEEPER WINDOW -->
+<div id="minesweeperWindow" onmousedown="bringToFront(this)">
+  <div class="ms-titlebar">
+    <span class="ms-titlebar-text">💣 マインスイーパー</span>
+    <button class="ms-titlebar-close" onclick="closeMinesweeper()">✕</button>
+  </div>
+  <div class="ms-body">
+    <div class="ms-header">
+      <div class="ms-lcd" id="msMineCount">005</div>
+      <button class="ms-face-btn" id="msFace" onclick="msReset()">🙂</button>
+      <div class="ms-lcd" id="msTimerEl">000</div>
+    </div>
+    <div class="ms-grid" id="msGrid"></div>
+  </div>
+</div>
+
 <!-- ENDING -->
 <div id="screen-ending">
   <div class="ending-emoji" id="endEmoji">🌿</div>
@@ -532,5 +548,6 @@
 <script src="js/chat-engine.js"></script>
 <script src="js/game-logic.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/minesweeper.js"></script>
 </body>
 </html>

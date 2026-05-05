@@ -170,9 +170,6 @@ function toggleGamesWindow() {
   }
 }
 
-function openMinesweeper() {
-  alert('マインスイーパーは準備中です');
-}
 
 function showWindowFromNotif(appId) {
   closeAllPopups();
