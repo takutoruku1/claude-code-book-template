@@ -483,6 +483,124 @@ body:has(#screen-title.active) .taskbar { display: none; }
 .rh-sw { bottom: 0; left:  0; width: 10px; height: 10px; cursor: sw-resize; }
 .rh-se { bottom: 0; right: 0; width: 10px; height: 10px; cursor: se-resize; }
 
+/* ===== EXPLORER WINDOW ===== */
+.explorer-window {
+  position: fixed;
+  left: 160px;
+  top: 60px;
+  width: 760px;
+  height: 500px;
+  min-width: 400px;
+  min-height: 280px;
+  background: #1a1a28;
+  border: 1px solid var(--win-border);
+  border-radius: 10px;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.04);
+  animation: windowOpen .3s cubic-bezier(.34,1.4,.64,1);
+  overflow: hidden;
+  z-index: 50;
+}
+.explorer-window.active { display: flex; }
+.explorer-window .titlebar { background: #1e1e2e; border-bottom: 1px solid rgba(255,255,255,.08); }
+.explorer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 8px;
+  background: #1e1e2e;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.explorer-nav-btn {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 5px;
+  font-size: 14px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background .12s, color .12s;
+  flex-shrink: 0;
+}
+.explorer-nav-btn:hover { background: rgba(255,255,255,.10); color: var(--text); }
+.explorer-nav-btn.disabled { opacity: .3; pointer-events: none; }
+.explorer-address-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 0 4px;
+  cursor: default;
+}
+.explorer-address-bar span { color: var(--text); font-weight: 500; }
+.explorer-address-sep { color: rgba(255,255,255,.3); margin: 0 2px; }
+.explorer-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.explorer-sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  padding: 8px 0;
+  border-right: 1px solid rgba(255,255,255,.06);
+  overflow-y: auto;
+  background: #191926;
+}
+.explorer-sidebar-group { margin-bottom: 4px; }
+.explorer-sidebar-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 4px 14px 2px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.explorer-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 0 4px;
+  transition: background .1s, color .1s;
+}
+.explorer-sidebar-item:hover { background: rgba(255,255,255,.08); color: var(--text); }
+.explorer-sidebar-item.active { background: rgba(124,106,247,.18); color: var(--accent2); }
+.explorer-sidebar-icon { font-size: 14px; flex-shrink: 0; }
+.explorer-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-dim);
+}
+.explorer-empty-icon { font-size: 56px; opacity: .4; }
+.explorer-empty-text { font-size: 13px; opacity: .7; }
+.explorer-statusbar {
+  height: 24px;
+  border-top: 1px solid rgba(255,255,255,.06);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  background: #191926;
+  flex-shrink: 0;
+}
+
 /* ===== チャトル CHAT WINDOW ===== */
 .chat-window {
   position: fixed;
@@ -1916,7 +2034,7 @@ body:has(#screen-title.active) .taskbar { display: none; }
       <div class="start-pin-icon">⚙️</div>
       <div class="start-pin-label">設定</div>
     </div>
-    <div class="start-pin-item">
+    <div class="start-pin-item" onclick="startMenuOpen('games')">
       <div class="start-pin-icon">🎮</div>
       <div class="start-pin-label">ゲーム</div>
     </div>
@@ -2016,6 +2134,61 @@ body:has(#screen-title.active) .taskbar { display: none; }
       <div class="note-empty" id="noteEmpty">まだメモがありません。チャットの吹き出しをタップするとメモできます。</div>
     </div>
   </div>
+
+<!-- GAMES EXPLORER WINDOW -->
+<div class="explorer-window" id="gamesWindow">
+  <div class="titlebar">
+    <div class="titlebar-title">🎮 ゲーム</div>
+    <div class="titlebar-winbtns">
+      <div class="titlebar-winbtn min" onclick="toggleGamesWindow()">&#x2500;</div>
+      <div class="snap-btn-wrap">
+        <div class="titlebar-winbtn max" id="maxBtnGames" onclick="toggleMaximize('gamesWindow','maxBtnGames')">&#x25A1;</div>
+        <div class="snap-layouts">
+          <div class="snap-layouts-label">スナップレイアウト</div>
+          <div class="snap-layouts-row">
+            <div class="snap-layout-cell snapleft"  onclick="snapLayout('gamesWindow','left',event)"  title="左半分"><div class="snap-ind"></div></div>
+            <div class="snap-layout-cell snapfull"  onclick="snapLayout('gamesWindow','full',event)"  title="最大化"><div class="snap-ind"></div></div>
+            <div class="snap-layout-cell snapright" onclick="snapLayout('gamesWindow','right',event)" title="右半分"><div class="snap-ind"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="titlebar-winbtn close" onclick="closeGamesWindow()">&#x2715;</div>
+    </div>
+  </div>
+  <div class="explorer-toolbar">
+    <div class="explorer-nav-btn disabled" title="戻る">&#8249;</div>
+    <div class="explorer-nav-btn disabled" title="進む">&#8250;</div>
+    <div class="explorer-nav-btn disabled" title="上へ">&#8593;</div>
+    <div class="explorer-address-bar">
+      📁&nbsp;<span style="color:var(--text-dim)">PC</span>
+      <span class="explorer-address-sep">&rsaquo;</span>
+      <span>ゲーム</span>
+    </div>
+    <div class="explorer-nav-btn" title="最新の情報に更新">&#8635;</div>
+  </div>
+  <div class="explorer-body">
+    <div class="explorer-sidebar">
+      <div class="explorer-sidebar-group">
+        <div class="explorer-sidebar-label">クイックアクセス</div>
+        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">🏠</span>ホーム</div>
+        <div class="explorer-sidebar-item active"><span class="explorer-sidebar-icon">🎮</span>ゲーム</div>
+        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">🖥</span>デスクトップ</div>
+        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">📥</span>ダウンロード</div>
+        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">📄</span>ドキュメント</div>
+        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">🖼</span>ピクチャ</div>
+      </div>
+      <div class="explorer-sidebar-group">
+        <div class="explorer-sidebar-label">PC</div>
+        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">💾</span>ローカルディスク (C:)</div>
+      </div>
+    </div>
+    <div class="explorer-content">
+      <div class="explorer-empty-icon">🎮</div>
+      <div class="explorer-empty-text">このフォルダーは空です</div>
+    </div>
+  </div>
+  <div class="explorer-statusbar">0 個の項目</div>
+</div>
 
 <!-- ENDING -->
 <div id="screen-ending">
@@ -2894,6 +3067,31 @@ function closeMemoApp() {
   updateTaskbarIndicators();
 }
 
+function openGamesWindow() {
+  const win = document.getElementById('gamesWindow');
+  win.classList.add('active');
+  window.gamesMinimized = false;
+}
+
+function closeGamesWindow() {
+  const win = document.getElementById('gamesWindow');
+  win.classList.remove('active');
+  window.gamesMinimized = false;
+}
+
+function toggleGamesWindow() {
+  const win = document.getElementById('gamesWindow');
+  if (window.gamesMinimized) {
+    win.classList.add('active');
+    window.gamesMinimized = false;
+  } else if (win.classList.contains('active')) {
+    minimizeWin(win);
+    window.gamesMinimized = true;
+  } else {
+    openGamesWindow();
+  }
+}
+
 /* ===== TASKBAR WINDOW TOGGLE ===== */
 window.appIsRunning  = false;
 window.appMinimized  = false;
@@ -3090,6 +3288,7 @@ function startMenuOpen(type) {
   if (type === 'app') taskbarToggleApp();
   else if (type === 'chat') taskbarToggleChat();
   else if (type === 'memo') taskbarToggleMemo();
+  else if (type === 'games') openGamesWindow();
 }
 
 function closeAllPopups() {
@@ -3350,7 +3549,7 @@ function makeDraggable(windowEl) {
   });
 }
 
-['appWindow', 'chatWindow', 'memoAppWindow'].forEach(id => {
+['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow'].forEach(id => {
   makeDraggable(document.getElementById(id));
 });
 
@@ -3422,7 +3621,7 @@ function makeResizable(windowEl) {
   });
 }
 
-['appWindow', 'chatWindow', 'memoAppWindow'].forEach(id => {
+['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow'].forEach(id => {
   makeResizable(document.getElementById(id));
 });
 </script>
