@@ -37,6 +37,14 @@ function buildCharSelect() {
    APP LIFECYCLE
 ============================================================ */
 function openApp(isDebugMode) {
+  if (window.appIsRunning) {
+    const appWin = document.getElementById('appWindow');
+    appWin.classList.add('active');
+    window.appMinimized = false;
+    updateTaskbarIndicators();
+    return;
+  }
+
   const overlay = document.getElementById('boot-overlay');
   document.getElementById('screen-title').classList.remove('active');
   overlay.classList.add('active');
@@ -48,7 +56,6 @@ function openApp(isDebugMode) {
 
   setTimeout(() => {
     overlay.classList.add('fading');
-    document.getElementById('chatWindow').classList.add('active');
     if (isDebugMode) {
       document.getElementById('screen-charselect').classList.add('active');
       buildCharSelect();
@@ -64,7 +71,6 @@ function startMainModeAutoRoute() {
   const routes = ['midori', 'saku', 'seiji', 'karen'];
   window.MAIN_MODE_ROUTES = routes;
   window.MAIN_MODE_ROUTE_INDEX = 0;
-  document.getElementById('appWindow').classList.add('active');
   resetGame(routes[0]);
 }
 
