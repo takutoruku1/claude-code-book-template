@@ -6,7 +6,7 @@ function bringToFront(el) {
   el.style.zIndex = ++_zTop;
 }
 document.addEventListener('DOMContentLoaded', () => {
-  ['appWindow', 'chatWindow', 'memoAppWindow'].forEach(id => {
+  ['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('mousedown', () => bringToFront(el));
   });
@@ -149,6 +149,7 @@ function openGamesWindow() {
   const win = document.getElementById('gamesWindow');
   win.classList.add('active');
   window.gamesMinimized = false;
+  bringToFront(win);
 }
 
 function closeGamesWindow() {
@@ -162,6 +163,7 @@ function toggleGamesWindow() {
   if (window.gamesMinimized) {
     win.classList.add('active');
     window.gamesMinimized = false;
+    bringToFront(win);
   } else if (win.classList.contains('active')) {
     minimizeWin(win);
     window.gamesMinimized = true;
