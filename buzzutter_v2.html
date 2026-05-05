@@ -97,6 +97,7 @@ body {
   animation: fadeIn .4s ease;
 }
 #screen-title.active { display: flex; }
+body:has(#screen-title.active) .taskbar { display: none; }
 
 .title-deco {
   position: absolute;
@@ -1714,7 +1715,7 @@ body {
             </div>
           </div>
         </div>
-        <div class="titlebar-winbtn close" onclick="closeApp()">&#x2715;</div>
+        <div class="titlebar-winbtn close" onclick="closeAppWindow()">&#x2715;</div>
       </div>
     </div>
 
@@ -1840,7 +1841,7 @@ body {
           </div>
         </div>
       </div>
-      <div class="titlebar-winbtn close" onclick="closeApp()">&#x2715;</div>
+      <div class="titlebar-winbtn close" onclick="closeChatWindow()">&#x2715;</div>
     </div>
   </div>
   <div class="chat-panel">
@@ -2865,6 +2866,18 @@ function closeApp() {
   window.appMinimized  = false;
   window.chatMinimized = false;
   window.memoMinimized = false;
+  updateTaskbarIndicators();
+}
+
+function closeAppWindow() {
+  document.getElementById('appWindow').classList.remove('active');
+  window.appMinimized = false;
+  updateTaskbarIndicators();
+}
+
+function closeChatWindow() {
+  document.getElementById('chatWindow').classList.remove('active');
+  window.chatMinimized = false;
   updateTaskbarIndicators();
 }
 
