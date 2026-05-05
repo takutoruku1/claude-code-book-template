@@ -574,14 +574,37 @@ body:has(#screen-title.active) .taskbar { display: none; }
   flex: 1;
   min-width: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px;
   color: var(--text-dim);
 }
 .explorer-empty-icon { font-size: 56px; opacity: .4; }
 .explorer-empty-text { font-size: 13px; opacity: .7; }
+.explorer-file-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 4px;
+  border-radius: 4px;
+  cursor: default;
+  width: 80px;
+  user-select: none;
+}
+.explorer-file-item:hover { background: rgba(124,106,247,.15); }
+.explorer-file-item.selected { background: rgba(124,106,247,.28); outline: 1px solid rgba(124,106,247,.5); }
+.explorer-file-icon { width: 56px; height: 56px; }
+.explorer-file-icon svg { width: 100%; height: 100%; }
+.explorer-file-name {
+  font-size: 11px;
+  color: var(--text);
+  text-align: center;
+  word-break: break-all;
+  line-height: 1.3;
+}
 .explorer-statusbar {
   height: 24px;
   border-top: 1px solid rgba(255,255,255,.06);
