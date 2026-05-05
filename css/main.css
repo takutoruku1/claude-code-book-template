@@ -638,7 +638,6 @@ body:has(#screen-title.active) .taskbar { display: none; }
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
 }
 #boot-overlay.active {
   opacity: 1;
