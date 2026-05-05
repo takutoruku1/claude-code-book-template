@@ -1399,6 +1399,184 @@ body {
   line-height: 1.3;
 }
 
+/* ===== WIN11 START MENU ===== */
+.start-menu {
+  position: fixed;
+  bottom: calc(var(--taskbar-height) + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(12px) scale(.97);
+  width: 640px;
+  max-width: calc(100vw - 24px);
+  background: rgba(20,20,34,0.96);
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 14px;
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  box-shadow: 0 16px 56px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.04);
+  z-index: 10001;
+  padding: 28px 28px 16px;
+  display: none;
+  opacity: 0;
+  transition: opacity .18s ease, transform .18s cubic-bezier(.34,1.4,.64,1);
+}
+.start-menu.active {
+  display: block;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+.start-menu-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 24px;
+  padding: 9px 16px;
+  margin-bottom: 22px;
+  transition: background .12s, border-color .12s;
+}
+.start-menu-search:focus-within {
+  background: rgba(255,255,255,.10);
+  border-color: rgba(124,106,247,.55);
+}
+.start-menu-search-icon { font-size: 16px; color: var(--text-dim); flex-shrink: 0; }
+.start-menu-search input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+}
+.start-menu-search input::placeholder { color: var(--text-dim); }
+.start-menu-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: .04em;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.start-menu-section-title a {
+  font-size: 11px;
+  color: var(--accent2);
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 400;
+}
+.start-menu-section-title a:hover { text-decoration: underline; }
+.start-pinned {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  margin-bottom: 20px;
+}
+.start-pin-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .12s;
+}
+.start-pin-item:hover { background: rgba(255,255,255,.10); }
+.start-pin-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: rgba(255,255,255,.06);
+}
+.start-pin-label {
+  font-size: 11px;
+  color: var(--text);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+.start-separator {
+  height: 1px;
+  background: rgba(255,255,255,.07);
+  margin: 4px 0 16px;
+}
+.start-recommended {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+.start-rec-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .12s;
+}
+.start-rec-item:hover { background: rgba(255,255,255,.08); }
+.start-rec-icon { font-size: 26px; flex-shrink: 0; }
+.start-rec-text {}
+.start-rec-name { font-size: 13px; color: var(--text); font-weight: 500; }
+.start-rec-meta { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+.start-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+.start-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .12s;
+}
+.start-user:hover { background: rgba(255,255,255,.09); }
+.start-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.start-username { font-size: 13px; color: var(--text); font-weight: 500; }
+.start-power-btns { display: flex; gap: 4px; }
+.start-power-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-dim);
+  transition: background .12s, color .12s;
+}
+.start-power-btn:hover { background: rgba(255,255,255,.10); color: var(--text); }
+@keyframes startMenuIn {
+  from { opacity:0; transform:translateX(-50%) translateY(12px) scale(.97); }
+  to   { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+}
+
 /* ===== QUIZ OVERLAY ===== */
 .quiz-overlay {
   position: fixed; inset: 0;
@@ -1628,7 +1806,7 @@ body {
   <!-- WINDOWS 11 TASKBAR -->
   <div class="taskbar">
     <div class="taskbar-center">
-      <div class="taskbar-start">
+      <div class="taskbar-start" onclick="toggleStartMenu(event)" id="taskbarStart">
         <div class="win-grid-icon">
           <span></span><span></span><span></span><span></span>
         </div>
@@ -1699,6 +1877,115 @@ body {
   <div class="cal-days" id="calDays"></div>
   <div class="cal-separator"></div>
   <div class="cal-today-btn" id="calTodayBtn">今日に移動</div>
+</div>
+
+<!-- START MENU -->
+<div class="start-menu" id="startMenu" onclick="event.stopPropagation()">
+  <div class="start-menu-search">
+    <span class="start-menu-search-icon">🔍</span>
+    <input type="text" placeholder="アプリ、設定、ドキュメントを検索" id="startSearchInput">
+  </div>
+
+  <div class="start-menu-section-title">
+    ピン留め済み
+    <a>すべてのアプリ &rsaquo;</a>
+  </div>
+  <div class="start-pinned">
+    <div class="start-pin-item" onclick="startMenuOpen('app')">
+      <div class="start-pin-icon">📱</div>
+      <div class="start-pin-label">ばずったー</div>
+    </div>
+    <div class="start-pin-item" onclick="startMenuOpen('chat')">
+      <div class="start-pin-icon">💬</div>
+      <div class="start-pin-label">チャトル</div>
+    </div>
+    <div class="start-pin-item" onclick="startMenuOpen('memo')">
+      <div class="start-pin-icon">📝</div>
+      <div class="start-pin-label">メモ帳</div>
+    </div>
+    <div class="start-pin-item">
+      <div class="start-pin-icon">🌐</div>
+      <div class="start-pin-label">ブラウザ</div>
+    </div>
+    <div class="start-pin-item">
+      <div class="start-pin-icon">📁</div>
+      <div class="start-pin-label">エクスプローラー</div>
+    </div>
+    <div class="start-pin-item">
+      <div class="start-pin-icon">⚙️</div>
+      <div class="start-pin-label">設定</div>
+    </div>
+    <div class="start-pin-item">
+      <div class="start-pin-icon">🎮</div>
+      <div class="start-pin-label">ゲーム</div>
+    </div>
+    <div class="start-pin-item">
+      <div class="start-pin-icon">🎵</div>
+      <div class="start-pin-label">音楽</div>
+    </div>
+    <div class="start-pin-item">
+      <div class="start-pin-icon">📷</div>
+      <div class="start-pin-label">カメラ</div>
+    </div>
+    <div class="start-pin-item">
+      <div class="start-pin-icon">📊</div>
+      <div class="start-pin-label">分析</div>
+    </div>
+    <div class="start-pin-item">
+      <div class="start-pin-icon">🛒</div>
+      <div class="start-pin-label">ストア</div>
+    </div>
+    <div class="start-pin-item">
+      <div class="start-pin-icon">💡</div>
+      <div class="start-pin-label">ヒント</div>
+    </div>
+  </div>
+
+  <div class="start-separator"></div>
+
+  <div class="start-menu-section-title">おすすめ</div>
+  <div class="start-recommended">
+    <div class="start-rec-item" onclick="startMenuOpen('app')">
+      <div class="start-rec-icon">📱</div>
+      <div class="start-rec-text">
+        <div class="start-rec-name">ばずったー.exe</div>
+        <div class="start-rec-meta">最近開いた</div>
+      </div>
+    </div>
+    <div class="start-rec-item" onclick="startMenuOpen('chat')">
+      <div class="start-rec-icon">💬</div>
+      <div class="start-rec-text">
+        <div class="start-rec-name">チャトル.exe</div>
+        <div class="start-rec-meta">最近開いた</div>
+      </div>
+    </div>
+    <div class="start-rec-item" onclick="startMenuOpen('memo')">
+      <div class="start-rec-icon">📝</div>
+      <div class="start-rec-text">
+        <div class="start-rec-name">メモ帳.exe</div>
+        <div class="start-rec-meta">最近開いた</div>
+      </div>
+    </div>
+    <div class="start-rec-item">
+      <div class="start-rec-icon">📊</div>
+      <div class="start-rec-text">
+        <div class="start-rec-name">SNS分析レポート.xlsx</div>
+        <div class="start-rec-meta">3時間前</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="start-footer">
+    <div class="start-user">
+      <div class="start-avatar">👤</div>
+      <div class="start-username">SNS担当者</div>
+    </div>
+    <div class="start-power-btns">
+      <div class="start-power-btn" title="スリープ">🌙</div>
+      <div class="start-power-btn" title="再起動">🔄</div>
+      <div class="start-power-btn" title="シャットダウン">⏻</div>
+    </div>
+  </div>
 </div>
 
   <!-- MEMO APP WINDOW -->
@@ -2767,12 +3054,42 @@ setInterval(updateTaskbarClock, 10000);
 /* ===== WIN11 CALENDAR POPUP ===== */
 let calYear, calMonth;
 
+function toggleStartMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('startMenu');
+  const isActive = menu.classList.contains('active');
+  closeAllPopups();
+  if (!isActive) {
+    menu.style.display = 'block';
+    requestAnimationFrame(() => menu.classList.add('active'));
+    document.getElementById('startSearchInput').value = '';
+  }
+}
+
+function closeStartMenu() {
+  const menu = document.getElementById('startMenu');
+  menu.classList.remove('active');
+  setTimeout(() => { if (!menu.classList.contains('active')) menu.style.display = 'none'; }, 200);
+}
+
+function startMenuOpen(type) {
+  closeStartMenu();
+  if (type === 'app') taskbarToggleApp();
+  else if (type === 'chat') taskbarToggleChat();
+  else if (type === 'memo') taskbarToggleMemo();
+}
+
+function closeAllPopups() {
+  closeStartMenu();
+  document.getElementById('calPopup').classList.remove('active');
+}
+
 function toggleCalendar(e) {
   e.stopPropagation();
   const popup = document.getElementById('calPopup');
-  if (popup.classList.contains('active')) {
-    popup.classList.remove('active');
-  } else {
+  const isActive = popup.classList.contains('active');
+  closeAllPopups();
+  if (!isActive) {
     const today = new Date();
     calYear  = today.getFullYear();
     calMonth = today.getMonth();
@@ -2846,6 +3163,7 @@ document.getElementById('calPopup').addEventListener('click', function(e) {
 });
 document.addEventListener('click', function() {
   document.getElementById('calPopup').classList.remove('active');
+  closeStartMenu();
 });
 
 /* ===== SNAP FEATURE ===== */
