@@ -173,11 +173,114 @@ function openMinesweeper() {
   alert('マインスイーパーは準備中です');
 }
 
+/* ===== NOTIFICATION CENTER ===== */
+let _notifications = [];
+let _notifIdCnt = 0;
+
+function addNotification(appId, appName, appIcon, message) {
+  if (_notifications.some(n => n.appId === appId)) return;
+  const notif = { id: ++_notifIdCnt, appId, appName, appIcon, message, time: new Date() };
+  _notifications.unshift(notif);
+  _renderNotifList();
+  _updateNotifBadge();
+  _showToast(notif);
+}
+
+function removeNotification(id) {
+  _notifications = _notifications.filter(n => n.id !== id);
+  _renderNotifList();
+  _updateNotifBadge();
+}
+
+function clearAllNotifications() {
+  _notifications = [];
+  _renderNotifList();
+  _updateNotifBadge();
+}
+
+function _updateNotifBadge() {
+  const badge = document.getElementById('notifBadge');
+  if (!badge) return;
+  const count = _notifications.length;
+  badge.textContent = count > 9 ? '9+' : count;
+  badge.classList.toggle('visible', count > 0);
+}
+
+function _renderNotifList() {
+  const list = document.getElementById('notifList');
+  if (!list) return;
+  if (_notifications.length === 0) {
+    list.innerHTML = '<div class="notif-empty">通知はありません</div>';
+    return;
+  }
+  list.innerHTML = _notifications.map(n => {
+    const t = `${String(n.time.getHours()).padStart(2,'0')}:${String(n.time.getMinutes()).padStart(2,'0')}`;
+    return `<div class="notif-item">
+      <div class="notif-item-icon">${n.appIcon}</div>
+      <div class="notif-item-body">
+        <div class="notif-item-app">${n.appName}</div>
+        <div class="notif-item-msg">${n.message}</div>
+        <div class="notif-item-time">${t}</div>
+      </div>
+      <button class="notif-item-dismiss" onclick="removeNotification(${n.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function toggleNotifCenter(e) {
+  e.stopPropagation();
+  const panel = document.getElementById('notifCenter');
+  const isActive = panel.classList.contains('active');
+  closeAllPopups();
+  if (!isActive) panel.classList.add('active');
+}
+
+function _showToast(notif) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `
+    <div class="toast-header">
+      <span class="toast-icon">${notif.appIcon}</span>
+      <span class="toast-app">${notif.appName}</span>
+      <button class="toast-close-btn" onclick="_dismissToast(this.closest('.toast'))">✕</button>
+    </div>
+    <div class="toast-body">${notif.message}</div>`;
+  container.appendChild(toast);
+  toast._timer = setTimeout(() => _dismissToast(toast), 5000);
+}
+
+function _dismissToast(toast) {
+  if (!toast || !toast.parentNode) return;
+  clearTimeout(toast._timer);
+  toast.classList.add('dismissing');
+  setTimeout(() => toast.remove(), 200);
+}
+
+/* ===== DESKTOP NOTIF ===== */
 window._notifPending = { notifApp: false, notifChat: false };
 
 function setDesktopNotif(id, show) {
   window._notifPending[id] = show;
   _applyDesktopNotif(id);
+  const isApp = id === 'notifApp';
+  if (show) {
+    const winId = isApp ? 'appWindow' : 'chatWindow';
+    const winOpen = document.getElementById(winId)?.classList.contains('active');
+    if (!winOpen) {
+      addNotification(
+        isApp ? 'app' : 'chat',
+        isApp ? 'ばずったー' : 'チャトル',
+        isApp ? '📱' : '💬',
+        isApp ? 'ばずったーに通知がきています' : 'チャトルに通知がきています'
+      );
+    }
+  } else {
+    const appId = isApp ? 'app' : 'chat';
+    _notifications = _notifications.filter(n => n.appId !== appId);
+    _renderNotifList();
+    _updateNotifBadge();
+  }
 }
 
 function _applyDesktopNotif(id) {
@@ -398,6 +501,7 @@ function startMenuOpen(type) {
 function closeAllPopups() {
   closeStartMenu();
   document.getElementById('calPopup').classList.remove('active');
+  document.getElementById('notifCenter').classList.remove('active');
 }
 
 function toggleCalendar(e) {
@@ -479,6 +583,7 @@ document.getElementById('calPopup').addEventListener('click', function(e) {
 });
 document.addEventListener('click', function() {
   document.getElementById('calPopup').classList.remove('active');
+  document.getElementById('notifCenter').classList.remove('active');
   closeStartMenu();
 });
 
