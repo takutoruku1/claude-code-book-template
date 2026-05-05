@@ -1,4 +1,18 @@
 /* ============================================================
+   WINDOW MANAGER
+============================================================ */
+let _zTop = 100;
+function bringToFront(el) {
+  el.style.zIndex = ++_zTop;
+}
+document.addEventListener('DOMContentLoaded', () => {
+  ['appWindow', 'chatWindow', 'memoAppWindow'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('mousedown', () => bringToFront(el));
+  });
+});
+
+/* ============================================================
    MISC
 ============================================================ */
 function toggleLike(el) {
@@ -41,6 +55,7 @@ function openApp(isDebugMode) {
     const appWin = document.getElementById('appWindow');
     appWin.classList.add('active');
     window.appMinimized = false;
+    bringToFront(appWin);
     updateTaskbarIndicators();
     refreshDesktopNotifs();
     return;
@@ -77,7 +92,9 @@ function startMainModeAutoRoute() {
 
 function startRoute(route) {
   document.getElementById('screen-charselect').classList.remove('active');
-  document.getElementById('appWindow').classList.add('active');
+  const appWin = document.getElementById('appWindow');
+  appWin.classList.add('active');
+  bringToFront(appWin);
   window.appMinimized = false;
   resetGame(route);
 }
@@ -113,7 +130,9 @@ function closeChatWindow() {
 }
 
 function openMemoApp() {
-  document.getElementById('memoAppWindow').classList.add('active');
+  const memoWin = document.getElementById('memoAppWindow');
+  memoWin.classList.add('active');
+  bringToFront(memoWin);
   window.memoMinimized = false;
   renderMemoNotes();
   updateTaskbarIndicators();
@@ -259,12 +278,14 @@ function taskbarToggleChat() {
   const chatWin = document.getElementById('chatWindow');
   if (window.chatMinimized) {
     chatWin.classList.add('active');
+    bringToFront(chatWin);
     window.chatMinimized = false;
   } else if (chatWin.classList.contains('active')) {
     minimizeWin(chatWin);
     window.chatMinimized = true;
   } else if (window.appIsRunning) {
     chatWin.classList.add('active');
+    bringToFront(chatWin);
     window.chatMinimized = false;
   }
   updateTaskbarIndicators();
@@ -302,6 +323,7 @@ function taskbarToggleApp() {
   }
   if (window.appMinimized) {
     appWin.classList.add('active');
+    bringToFront(appWin);
     window.appMinimized = false;
   } else if (appWin.classList.contains('active') || charselEl.classList.contains('active')) {
     charselEl.classList.remove('active');
@@ -309,6 +331,7 @@ function taskbarToggleApp() {
     window.appMinimized = true;
   } else {
     appWin.classList.add('active');
+    bringToFront(appWin);
     window.appMinimized = false;
   }
   updateTaskbarIndicators();

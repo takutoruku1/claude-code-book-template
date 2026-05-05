@@ -228,6 +228,7 @@ body:has(#screen-title.active) .taskbar { display: none; }
   width: min(1300px, 98vw);
   height: min(780px, 96vh);
   background: var(--surface);
+  z-index: 100;
   border: 1px solid var(--win-border);
   border-radius: 12px;
   display: none;
@@ -712,7 +713,7 @@ body:has(#screen-title.active) .taskbar { display: none; }
   box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
   animation: windowOpen .3s cubic-bezier(.34,1.4,.64,1);
   overflow: hidden;
-  z-index: 40;
+  z-index: 100;
 }
 .chat-window.active { display: flex; }
 .chat-window .chat-panel {
