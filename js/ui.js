@@ -42,6 +42,7 @@ function openApp(isDebugMode) {
     appWin.classList.add('active');
     window.appMinimized = false;
     updateTaskbarIndicators();
+    refreshDesktopNotifs();
     return;
   }
 
@@ -101,12 +102,14 @@ function closeAppWindow() {
   document.getElementById('appWindow').classList.remove('active');
   window.appMinimized = false;
   updateTaskbarIndicators();
+  refreshDesktopNotifs();
 }
 
 function closeChatWindow() {
   document.getElementById('chatWindow').classList.remove('active');
   window.chatMinimized = false;
   updateTaskbarIndicators();
+  refreshDesktopNotifs();
 }
 
 function openMemoApp() {
@@ -149,6 +152,26 @@ function toggleGamesWindow() {
 
 function openMinesweeper() {
   alert('マインスイーパーは準備中です');
+}
+
+window._notifPending = { notifApp: false, notifChat: false };
+
+function setDesktopNotif(id, show) {
+  window._notifPending[id] = show;
+  _applyDesktopNotif(id);
+}
+
+function _applyDesktopNotif(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const winId  = id === 'notifApp' ? 'appWindow' : 'chatWindow';
+  const winOpen = document.getElementById(winId)?.classList.contains('active');
+  el.classList.toggle('on', window._notifPending[id] && !winOpen);
+}
+
+function refreshDesktopNotifs() {
+  _applyDesktopNotif('notifApp');
+  _applyDesktopNotif('notifChat');
 }
 
 function resetGame(route) {
@@ -245,6 +268,7 @@ function taskbarToggleChat() {
     window.chatMinimized = false;
   }
   updateTaskbarIndicators();
+  refreshDesktopNotifs();
 }
 
 function openChatApp() {
@@ -257,7 +281,7 @@ function openChatApp() {
 
 function minimizeWin(el) {
   el.classList.add('minimizing');
-  setTimeout(() => el.classList.remove('active', 'minimizing'), 160);
+  setTimeout(() => { el.classList.remove('active', 'minimizing'); refreshDesktopNotifs(); }, 160);
 }
 
 function toggleMaximize(windowId, btnId) {
@@ -288,6 +312,7 @@ function taskbarToggleApp() {
     window.appMinimized = false;
   }
   updateTaskbarIndicators();
+  refreshDesktopNotifs();
 }
 
 function taskbarToggleMemo() {

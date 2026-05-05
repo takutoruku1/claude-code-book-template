@@ -86,6 +86,8 @@ function showArea(name) {
     document.getElementById(id).style.display = 'none';
   });
   if (name) document.getElementById(name).style.display = 'flex';
+  const needsAction = ['materialArea','postArea','reactionArea'].includes(name);
+  setDesktopNotif('notifApp', needsAction);
 }
 
 function addChatMsg(from, text, ava, keyword) {

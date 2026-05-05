@@ -77,11 +77,13 @@ function runChat(idx) {
 function showChoices(opts) {
   const box = document.getElementById('chatChoices');
   box.innerHTML = '';
+  setDesktopNotif('notifChat', true);
   opts.forEach(opt => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.textContent = opt.text;
     btn.onclick = () => {
+      setDesktopNotif('notifChat', false);
       addChatMsg('self', opt.text, '👤');
       box.innerHTML = '';
       if (opt.selfBonus) GS.chatSelfBonus += opt.selfBonus;
