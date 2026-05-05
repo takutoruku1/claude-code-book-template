@@ -37,19 +37,27 @@ function buildCharSelect() {
    APP LIFECYCLE
 ============================================================ */
 function openApp(isDebugMode) {
+  const overlay = document.getElementById('boot-overlay');
   document.getElementById('screen-title').classList.remove('active');
+  overlay.classList.add('active');
+
   window.IS_DEBUG_MODE = isDebugMode;
   window.appIsRunning  = true;
   window.appMinimized  = false;
   window.chatMinimized = false;
-  document.getElementById('chatWindow').classList.add('active');
-  if (isDebugMode) {
-    document.getElementById('screen-charselect').classList.add('active');
-    buildCharSelect();
-  } else {
-    startMainModeAutoRoute();
-  }
-  updateTaskbarIndicators();
+
+  setTimeout(() => {
+    overlay.classList.add('fading');
+    document.getElementById('chatWindow').classList.add('active');
+    if (isDebugMode) {
+      document.getElementById('screen-charselect').classList.add('active');
+      buildCharSelect();
+    } else {
+      startMainModeAutoRoute();
+    }
+    updateTaskbarIndicators();
+    setTimeout(() => overlay.classList.remove('active', 'fading'), 700);
+  }, 3000);
 }
 
 function startMainModeAutoRoute() {
