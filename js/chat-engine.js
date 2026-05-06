@@ -107,7 +107,14 @@ function _isBuzzOpen() {
 }
 
 function _onChoiceSelect(opt) {
-  const box = document.getElementById('chatChoices');
+  const box     = document.getElementById('chatChoices');
+  const chatWin = document.getElementById('chatWindow');
+  if (chatWin && !chatWin.classList.contains('active')) {
+    chatWin.classList.add('active');
+    window.chatMinimized = false;
+    if (typeof updateTaskbarIndicators === 'function') updateTaskbarIndicators();
+  }
+  if (chatWin && typeof bringToFront === 'function') bringToFront(chatWin);
   window._pendingChoices = null;
   setDesktopNotif('notifChat', false);
   addChatMsg('self', opt.text, '👤');
