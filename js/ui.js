@@ -114,6 +114,7 @@ function closeApp() {
   window.chatMinimized = false;
   window.memoMinimized = false;
   updateTaskbarIndicators();
+  updateProtagWidget();
 }
 
 function closeAppWindow() {
@@ -402,6 +403,7 @@ function resetGame(route) {
 
   initGS(route);
   buildFlowMap(route);
+  updateProtagWidget();
 
   const char = CHARACTERS[route];
   document.getElementById('chatMessages').innerHTML  = '';
@@ -953,3 +955,62 @@ function makeResizable(windowEl) {
 ['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow'].forEach(id => {
   makeResizable(document.getElementById(id));
 });
+
+/* ============================================================
+   PROTAGONIST WIDGET
+============================================================ */
+const _PROTAG_ON_CLIENT = [
+  '（…読んでいる）',
+  '（なるほど）',
+  '（そうか…）',
+  '（ふむ）',
+  '（うん…）',
+  '（…）',
+];
+const _PROTAG_ON_CHOICES = [
+  '（どう答えようか）',
+  '（慎重に…）',
+  '（正直に言うか）',
+  '（何て返そう）',
+  '（言葉を選ばないと）',
+];
+const _PROTAG_ON_ANSWER = [
+  '（…これでよかったのかな）',
+  '（伝わったかな）',
+  '（うまく言えたか）',
+  '（…どう受け取られるか）',
+];
+
+let _protagTimer  = null;
+let _protagIdle   = null;
+
+function _pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function showProtagMsg(text, thinking = false, duration = 3200) {
+  const widget = document.getElementById('protagonistWidget');
+  const bubble = document.getElementById('protagBubble');
+  const textEl = document.getElementById('protagText');
+  if (!widget || !bubble || !textEl) return;
+
+  clearTimeout(_protagTimer);
+  textEl.textContent = text;
+  bubble.classList.toggle('thinking', thinking);
+  bubble.classList.add('show');
+
+  _protagTimer = setTimeout(() => bubble.classList.remove('show'), duration);
+}
+
+function updateProtagWidget() {
+  const w = document.getElementById('protagonistWidget');
+  if (!w) return;
+  if (window.appIsRunning) {
+    w.classList.add('visible');
+    const char = GS?.route ? CHARACTERS[GS.route] : null;
+    const ava  = document.getElementById('protagAvatar');
+    if (ava) ava.textContent = '👤';
+  } else {
+    w.classList.remove('visible');
+    clearTimeout(_protagTimer);
+    document.getElementById('protagBubble')?.classList.remove('show');
+  }
+}

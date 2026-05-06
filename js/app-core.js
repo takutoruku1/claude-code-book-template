@@ -122,6 +122,14 @@ function addChatMsg(from, text, ava, keyword) {
       window._chatUnread = (window._chatUnread || 0) + 1;
       updateChatBadge();
     }
+    if (typeof showProtagMsg === 'function') {
+      setTimeout(() => showProtagMsg(_pick(_PROTAG_ON_CLIENT), true, 2800), 600);
+    }
+  }
+  if (from === 'self' && !window._skipChatHistory) {
+    if (typeof showProtagMsg === 'function') {
+      setTimeout(() => showProtagMsg(_pick(_PROTAG_ON_ANSWER), true, 3000), 300);
+    }
   }
 }
 

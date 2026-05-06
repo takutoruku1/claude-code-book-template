@@ -81,6 +81,9 @@ function showChoices(opts) {
   box.innerHTML = '';
   setDesktopNotif('notifChat', true);
   window._pendingChoices = opts;
+  if (typeof showProtagMsg === 'function') {
+    setTimeout(() => showProtagMsg(_pick(_PROTAG_ON_CHOICES), true, 4500), 400);
+  }
   opts.forEach(opt => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
