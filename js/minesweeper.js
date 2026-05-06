@@ -161,10 +161,14 @@ function openMinesweeper() {
     win.classList.add('active');
     msReset();
   }
+  window.minesweeperMinimized = false;
   bringToFront(win);
+  if (typeof updateTaskbarIndicators === 'function') updateTaskbarIndicators();
 }
 
 function closeMinesweeper() {
   document.getElementById('minesweeperWindow').classList.remove('active');
+  window.minesweeperMinimized = false;
   clearInterval(msTimerInt);
+  if (typeof updateTaskbarIndicators === 'function') updateTaskbarIndicators();
 }

@@ -6,7 +6,7 @@ function bringToFront(el) {
   el.style.zIndex = ++_zTop;
 }
 document.addEventListener('DOMContentLoaded', () => {
-  ['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow'].forEach(id => {
+  ['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow', 'minesweeperWindow'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('mousedown', () => bringToFront(el));
   });
@@ -150,12 +150,14 @@ function openGamesWindow() {
   win.classList.add('active');
   window.gamesMinimized = false;
   bringToFront(win);
+  updateTaskbarIndicators();
 }
 
 function closeGamesWindow() {
   const win = document.getElementById('gamesWindow');
   win.classList.remove('active');
   window.gamesMinimized = false;
+  updateTaskbarIndicators();
 }
 
 function toggleGamesWindow() {
@@ -169,6 +171,25 @@ function toggleGamesWindow() {
     window.gamesMinimized = true;
   } else {
     openGamesWindow();
+  }
+  updateTaskbarIndicators();
+}
+
+function taskbarToggleGames() {
+  toggleGamesWindow();
+}
+
+function taskbarToggleMinesweeper() {
+  const win = document.getElementById('minesweeperWindow');
+  if (window.minesweeperMinimized) {
+    win.classList.add('active');
+    window.minesweeperMinimized = false;
+    bringToFront(win);
+    updateTaskbarIndicators();
+  } else if (win.classList.contains('active')) {
+    minimizeWin(win);
+    window.minesweeperMinimized = true;
+    updateTaskbarIndicators();
   }
 }
 
@@ -390,10 +411,12 @@ window.chatMinimized = false;
 window.memoMinimized = false;
 
 function updateTaskbarIndicators() {
-  const iconApp  = document.getElementById('taskbarIconApp');
-  const iconChat = document.getElementById('taskbarIconChat');
-  const iconMemo = document.getElementById('taskbarIconMemo');
-  iconApp .classList.toggle('running',
+  const iconApp          = document.getElementById('taskbarIconApp');
+  const iconChat         = document.getElementById('taskbarIconChat');
+  const iconMemo         = document.getElementById('taskbarIconMemo');
+  const iconGames        = document.getElementById('taskbarIconGames');
+  const iconMinesweeper  = document.getElementById('taskbarIconMinesweeper');
+  iconApp.classList.toggle('running',
     window.appIsRunning &&
     (document.getElementById('appWindow').classList.contains('active') ||
      document.getElementById('screen-charselect').classList.contains('active') ||
@@ -405,6 +428,12 @@ function updateTaskbarIndicators() {
   );
   iconMemo.classList.toggle('running',
     document.getElementById('memoAppWindow').classList.contains('active') || window.memoMinimized
+  );
+  if (iconGames) iconGames.classList.toggle('running',
+    document.getElementById('gamesWindow').classList.contains('active') || window.gamesMinimized
+  );
+  if (iconMinesweeper) iconMinesweeper.classList.toggle('running',
+    document.getElementById('minesweeperWindow').classList.contains('active') || window.minesweeperMinimized
   );
 }
 

@@ -1574,7 +1574,7 @@ body:has(#screen-title.active) .taskbar { display: none; }
 .taskbar-icon {
   width: 40px;
   height: 40px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
@@ -1583,6 +1583,7 @@ body:has(#screen-title.active) .taskbar { display: none; }
   transition: background .12s;
   position: relative;
 }
+.taskbar-icon.running { display: flex; }
 .taskbar-icon:hover { background: rgba(255,255,255,.10); }
 .taskbar-icon.running::after {
   content: '';

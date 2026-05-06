@@ -180,6 +180,8 @@
       <div class="taskbar-icon" id="taskbarIconApp" onclick="taskbarToggleApp()">📱</div>
       <div class="taskbar-icon" id="taskbarIconChat" onclick="taskbarToggleChat()">💬</div>
       <div class="taskbar-icon" id="taskbarIconMemo" onclick="taskbarToggleMemo()">📝</div>
+      <div class="taskbar-icon" id="taskbarIconGames" onclick="taskbarToggleGames()">🎮</div>
+      <div class="taskbar-icon" id="taskbarIconMinesweeper" onclick="taskbarToggleMinesweeper()">💣</div>
     </div>
     <div class="taskbar-tray">
       <div class="taskbar-notif-btn" id="taskbarNotifBtn" onclick="toggleNotifCenter(event)">
@@ -519,6 +521,7 @@
 <div id="minesweeperWindow" onmousedown="bringToFront(this)">
   <div class="ms-titlebar">
     <span class="ms-titlebar-text">💣 マインスイーパー</span>
+    <button class="ms-titlebar-close" style="margin-right:2px;background:transparent;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:13px;padding:2px 6px;" onclick="taskbarToggleMinesweeper()">&#x2500;</button>
     <button class="ms-titlebar-close" onclick="closeMinesweeper()">✕</button>
   </div>
   <div class="ms-body">
