@@ -199,6 +199,15 @@ body:has(#screen-title.active) .taskbar { display: none; }
   transition: background .2s, color .2s;
 }
 .btn-delete-save:hover { background: rgba(255,80,80,.2); color: #ff6b6b; }
+.btn-delete-slot {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: none;
+  font-size: 13px;
+  padding: 10px 28px;
+  color: var(--text-dim);
+}
+.btn-delete-slot:hover { background: rgba(255,80,80,.1); border-color: rgba(255,80,80,.3); color: #ff6b6b; transform: none; box-shadow: none; }
 
 /* ---- セーブスロットモーダル ---- */
 #saveSlotModal {
@@ -259,6 +268,9 @@ body:has(#screen-title.active) .taskbar { display: none; }
 .slot-name { font-size: 13px; color: var(--text); font-weight: 600; }
 .slot-detail { font-size: 11px; color: var(--text-dim); }
 .slot-empty { font-size: 12px; color: rgba(255,255,255,.25); }
+.slot-item-delete:hover { background: rgba(255,80,80,.08); border-color: rgba(255,80,80,.2); }
+.slot-delete-icon { font-size: 14px; opacity: .5; }
+.slot-item-delete:hover .slot-delete-icon { opacity: 1; }
 .slot-overwrite {
   font-size: 10px;
   color: rgba(255,107,157,.6);

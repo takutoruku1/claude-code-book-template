@@ -49,7 +49,11 @@
         <button class="btn-start btn-continue" id="btnContinue" onclick="showLoadSlotPicker()" style="display:none">
           ↩ 続きから始める<br><span class="btn-continue-sub" id="btnContinueSub"></span>
         </button>
-        <button class="btn-delete-save" id="btnDeleteSave" onclick="if(confirm('セーブデータを削除しますか？'))deleteSave()" style="display:none">✕</button>
+      </div>
+      <div class="btn-continue-wrap" id="btnDeleteWrap" style="display:none">
+        <button class="btn-start btn-delete-slot" onclick="showDeleteSlotPicker()">
+          🗑 セーブデータを削除
+        </button>
       </div>
     </div>
   </div>

@@ -4,8 +4,9 @@
 const SAVE_SLOT_KEYS = ['buzzutter_save_1', 'buzzutter_save_2', 'buzzutter_save_3'];
 
 function _buildSaveData() {
+  const el = id => document.getElementById(id);
   return {
-    version: 1,
+    version: 2,
     savedAt: new Date().toISOString(),
     routeLabel: CHARACTERS[GS.route]?.name || GS.route,
     GS: JSON.parse(JSON.stringify(GS)),
@@ -17,8 +18,15 @@ function _buildSaveData() {
       ? JSON.parse(JSON.stringify(window._pendingChoices)) : null,
     currentStep: window._currentStep || 1,
     currentArea: window._currentArea || 'gamePlaceholder',
-    chatWindowActive: document.getElementById('chatWindow')?.classList.contains('active') || false,
-    chatMinimized: window.chatMinimized || false,
+    appWindowActive:         el('appWindow')?.classList.contains('active')        ?? false,
+    appMinimized:            window.appMinimized   || false,
+    chatWindowActive:        el('chatWindow')?.classList.contains('active')       ?? false,
+    chatMinimized:           window.chatMinimized  || false,
+    memoWindowActive:        el('memoAppWindow')?.classList.contains('active')    ?? false,
+    memoMinimized:           window.memoMinimized  || false,
+    gamesWindowActive:       el('gamesWindow')?.classList.contains('active')      ?? false,
+    gamesMinimized:          window.gamesMinimized || false,
+    minesweeperWindowActive: el('minesweeperWindow')?.classList.contains('active') ?? false,
   };
 }
 
@@ -142,7 +150,7 @@ function showLoadSlotPicker() {
 /* ---- ロード処理 ---- */
 function loadFromSlot(slot) {
   const data = _getSlotData(slot);
-  if (!data || data.version !== 1) return false;
+  if (!data) return false;
 
   window._loadingFromSave = true;
 
@@ -154,10 +162,11 @@ function loadFromSlot(slot) {
   window.IS_DEBUG_MODE         = data.isDebugMode;
   window.MAIN_MODE_ROUTES      = data.mainModeRoutes;
   window.MAIN_MODE_ROUTE_INDEX = data.mainModeRouteIndex;
-  window.appIsRunning  = true;
-  window.appMinimized  = false;
-  window.chatMinimized = data.chatMinimized || false;
-  window.memoMinimized = false;
+  window.appIsRunning    = true;
+  window.appMinimized    = data.appMinimized    || false;
+  window.chatMinimized   = data.chatMinimized   || false;
+  window.memoMinimized   = data.memoMinimized   || false;
+  window.gamesMinimized  = data.gamesMinimized  || false;
   window._chatHistory    = data.chatHistory || [];
   window._pendingChoices = data.pendingChoices || null;
   window._currentStep    = data.currentStep || 1;
@@ -188,11 +197,29 @@ function loadFromSlot(slot) {
   window._skipChatHistory = false;
 
   const appWin = document.getElementById('appWindow');
-  appWin.classList.add('active');
-  bringToFront(appWin);
+  appWin.classList.toggle('active', !!data.appWindowActive);
+  if (data.appWindowActive) bringToFront(appWin);
 
   const chatWin = document.getElementById('chatWindow');
   chatWin.classList.toggle('active', !!data.chatWindowActive);
+
+  if (data.memoWindowActive) {
+    openMemoApp();
+  } else {
+    closeMemoApp();
+  }
+
+  if (data.gamesWindowActive) {
+    openGamesWindow();
+  } else {
+    closeGamesWindow();
+  }
+
+  if (data.minesweeperWindowActive) {
+    openMinesweeper();
+  } else {
+    closeMinesweeper();
+  }
 
   setStep(data.currentStep || 1);
 
@@ -244,7 +271,6 @@ function loadFromSlot(slot) {
     }
   }
 
-  renderMemoNotes();
   updateTaskbarIndicators();
   window._loadingFromSave = false;
   refreshDesktopNotifs();
@@ -287,9 +313,52 @@ function _restorePostArea() {
   updatePreview();
 }
 
-/* ---- セーブ削除 ---- */
-function deleteSave() {
-  SAVE_SLOT_KEYS.forEach(k => localStorage.removeItem(k));
+/* ---- セーブ削除（スロット選択） ---- */
+function showDeleteSlotPicker() {
+  const hasAny = SAVE_SLOT_KEYS.some((_, i) => _getSlotData(i + 1));
+  if (!hasAny) return;
+
+  const existing = document.getElementById('saveSlotModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'saveSlotModal';
+
+  const STEP_LABELS = ['', 'チャット中', 'チャット中', '素材選択中', '投稿作成中', 'リアクション中', '結末'];
+
+  let slotsHtml = '';
+  for (let i = 1; i <= 3; i++) {
+    const meta = _getSlotMeta(i);
+    slotsHtml += `
+      <div class="slot-item slot-item-delete${meta ? '' : ' slot-disabled'}" ${meta ? `onclick="_onDeleteSlotClick(${i})"` : ''}>
+        <div class="slot-num">スロット ${i}</div>
+        <div class="slot-info">
+          ${meta
+            ? `<span class="slot-name">${meta.routeLabel}</span>
+               <span class="slot-detail">${STEP_LABELS[meta.step] || ''} &nbsp;|&nbsp; ${meta.dateStr}</span>`
+            : '<span class="slot-empty">空きスロット</span>'}
+        </div>
+        ${meta ? '<div class="slot-delete-icon">🗑</div>' : ''}
+      </div>`;
+  }
+
+  modal.innerHTML = `
+    <div class="slot-modal-box">
+      <div class="slot-modal-title">削除するスロットを選択</div>
+      <div class="slot-modal-slots">${slotsHtml}</div>
+      <button class="slot-modal-cancel" onclick="_closeSlotModal()">キャンセル</button>
+    </div>`;
+
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('visible'));
+}
+
+function _onDeleteSlotClick(slot) {
+  const meta = _getSlotMeta(slot);
+  if (!meta) return;
+  if (!confirm(`スロット ${slot}（${meta.routeLabel}）のセーブデータを削除しますか？`)) return;
+  _closeSlotModal();
+  localStorage.removeItem(SAVE_SLOT_KEYS[slot - 1]);
   _refreshTitleContinueBtn();
 }
 
@@ -299,12 +368,12 @@ function hasSaveData() {
 }
 
 function _refreshTitleContinueBtn() {
-  const btn = document.getElementById('btnContinue');
-  const del = document.getElementById('btnDeleteSave');
+  const btn     = document.getElementById('btnContinue');
+  const delWrap = document.getElementById('btnDeleteWrap');
   if (!btn) return;
   const has = hasSaveData();
   btn.style.display = has ? '' : 'none';
-  if (del) del.style.display = has ? '' : 'none';
+  if (delWrap) delWrap.style.display = has ? '' : 'none';
   const sub = document.getElementById('btnContinueSub');
   if (sub && has) {
     let latest = null;
