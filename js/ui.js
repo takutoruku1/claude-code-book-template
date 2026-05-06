@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('mousedown', () => bringToFront(el));
   });
+  updateTaskbarIndicators();
 });
 
 /* ============================================================
@@ -473,23 +474,23 @@ function updateTaskbarIndicators() {
   const iconGames        = document.getElementById('taskbarIconGames');
   const iconMinesweeper  = document.getElementById('taskbarIconMinesweeper');
   iconApp.classList.toggle('running',
-    window.appIsRunning &&
+    !!window.appIsRunning &&
     (document.getElementById('appWindow').classList.contains('active') ||
      document.getElementById('screen-charselect').classList.contains('active') ||
-     window.appMinimized)
+     !!window.appMinimized)
   );
   iconChat.classList.toggle('running',
-    window.appIsRunning &&
-    (document.getElementById('chatWindow').classList.contains('active') || window.chatMinimized)
+    !!window.appIsRunning &&
+    (document.getElementById('chatWindow').classList.contains('active') || !!window.chatMinimized)
   );
   iconMemo.classList.toggle('running',
-    document.getElementById('memoAppWindow').classList.contains('active') || window.memoMinimized
+    document.getElementById('memoAppWindow').classList.contains('active') || !!window.memoMinimized
   );
   if (iconGames) iconGames.classList.toggle('running',
-    document.getElementById('gamesWindow').classList.contains('active') || window.gamesMinimized
+    document.getElementById('gamesWindow').classList.contains('active') || !!window.gamesMinimized
   );
   if (iconMinesweeper) iconMinesweeper.classList.toggle('running',
-    document.getElementById('minesweeperWindow').classList.contains('active') || window.minesweeperMinimized
+    document.getElementById('minesweeperWindow').classList.contains('active') || !!window.minesweeperMinimized
   );
 }
 
