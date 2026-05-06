@@ -109,7 +109,8 @@ function addChatMsg(from, text, ava, keyword) {
     bubble.addEventListener('click', () => collectKeyword(keyword, bubble));
   }
   msgs.appendChild(row);
-  msgs.scrollTop = msgs.scrollHeight;
+  const pastVisible = document.getElementById('chatPastMessages')?.style.display !== 'none';
+  if (!pastVisible) msgs.scrollTop = msgs.scrollHeight;
   if (!window._skipChatHistory) {
     if (!window._chatHistory) window._chatHistory = [];
     window._chatHistory.push({ type: 'msg', from, text, avatar: ava });

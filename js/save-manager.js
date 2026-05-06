@@ -187,6 +187,8 @@ function loadFromSlot(slot) {
   document.getElementById('chatMessages').innerHTML   = '';
   document.getElementById('chatChoices').innerHTML    = '';
   if (typeof _setChatCharInfo === 'function') _setChatCharInfo(char);
+  window._routeChats = {};
+  if (typeof _initRouteChatEntry === 'function') _initRouteChatEntry(GS.route);
   window._chatUnread = 0;
 
   window._skipChatHistory = true;

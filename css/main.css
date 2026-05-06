@@ -1040,6 +1040,14 @@ body:has(#screen-title.active) .taskbar { display: none; }
 /* Thread screen: messages fill remaining space */
 #chatScreenThread { background: var(--bg); }
 #chatScreenThread .chat-messages { padding-bottom: 140px; }
+#chatPastMessages { padding-bottom: 20px; }
+.chat-past-label {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-sub);
+  padding: 8px 0 12px;
+  opacity: .7;
+}
 
 /* ===== STEP BAR ===== */
 .step-bar {

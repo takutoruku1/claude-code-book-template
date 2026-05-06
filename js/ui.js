@@ -113,6 +113,7 @@ function closeApp() {
   window.appMinimized  = false;
   window.chatMinimized = false;
   window.memoMinimized = false;
+  window._routeChats   = {};
   clearProtagChoices();
   updateTaskbarIndicators();
   updateProtagWidget();
@@ -135,8 +136,9 @@ function _showPendingChoicesInWidget() {
 
 function _onChatWindowOpen() {
   clearChatBadge();
-  const onThread = !!document.getElementById('chatScreenThread')?.classList.contains('active');
-  if (onThread) _showPendingChoicesInWidget();
+  const onThread    = !!document.getElementById('chatScreenThread')?.classList.contains('active');
+  const pastVisible = document.getElementById('chatPastMessages')?.style.display !== 'none';
+  if (onThread && !pastVisible) _showPendingChoicesInWidget();
 }
 
 function closeChatWindow() {
@@ -365,70 +367,171 @@ function chatShowScreen(screen) {
   if (screen === 'thread') clearChatBadge();
 }
 
-function chatOpenThread() {
+function chatOpenThread(route) {
+  const target = route || GS?.route;
+  const isCurrent = !target || target === GS?.route;
+  const char = (target ? CHARACTERS[target] : null) || CHARACTERS[GS?.route];
+
+  if (char) {
+    const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+    setEl('chatAvatarEl', char.avatar);
+    setEl('chatNameEl',   char.name);
+    setEl('chatStatus',   isCurrent ? 'オンライン' : '-----');
+  }
+
+  const msgsEl     = document.getElementById('chatMessages');
+  const pastEl     = document.getElementById('chatPastMessages');
+  const choicesEl  = document.getElementById('chatChoices');
+
+  if (isCurrent) {
+    if (pastEl)    { pastEl.style.display = 'none'; pastEl.innerHTML = ''; }
+    if (msgsEl)    { msgsEl.style.display = ''; msgsEl.scrollTop = msgsEl.scrollHeight; }
+    if (choicesEl) { choicesEl.style.display = ''; }
+    _showPendingChoicesInWidget();
+  } else {
+    const snap = window._routeChats?.[target]?.messagesHTML || '';
+    if (msgsEl)    { msgsEl.style.display = 'none'; }
+    if (choicesEl) { choicesEl.style.display = 'none'; }
+    clearProtagChoices();
+    if (pastEl) {
+      pastEl.innerHTML = `<div class="chat-past-label">📜 過去のトーク</div>${snap}`;
+      pastEl.style.display = '';
+      setTimeout(() => { pastEl.scrollTop = pastEl.scrollHeight; }, 50);
+    }
+  }
+
   chatShowScreen('thread');
-  setTimeout(() => {
-    const msgs = document.getElementById('chatMessages');
-    if (msgs) msgs.scrollTop = msgs.scrollHeight;
-  }, 50);
-  _showPendingChoicesInWidget();
+  _renderChatLists();
+}
+
+const _ROUTE_ORDER = ['midori', 'saku', 'seiji', 'karen'];
+
+function _initRouteChatEntry(route) {
+  if (!window._routeChats) window._routeChats = {};
+  if (!window._routeChats[route]) {
+    window._routeChats[route] = {
+      char:    CHARACTERS[route],
+      preview: 'メッセージはありません',
+      time:    '',
+      unread:  0,
+      done:    false,
+      messagesHTML: '',
+    };
+  }
+  _renderChatLists();
+}
+
+function _renderChatLists() {
+  const chats = window._routeChats || {};
+  const routes = _ROUTE_ORDER.filter(r => chats[r]);
+
+  const friendsList = document.getElementById('chatFriendsList');
+  const talksList   = document.getElementById('chatTalksList');
+  const countEl     = document.getElementById('chatFriendCount');
+  if (countEl) countEl.textContent = `友達 ${routes.length}`;
+
+  if (friendsList) {
+    friendsList.innerHTML = '';
+    routes.forEach(route => {
+      const d = chats[route];
+      const item = document.createElement('div');
+      item.className = 'chatapp-friend-item';
+      item.onclick = () => chatOpenThread(route);
+      item.innerHTML = `
+        <div class="chatapp-contact-ava">${d.char.avatar}</div>
+        <div class="chatapp-contact-info">
+          <div class="chatapp-contact-name">${d.char.name}</div>
+          <div class="chatapp-contact-sub">${d.done ? '-----' : 'オンライン'}</div>
+        </div>`;
+      friendsList.appendChild(item);
+    });
+  }
+
+  if (talksList) {
+    talksList.innerHTML = '';
+    routes.forEach(route => {
+      const d    = chats[route];
+      const unread = (route === GS?.route) ? (window._chatUnread || 0) : 0;
+      const item = document.createElement('div');
+      item.className = 'chatapp-talk-item';
+      item.onclick = () => chatOpenThread(route);
+      item.innerHTML = `
+        <div class="chatapp-talk-ava">${d.char.avatar}</div>
+        <div class="chatapp-talk-body">
+          <div class="chatapp-talk-top">
+            <span class="chatapp-talk-name">${d.char.name}</span>
+            <span class="chatapp-talk-time">${d.time}</span>
+          </div>
+          <span class="chatapp-talk-preview">${d.preview}</span>
+        </div>
+        ${unread > 0 ? `<div class="chatapp-talk-badge" style="display:flex">${unread > 9 ? '9+' : unread}</div>` : ''}`;
+      talksList.appendChild(item);
+    });
+  }
 }
 
 function updateChatContactPreview(text) {
-  const preview = document.getElementById('chatTalkPreview');
-  const timeEl  = document.getElementById('chatTalkTime');
-  if (preview) preview.textContent = text.length > 26 ? text.slice(0, 26) + '…' : text;
-  if (timeEl) {
-    const now = new Date();
-    timeEl.textContent = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
-  }
+  const now = new Date();
+  const t   = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const p   = text.length > 26 ? text.slice(0, 26) + '…' : text;
+  const entry = window._routeChats?.[GS?.route];
+  if (entry) { entry.preview = p; entry.time = t; }
+  _renderChatLists();
 }
 
 function updateChatBadge() {
   const count = window._chatUnread || 0;
   const str   = count > 9 ? '9+' : String(count);
   const show  = count > 0 ? 'flex' : 'none';
-  const talkBadge = document.getElementById('chatTalkBadge');
-  const navBadge  = document.getElementById('chatNavBadge');
-  if (talkBadge) { talkBadge.textContent = str; talkBadge.style.display = show; }
-  if (navBadge)  { navBadge.textContent  = str; navBadge.style.display  = show; }
+  const navBadge = document.getElementById('chatNavBadge');
+  if (navBadge) { navBadge.textContent = str; navBadge.style.display = show; }
+  _renderChatLists();
 }
 
 function clearChatBadge() {
   window._chatUnread = 0;
-  updateChatBadge();
+  const navBadge = document.getElementById('chatNavBadge');
+  if (navBadge) { navBadge.style.display = 'none'; }
+  _renderChatLists();
 }
 
 function _setChatCharInfo(char) {
   const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
-  setEl('chatAvatarEl',   char.avatar);
-  setEl('chatNameEl',     char.name);
-  setEl('chatTalkAva',    char.avatar);
-  setEl('chatTalkName',   char.name);
-  setEl('chatFriendAva',  char.avatar);
-  setEl('chatFriendName', char.name);
-  setEl('chatTalkPreview', 'メッセージはありません');
-  setEl('chatTalkTime', '');
+  setEl('chatAvatarEl', char.avatar);
+  setEl('chatNameEl',   char.name);
 }
 
 function resetGame(route) {
+  // Save snapshot of previous route
+  if (GS?.route && window._routeChats?.[GS.route]) {
+    window._routeChats[GS.route].messagesHTML = document.getElementById('chatMessages')?.innerHTML || '';
+    window._routeChats[GS.route].done = true;
+  }
+
   window._chatHistory    = [];
   window._pendingChoices = null;
   window._currentStep    = 1;
   window._currentArea    = 'gamePlaceholder';
   window._chatUnread     = 0;
 
+  if (!window._routeChats) window._routeChats = {};
+
   initGS(route);
   buildFlowMap(route);
   updateProtagWidget();
 
   const char = CHARACTERS[route];
+  const pastEl = document.getElementById('chatPastMessages');
+  if (pastEl) { pastEl.style.display = 'none'; pastEl.innerHTML = ''; }
+  document.getElementById('chatMessages').style.display = '';
   document.getElementById('chatMessages').innerHTML  = '';
+  document.getElementById('chatChoices').style.display = '';
   document.getElementById('chatChoices').innerHTML   = '';
   document.getElementById('chatStatus').textContent  = 'オンライン';
   document.getElementById('phIcon').textContent      = char.avatar;
   document.getElementById('screen-ending').classList.remove('active');
   _setChatCharInfo(char);
+  _initRouteChatEntry(route);
   chatShowScreen('talk');
   updateChatBadge();
 

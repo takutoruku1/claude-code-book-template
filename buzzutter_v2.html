@@ -228,31 +228,15 @@
         </div>
       </div>
       <div class="chatapp-list-scroll">
-        <div class="chatapp-section-label">友達 1</div>
-        <div class="chatapp-friend-item" onclick="chatOpenThread()">
-          <div class="chatapp-contact-ava" id="chatFriendAva">💬</div>
-          <div class="chatapp-contact-info">
-            <div class="chatapp-contact-name" id="chatFriendName">---</div>
-            <div class="chatapp-contact-sub">オンライン</div>
-          </div>
-        </div>
+        <div class="chatapp-section-label" id="chatFriendCount">友達 0</div>
+        <div id="chatFriendsList"></div>
       </div>
     </div>
     <!-- トーク一覧画面 -->
     <div class="chatapp-screen active" id="chatScreenTalk">
       <div class="chatapp-list-header">トーク</div>
       <div class="chatapp-list-scroll">
-        <div class="chatapp-talk-item" onclick="chatOpenThread()">
-          <div class="chatapp-talk-ava" id="chatTalkAva">💬</div>
-          <div class="chatapp-talk-body">
-            <div class="chatapp-talk-top">
-              <span class="chatapp-talk-name" id="chatTalkName">---</span>
-              <span class="chatapp-talk-time" id="chatTalkTime"></span>
-            </div>
-            <span class="chatapp-talk-preview" id="chatTalkPreview">メッセージはありません</span>
-          </div>
-          <div class="chatapp-talk-badge" id="chatTalkBadge" style="display:none">0</div>
-        </div>
+        <div id="chatTalksList"></div>
       </div>
     </div>
     <!-- トーク画面 -->
@@ -267,6 +251,7 @@
       </div>
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-choices" id="chatChoices"></div>
+      <div class="chat-messages" id="chatPastMessages" style="display:none"></div>
     </div>
   </div>
   <!-- ボトムナビ -->
