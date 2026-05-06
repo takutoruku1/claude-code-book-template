@@ -56,7 +56,7 @@ function _getSlotMeta(slot) {
 }
 
 /* ---- セーブ画面（スロット選択モーダル） ---- */
-function _showSlotModal(titleText, onSlotClick, loadMode) {
+function _showSlotModal(titleText, onSlotClick, loadMode, showQuitBtn) {
   const existing = document.getElementById('saveSlotModal');
   if (existing) existing.remove();
 
@@ -82,10 +82,15 @@ function _showSlotModal(titleText, onSlotClick, loadMode) {
       </div>`;
   }
 
+  const quitBtn = showQuitBtn
+    ? `<button class="slot-modal-quit" onclick="_closeSlotModal();closeApp()">セーブせずに終了</button>`
+    : '';
+
   modal.innerHTML = `
     <div class="slot-modal-box">
       <div class="slot-modal-title">${titleText}</div>
       <div class="slot-modal-slots">${slotsHtml}</div>
+      ${quitBtn}
       <button class="slot-modal-cancel" onclick="_closeSlotModal()">キャンセル</button>
     </div>`;
 
@@ -118,7 +123,7 @@ function shutdownGame() {
     _writeSlot(slot, _buildSaveData());
     _refreshTitleContinueBtn();
     _showShutdownOverlay(() => closeApp());
-  }, false);
+  }, false, true);
 }
 
 /* ---- スリープ（セーブのみ） ---- */
