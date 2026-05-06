@@ -214,30 +214,24 @@ function showKidokuLastChoice(choices) {
 ============================================================ */
 function triggerFlashback(phase, callback) {
   GS.flashbackPhase = Math.max(GS.flashbackPhase, phase);
-  const overlay = document.createElement('div');
-  overlay.style.cssText = [
-    'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;',
-    'display:flex;align-items:center;justify-content:center;',
-    'flex-direction:column;gap:20px;animation:fadeIn .4s ease;',
-  ].join('');
 
   const lines = phase === 2
     ? ['…残す、か。', '何を、残したかったんだろう。']
     : ['3年前の記事。', '篠宮 カレンの姉。', '私が書いた——'];
 
-  lines.forEach((t, i) => {
-    const p = document.createElement('p');
-    p.style.cssText = 'color:rgba(200,200,220,.7);font-size:15px;letter-spacing:3px;opacity:0;transition:opacity .8s;';
-    p.textContent = t;
-    overlay.appendChild(p);
-    setTimeout(() => { p.style.opacity = '1'; }, 600 + i * 1400);
-  });
-  document.body.appendChild(overlay);
+  const lineInterval = 1800;
+  const lineDuration = 2200;
 
-  const total = 600 + lines.length * 1400 + 1600;
+  lines.forEach((text, i) => {
+    setTimeout(() => {
+      if (typeof showProtagMsg === 'function') showProtagMsg(text, false, lineDuration);
+      document.getElementById('protagBubble')?.classList.add('flashback');
+    }, 300 + i * lineInterval);
+  });
+
+  const total = 300 + (lines.length - 1) * lineInterval + lineDuration + 500;
   setTimeout(() => {
-    overlay.style.opacity = '0';
-    overlay.style.transition = 'opacity .8s';
-    setTimeout(() => { overlay.remove(); if (callback) callback(); }, 800);
+    document.getElementById('protagBubble')?.classList.remove('flashback');
+    if (callback) callback();
   }, total);
 }

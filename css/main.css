@@ -2495,6 +2495,12 @@ body:has(#screen-title.active) .taskbar { display: none; }
   transform: translateY(0) scale(1);
 }
 .protag-bubble.thinking { font-style: italic; color: rgba(180,170,255,.7); }
+.protag-bubble.flashback {
+  letter-spacing: 2.5px;
+  color: rgba(200,195,230,.75);
+  border-color: rgba(124,106,247,.15);
+  background: rgba(12,8,24,.96);
+}
 @keyframes protagFloat {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-5px); }

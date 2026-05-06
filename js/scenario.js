@@ -244,12 +244,6 @@ const CHAT_FLOWS = {
     // flashback2 は演出 trigger。showMaterial と違い resumeAt を使わず、
     // 演出完了後は配列の次のステップ（saku_fb2_after）へ自動進行する。
     {
-      id: 'saku_fb2_pre',
-      from: 'system',
-      text: '— 主人公の記憶が揺れる —',
-      pause: 600
-    },
-    {
       id: 'saku_fb2',
       from: 'trigger',
       action: 'flashback2'
