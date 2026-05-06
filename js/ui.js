@@ -113,6 +113,7 @@ function closeApp() {
   window.appMinimized  = false;
   window.chatMinimized = false;
   window.memoMinimized = false;
+  clearProtagChoices();
   updateTaskbarIndicators();
   updateProtagWidget();
 }
@@ -124,9 +125,19 @@ function closeAppWindow() {
   refreshDesktopNotifs();
 }
 
+function _onChatWindowOpen() {
+  clearChatBadge();
+  if (window._pendingChoices && typeof showProtagChoices === 'function') {
+    const box = document.getElementById('chatChoices');
+    if (box) box.innerHTML = '';
+    showProtagChoices(window._pendingChoices, _onChoiceSelect);
+  }
+}
+
 function closeChatWindow() {
   document.getElementById('chatWindow').classList.remove('active');
   window.chatMinimized = false;
+  clearProtagChoices();
   updateTaskbarIndicators();
   refreshDesktopNotifs();
 }
@@ -502,15 +513,16 @@ function taskbarToggleChat() {
     chatWin.classList.add('active');
     bringToFront(chatWin);
     window.chatMinimized = false;
-    clearChatBadge();
+    _onChatWindowOpen();
   } else if (chatWin.classList.contains('active')) {
+    clearProtagChoices();
     minimizeWin(chatWin);
     window.chatMinimized = true;
   } else if (window.appIsRunning) {
     chatWin.classList.add('active');
     bringToFront(chatWin);
     window.chatMinimized = false;
-    clearChatBadge();
+    _onChatWindowOpen();
   }
   updateTaskbarIndicators();
   refreshDesktopNotifs();

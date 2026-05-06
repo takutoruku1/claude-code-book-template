@@ -76,43 +76,66 @@ function runChat(idx) {
   }
 }
 
+const _PROTAG_GUIDE_CHAT = [
+  'チャトルにメッセージが届いているようだ…',
+  '返事を待たせているかもしれない。チャトルを確認しよう',
+  'チャトルに新しいメッセージがある気がする',
+];
+const _PROTAG_GUIDE_BUZZ = [
+  'ばずったーで文章を考えよう',
+  'ばずったーを開いて投稿を作ろう',
+  '何を書くか、ばずったーで考えてみよう',
+];
+const _PROTAG_GUIDE_POST = [
+  'ばずったーで投稿しよう',
+  '言葉が決まったら、ばずったーから送信しよう',
+  '投稿の準備ができたらばずったーへ',
+];
+
+function _isChatOpen() {
+  return !!document.getElementById('chatWindow')?.classList.contains('active');
+}
+function _isBuzzOpen() {
+  return !!document.getElementById('appWindow')?.classList.contains('active');
+}
+
+function _onChoiceSelect(opt) {
+  const box = document.getElementById('chatChoices');
+  window._pendingChoices = null;
+  setDesktopNotif('notifChat', false);
+  addChatMsg('self', opt.text, '👤');
+  if (box) box.innerHTML = '';
+  if (opt.selfBonus) GS.chatSelfBonus += opt.selfBonus;
+  if (opt.buzzBonus) GS.chatBuzzBonus += opt.buzzBonus;
+  if (opt.egoPlus)   GS.egoScore++;
+  if (opt.setFlag)   GS.flags[opt.setFlag] = true;
+  setTimeout(() => runChatId(opt.next), 300);
+}
+
 function showChoices(opts) {
   const box = document.getElementById('chatChoices');
   box.innerHTML = '';
   setDesktopNotif('notifChat', true);
   window._pendingChoices = opts;
 
+  const chatOpen = _isChatOpen();
+
   if (typeof showProtagMsg === 'function') {
-    setTimeout(() => showProtagMsg(_pick(_PROTAG_ON_CHOICES), true, 4500), 400);
+    if (chatOpen) {
+      setTimeout(() => showProtagMsg(_pick(_PROTAG_ON_CHOICES), true, 4500), 400);
+    } else {
+      setTimeout(() => showProtagMsg(_pick(_PROTAG_GUIDE_CHAT), false, 7000), 400);
+    }
   }
 
-  if (typeof showProtagChoices === 'function') {
-    showProtagChoices(opts, (opt) => {
-      window._pendingChoices = null;
-      setDesktopNotif('notifChat', false);
-      addChatMsg('self', opt.text, '👤');
-      if (opt.selfBonus) GS.chatSelfBonus += opt.selfBonus;
-      if (opt.buzzBonus) GS.chatBuzzBonus += opt.buzzBonus;
-      if (opt.egoPlus)   GS.egoScore++;
-      if (opt.setFlag)   GS.flags[opt.setFlag] = true;
-      setTimeout(() => runChatId(opt.next), 300);
-    });
+  if (chatOpen && typeof showProtagChoices === 'function') {
+    showProtagChoices(opts, _onChoiceSelect);
   } else {
     opts.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'choice-btn';
       btn.textContent = opt.text;
-      btn.onclick = () => {
-        window._pendingChoices = null;
-        setDesktopNotif('notifChat', false);
-        addChatMsg('self', opt.text, '👤');
-        box.innerHTML = '';
-        if (opt.selfBonus) GS.chatSelfBonus += opt.selfBonus;
-        if (opt.buzzBonus) GS.chatBuzzBonus += opt.buzzBonus;
-        if (opt.egoPlus)   GS.egoScore++;
-        if (opt.setFlag)   GS.flags[opt.setFlag] = true;
-        setTimeout(() => runChatId(opt.next), 300);
-      };
+      btn.onclick = () => _onChoiceSelect(opt);
       box.appendChild(btn);
     });
   }
@@ -124,10 +147,16 @@ function handleTrigger(node, idx) {
     setStep(2);
     showArea('materialArea');
     setupMaterials();
+    if (!_isBuzzOpen() && typeof showProtagMsg === 'function') {
+      setTimeout(() => showProtagMsg(_pick(_PROTAG_GUIDE_BUZZ), false, 7000), 600);
+    }
 
   } else if (node.action === 'showPost') {
     GS.postResumeAt = node.resumeAt || null;
     goToPost();
+    if (!_isBuzzOpen() && typeof showProtagMsg === 'function') {
+      setTimeout(() => showProtagMsg(_pick(_PROTAG_GUIDE_POST), false, 7000), 600);
+    }
 
   } else if (node.action === 'flashback2') {
     triggerFlashback(2, () => runChat(idx + 1));
