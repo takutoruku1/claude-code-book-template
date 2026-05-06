@@ -80,11 +80,13 @@ function showChoices(opts) {
   const box = document.getElementById('chatChoices');
   box.innerHTML = '';
   setDesktopNotif('notifChat', true);
+  window._pendingChoices = opts;
   opts.forEach(opt => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.textContent = opt.text;
     btn.onclick = () => {
+      window._pendingChoices = null;
       setDesktopNotif('notifChat', false);
       addChatMsg('self', opt.text, '👤');
       box.innerHTML = '';

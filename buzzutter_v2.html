@@ -45,6 +45,12 @@
     <div class="title-button-group">
       <button class="btn-start" onclick="openApp(false)">▶ メインモード</button>
       <button class="btn-start btn-start-debug" onclick="openApp(true)">🔧 デバッグモード</button>
+      <div class="btn-continue-wrap">
+        <button class="btn-start btn-continue" id="btnContinue" onclick="showLoadSlotPicker()" style="display:none">
+          ↩ 続きから始める<br><span class="btn-continue-sub" id="btnContinueSub"></span>
+        </button>
+        <button class="btn-delete-save" id="btnDeleteSave" onclick="if(confirm('セーブデータを削除しますか？'))deleteSave()" style="display:none">✕</button>
+      </div>
     </div>
   </div>
 
@@ -357,9 +363,9 @@
       <div class="start-username">SNS担当者</div>
     </div>
     <div class="start-power-btns">
-      <div class="start-power-btn" title="スリープ">🌙</div>
+      <div class="start-power-btn" title="セーブする" onclick="sleepGame()">🌙</div>
       <div class="start-power-btn" title="再起動">🔄</div>
-      <div class="start-power-btn" title="シャットダウン">⏻</div>
+      <div class="start-power-btn" title="セーブしてゲームを終了する" onclick="shutdownGame()">⏻</div>
     </div>
   </div>
 </div>
@@ -549,5 +555,6 @@
 <script src="js/game-logic.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/minesweeper.js"></script>
+<script src="js/save-manager.js"></script>
 </body>
 </html>

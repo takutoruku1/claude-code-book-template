@@ -318,6 +318,11 @@ function refreshDesktopNotifs() {
 }
 
 function resetGame(route) {
+  window._chatHistory    = [];
+  window._pendingChoices = null;
+  window._currentStep    = 1;
+  window._currentArea    = 'gamePlaceholder';
+
   initGS(route);
   buildFlowMap(route);
 

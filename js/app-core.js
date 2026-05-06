@@ -74,6 +74,7 @@ function buildFlowMap(route) {
    UTILS
 ============================================================ */
 function setStep(n) {
+  window._currentStep = n;
   for (let i = 1; i <= 6; i++) {
     const el = document.getElementById('s' + i);
     if (!el) continue;
@@ -86,6 +87,7 @@ function showArea(name) {
     document.getElementById(id).style.display = 'none';
   });
   if (name) document.getElementById(name).style.display = 'flex';
+  window._currentArea = name || 'gamePlaceholder';
   const needsAction = ['materialArea','postArea','reactionArea'].includes(name);
   setDesktopNotif('notifApp', needsAction);
 }
@@ -108,6 +110,10 @@ function addChatMsg(from, text, ava, keyword) {
   }
   msgs.appendChild(row);
   msgs.scrollTop = msgs.scrollHeight;
+  if (!window._skipChatHistory) {
+    if (!window._chatHistory) window._chatHistory = [];
+    window._chatHistory.push({ type: 'msg', from, text, avatar: ava });
+  }
 }
 
 function addTyping() {
@@ -135,4 +141,8 @@ function addSysMsg(text) {
   d.className = 'sys-msg'; d.textContent = text;
   msgs.appendChild(d);
   msgs.scrollTop = msgs.scrollHeight;
+  if (!window._skipChatHistory) {
+    if (!window._chatHistory) window._chatHistory = [];
+    window._chatHistory.push({ type: 'sys', text });
+  }
 }
