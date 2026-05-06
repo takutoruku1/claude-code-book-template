@@ -2435,12 +2435,13 @@ body:has(#screen-title.active) .taskbar { display: none; }
 #protagonistWidget {
   position: fixed;
   bottom: calc(var(--taskbar-height) + 16px);
-  right: 24px;
+  left: 50%;
+  transform: translateX(-50%);
   display: none;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 10px;
-  z-index: 49;
+  z-index: 500;
   pointer-events: none;
 }
 #protagonistWidget.visible { display: flex; }
@@ -2457,11 +2458,11 @@ body:has(#screen-title.active) .taskbar { display: none; }
 .protag-bubble {
   background: rgba(18,14,30,.93);
   border: 1px solid rgba(124,106,247,.35);
-  border-radius: 14px 14px 4px 14px;
+  border-radius: 14px;
   padding: 9px 13px;
   font-size: 12px;
   color: rgba(220,215,255,.9);
-  max-width: 190px;
+  max-width: 220px;
   line-height: 1.6;
   letter-spacing: .3px;
   backdrop-filter: blur(8px);
@@ -2469,16 +2470,17 @@ body:has(#screen-title.active) .taskbar { display: none; }
   transform: translateY(6px) scale(.97);
   transition: opacity .25s ease, transform .25s ease;
   position: relative;
+  text-align: center;
 }
 .protag-bubble::after {
   content: '';
   position: absolute;
-  bottom: -6px; right: 14px;
+  bottom: -6px; left: 50%;
+  transform: translateX(-50%) rotate(45deg);
   width: 10px; height: 10px;
   background: rgba(18,14,30,.93);
   border-right: 1px solid rgba(124,106,247,.35);
   border-bottom: 1px solid rgba(124,106,247,.35);
-  transform: rotate(45deg);
 }
 .protag-bubble.show {
   opacity: 1;
