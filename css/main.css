@@ -1190,6 +1190,7 @@ body:has(#screen-title.active) .taskbar { display: none; }
   max-height: 45vh;
   overflow-y: auto;
 }
+.chat-choices:empty { display: none; }
 .choice-btn {
   padding: 8px 12px;
   background: var(--surface2);
