@@ -737,6 +737,7 @@ body:has(#screen-title.active) .taskbar { display: none; }
 }
 .explorer-empty-icon { font-size: 56px; opacity: .4; }
 .explorer-empty-text { font-size: 13px; opacity: .7; }
+#trashWindow .explorer-content { align-content: center; justify-content: center; }
 .explorer-file-item {
   display: flex;
   flex-direction: column;

@@ -6,7 +6,7 @@ function bringToFront(el) {
   el.style.zIndex = ++_zTop;
 }
 document.addEventListener('DOMContentLoaded', () => {
-  ['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow', 'minesweeperWindow'].forEach(id => {
+  ['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow', 'minesweeperWindow', 'trashWindow'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('mousedown', () => bringToFront(el));
   });
@@ -163,6 +163,16 @@ function closeMemoApp() {
   document.getElementById('memoAppWindow').classList.remove('active');
   window.memoMinimized = false;
   updateTaskbarIndicators();
+}
+
+function openTrashWindow() {
+  const win = document.getElementById('trashWindow');
+  win.classList.add('active');
+  bringToFront(win);
+}
+
+function closeTrashWindow() {
+  document.getElementById('trashWindow').classList.remove('active');
 }
 
 function openGamesWindow() {
@@ -1001,7 +1011,7 @@ function makeDraggable(windowEl) {
   });
 }
 
-['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow'].forEach(id => {
+['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow', 'trashWindow'].forEach(id => {
   makeDraggable(document.getElementById(id));
 });
 
@@ -1073,7 +1083,7 @@ function makeResizable(windowEl) {
   });
 }
 
-['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow'].forEach(id => {
+['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow', 'trashWindow'].forEach(id => {
   makeResizable(document.getElementById(id));
 });
 

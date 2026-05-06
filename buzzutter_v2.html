@@ -26,6 +26,10 @@
       <div class="icon-label">メモ帳</div>
       <div class="desktop-notif" id="notifMemo"></div>
     </div>
+    <div class="desktop-icon" onclick="openTrashWindow()">
+      <div class="icon-img">🗑️</div>
+      <div class="icon-label">ゴミ箱</div>
+    </div>
   </div>
 
   <!-- TITLE SCREEN -->
@@ -556,6 +560,60 @@
     <div class="boot-dot"></div>
     <div class="boot-dot"></div>
     <div class="boot-dot"></div>
+  </div>
+</div>
+
+<!-- TRASH WINDOW -->
+<div class="explorer-window" id="trashWindow">
+  <div class="titlebar">
+    <div class="titlebar-title">🗑️ ゴミ箱</div>
+    <div class="titlebar-winbtns">
+      <div class="snap-btn-wrap">
+        <div class="titlebar-winbtn max" id="maxBtnTrash" onclick="toggleMaximize('trashWindow','maxBtnTrash')">&#x25A1;</div>
+        <div class="snap-layouts">
+          <div class="snap-layouts-label">スナップレイアウト</div>
+          <div class="snap-layouts-row">
+            <div class="snap-layout-cell snapleft"  onclick="snapLayout('trashWindow','left',event)"  title="左半分"><div class="snap-ind"></div></div>
+            <div class="snap-layout-cell snapfull"  onclick="snapLayout('trashWindow','full',event)"  title="最大化"><div class="snap-ind"></div></div>
+            <div class="snap-layout-cell snapright" onclick="snapLayout('trashWindow','right',event)" title="右半分"><div class="snap-ind"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="titlebar-winbtn close" onclick="closeTrashWindow()">&#x2715;</div>
+    </div>
+  </div>
+  <div class="explorer-toolbar">
+    <div class="explorer-nav-btn disabled" title="戻る">&#8249;</div>
+    <div class="explorer-nav-btn disabled" title="進む">&#8250;</div>
+    <div class="explorer-nav-btn disabled" title="上へ">&#8593;</div>
+    <div class="explorer-address-bar">
+      🖥️&nbsp;<span style="color:var(--text-dim)">PC</span>
+      <span class="explorer-address-sep">&rsaquo;</span>
+      <span>ゴミ箱</span>
+    </div>
+    <div class="explorer-nav-btn" title="最新の情報に更新">&#8635;</div>
+  </div>
+  <div class="explorer-body">
+    <div class="explorer-sidebar">
+      <div class="explorer-sidebar-group">
+        <div class="explorer-sidebar-label">クイックアクセス</div>
+        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">🏠</span>ホーム</div>
+        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">🖥</span>デスクトップ</div>
+        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">📥</span>ダウンロード</div>
+        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">📄</span>ドキュメント</div>
+      </div>
+      <div class="explorer-sidebar-group">
+        <div class="explorer-sidebar-label">PC</div>
+        <div class="explorer-sidebar-item active"><span class="explorer-sidebar-icon">🗑️</span>ゴミ箱</div>
+        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">💾</span>ローカルディスク (C:)</div>
+      </div>
+    </div>
+    <div class="explorer-content">
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+        <div class="explorer-empty-icon">🗑️</div>
+        <div class="explorer-empty-text">ゴミ箱は空です</div>
+      </div>
+    </div>
   </div>
 </div>
 
