@@ -76,21 +76,27 @@ function runChat(idx) {
   }
 }
 
-const _PROTAG_GUIDE_CHAT = [
-  'チャトルにメッセージが届いているようだ…',
-  '返事を待たせているかもしれない。チャトルを確認しよう',
-  'チャトルに新しいメッセージがある気がする',
-];
-const _PROTAG_GUIDE_BUZZ = [
-  'ばずったーで文章を考えよう',
-  'ばずったーを開いて投稿を作ろう',
-  '何を書くか、ばずったーで考えてみよう',
-];
-const _PROTAG_GUIDE_POST = [
-  'ばずったーで投稿しよう',
-  '言葉が決まったら、ばずったーから送信しよう',
-  '投稿の準備ができたらばずったーへ',
-];
+const _PROTAG_GUIDE_CHAT = {
+  midori:   ['メッセージが届いているようだ', 'クライアントが待っているかもしれない。チャトルを開こう'],
+  saku:     ['チャトルに新しいメッセージが…', '返事を待たせているかもしれない'],
+  seiji:    ['クライアントから連絡が来ているようだ', 'チャトルにメッセージがある'],
+  karen:    ['チャトルにメッセージが…見ないといけない', 'チャトルを確認しよう。…怖いけど'],
+  _default: ['チャトルにメッセージが届いているようだ…', '返事を待たせているかもしれない。チャトルを確認しよう'],
+};
+const _PROTAG_GUIDE_BUZZ = {
+  midori:   ['みどりさんの言葉に合う文章を、ばずったーで考えよう', 'どんな言葉がみどりさんらしいか、ばずったーで'],
+  saku:     ['朔さんの作品を、どう言葉にするか。ばずったーで', 'この人の視点を文章にしよう。ばずったーへ'],
+  seiji:    ['投稿文をばずったーで準備しよう', '誠司さんの店の魅力を伝える文章を考えよう'],
+  karen:    ['…ばずったーで言葉を選ぼう', '何を書くか、ばずったーで考えないと'],
+  _default: ['ばずったーで文章を考えよう', 'ばずったーを開いて投稿を作ろう'],
+};
+const _PROTAG_GUIDE_POST = {
+  midori:   ['準備ができたら、ばずったーから投稿しよう', 'みどりさんの想いを届けよう。ばずったーへ'],
+  saku:     ['この作品を世界に出そう。ばずったーへ', '言葉が決まったら、ばずったーから送信しよう'],
+  seiji:    ['文章が決まったらばずったーから投稿しよう', 'あとは送信するだけ。ばずったーへ'],
+  karen:    ['…送信するか、ばずったーで決めよう', '覚悟が決まったら、ばずったーから投稿しよう'],
+  _default: ['ばずったーで投稿しよう', '言葉が決まったら、ばずったーから送信しよう'],
+};
 
 function _isChatOpen() {
   return !!document.getElementById('chatWindow')?.classList.contains('active')
@@ -123,9 +129,9 @@ function showChoices(opts) {
 
   if (typeof showProtagMsg === 'function') {
     if (chatOpen) {
-      setTimeout(() => showProtagMsg(_pick(_PROTAG_ON_CHOICES), true, 4500), 400);
+      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_ON_CHOICES), true, 4500), 400);
     } else {
-      setTimeout(() => showProtagMsg(_pick(_PROTAG_GUIDE_CHAT), false, 7000), 400);
+      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_GUIDE_CHAT), false, 7000), 400);
     }
   }
 
@@ -149,14 +155,14 @@ function handleTrigger(node, idx) {
     showArea('materialArea');
     setupMaterials();
     if (!_isBuzzOpen() && typeof showProtagMsg === 'function') {
-      setTimeout(() => showProtagMsg(_pick(_PROTAG_GUIDE_BUZZ), false, 7000), 600);
+      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_GUIDE_BUZZ), false, 7000), 600);
     }
 
   } else if (node.action === 'showPost') {
     GS.postResumeAt = node.resumeAt || null;
     goToPost();
     if (!_isBuzzOpen() && typeof showProtagMsg === 'function') {
-      setTimeout(() => showProtagMsg(_pick(_PROTAG_GUIDE_POST), false, 7000), 600);
+      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_GUIDE_POST), false, 7000), 600);
     }
 
   } else if (node.action === 'flashback2') {

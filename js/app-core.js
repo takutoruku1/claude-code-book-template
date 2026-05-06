@@ -125,18 +125,15 @@ function addChatMsg(from, text, ava, keyword) {
     }
     if (typeof showProtagMsg === 'function') {
       if (!winActive) {
-        const guideArr = typeof _PROTAG_GUIDE_CHAT !== 'undefined'
-          ? _PROTAG_GUIDE_CHAT
-          : ['チャトルにメッセージが届いているようだ…'];
-        setTimeout(() => showProtagMsg(_pick(guideArr), false, 7000), 600);
+        setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_GUIDE_CHAT), false, 7000), 600);
       } else {
-        setTimeout(() => showProtagMsg(_pick(_PROTAG_ON_CLIENT), true, 2800), 600);
+        setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_ON_CLIENT), true, 2800), 600);
       }
     }
   }
   if (from === 'self' && !window._skipChatHistory) {
     if (typeof showProtagMsg === 'function') {
-      setTimeout(() => showProtagMsg(_pick(_PROTAG_ON_ANSWER), true, 3000), 300);
+      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_ON_ANSWER), true, 3000), 300);
     }
   }
 }
