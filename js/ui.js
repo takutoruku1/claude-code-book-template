@@ -388,7 +388,12 @@ function updateTaskbarIndicators() {
   const iconApp  = document.getElementById('taskbarIconApp');
   const iconChat = document.getElementById('taskbarIconChat');
   const iconMemo = document.getElementById('taskbarIconMemo');
-  iconApp .classList.toggle('running', window.appIsRunning);
+  iconApp .classList.toggle('running',
+    window.appIsRunning &&
+    (document.getElementById('appWindow').classList.contains('active') ||
+     document.getElementById('screen-charselect').classList.contains('active') ||
+     window.appMinimized)
+  );
   iconChat.classList.toggle('running',
     window.appIsRunning &&
     (document.getElementById('chatWindow').classList.contains('active') || window.chatMinimized)
