@@ -279,24 +279,6 @@ body:has(#screen-title.active) .taskbar { display: none; }
 }
 .slot-modal-cancel:hover { background: rgba(255,255,255,.06); }
 
-/* ---- セーブトースト ---- */
-.save-toast {
-  position: fixed;
-  bottom: 64px;
-  left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  background: rgba(22,22,36,.95);
-  border: 1px solid rgba(255,255,255,.1);
-  color: rgba(255,255,255,.8);
-  font-size: 13px;
-  padding: 9px 22px;
-  border-radius: 20px;
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity .3s, transform .3s;
-}
-.save-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 
 /* ===== CHARACTER SELECT ===== */

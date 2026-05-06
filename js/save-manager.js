@@ -120,8 +120,16 @@ function sleepGame() {
   _showSlotModal('セーブスロットを選択', slot => {
     _writeSlot(slot, _buildSaveData());
     _refreshTitleContinueBtn();
-    _showSaveToast();
+    _showSaveOverlay();
   }, false);
+}
+
+/* ---- ゲーム中からロード ---- */
+function showInGameLoadPicker() {
+  closeAllPopups();
+  const hasAny = SAVE_SLOT_KEYS.some((_, i) => _getSlotData(i + 1));
+  if (!hasAny) return;
+  _showSlotModal('ロードするスロットを選択', slot => loadFromSlot(slot), true);
 }
 
 /* ---- タイトルからロード ---- */
@@ -311,7 +319,7 @@ function _refreshTitleContinueBtn() {
   }
 }
 
-function _showShutdownOverlay(callback) {
+function _showSaveOverlay(callback) {
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:20000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;opacity:0;transition:opacity .4s;';
   overlay.innerHTML = '<div style="color:rgba(255,255,255,.5);font-size:13px;letter-spacing:2px;">ゲームを保存しました</div>';
@@ -325,16 +333,8 @@ function _showShutdownOverlay(callback) {
   });
 }
 
-function _showSaveToast() {
-  const t = document.createElement('div');
-  t.className = 'save-toast';
-  t.textContent = '💾 セーブしました';
-  document.body.appendChild(t);
-  requestAnimationFrame(() => t.classList.add('visible'));
-  setTimeout(() => {
-    t.classList.remove('visible');
-    setTimeout(() => t.remove(), 400);
-  }, 1800);
+function _showShutdownOverlay(callback) {
+  _showSaveOverlay(callback);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
