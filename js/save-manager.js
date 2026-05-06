@@ -181,6 +181,8 @@ function loadFromSlot(slot) {
   document.getElementById('chatStatus').textContent   = 'オンライン';
   document.getElementById('chatMessages').innerHTML   = '';
   document.getElementById('chatChoices').innerHTML    = '';
+  if (typeof _setChatCharInfo === 'function') _setChatCharInfo(char);
+  window._chatUnread = 0;
 
   window._skipChatHistory = true;
   const msgsEl = document.getElementById('chatMessages');
@@ -195,6 +197,11 @@ function loadFromSlot(slot) {
   });
   msgsEl.scrollTop = msgsEl.scrollHeight;
   window._skipChatHistory = false;
+
+  const _lastClient = [...(data.chatHistory || [])].reverse().find(m => m.type === 'msg' && m.from === 'client');
+  if (_lastClient && typeof updateChatContactPreview === 'function') {
+    updateChatContactPreview(_lastClient.text);
+  }
 
   const appWin = document.getElementById('appWindow');
   appWin.classList.toggle('active', !!data.appWindowActive);
@@ -271,6 +278,7 @@ function loadFromSlot(slot) {
     }
   }
 
+  if (typeof chatShowScreen === 'function') chatShowScreen('talk');
   updateTaskbarIndicators();
   window._loadingFromSave = false;
   refreshDesktopNotifs();

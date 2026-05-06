@@ -824,7 +824,7 @@ body:has(#screen-title.active) .taskbar { display: none; }
   position: fixed;
   left: 90px;
   top: 8px;
-  width: 340px;
+  width: 360px;
   height: calc(100vh - var(--taskbar-height) - 16px);
   min-height: 400px;
   background: var(--surface);
@@ -838,13 +838,197 @@ body:has(#screen-title.active) .taskbar { display: none; }
   z-index: 100;
 }
 .chat-window.active { display: flex; }
-.chat-window .chat-panel {
+.chatapp-content {
   flex: 1;
   min-height: 0;
-  width: auto;
-  min-width: 0;
-  border-right: none;
+  position: relative;
+  overflow: hidden;
 }
+.chatapp-screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+.chatapp-screen.active { display: flex; }
+/* ---- My profile (友達画面上部) ---- */
+.chatapp-my-profile {
+  background: var(--surface);
+  border-bottom: 1px solid var(--win-border);
+  padding: 14px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.chatapp-my-ava {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2a1f4a, #1a0f3a);
+  border: 2px solid var(--accent2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.chatapp-my-name { font-size: 14px; font-weight: 700; }
+.chatapp-my-sub  { font-size: 10px; color: var(--accent2); margin-top: 2px; }
+/* ---- Shared scroll area ---- */
+.chatapp-list-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.chatapp-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: .5px;
+  padding: 8px 14px 4px;
+}
+/* ---- Friend item (友達画面) ---- */
+.chatapp-friend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--win-border);
+  transition: background .12s;
+}
+.chatapp-friend-item:hover { background: rgba(255,255,255,.05); }
+.chatapp-contact-ava {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a4a2a, #1a3a1a);
+  border: 2px solid var(--line-green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.chatapp-contact-info { flex: 1; min-width: 0; }
+.chatapp-contact-name { font-size: 13px; font-weight: 700; }
+.chatapp-contact-sub  { font-size: 10px; color: var(--line-green); margin-top: 2px; }
+/* ---- Talk list header ---- */
+.chatapp-list-header {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 14px 9px;
+  border-bottom: 1px solid var(--win-border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+/* ---- Talk item (トーク一覧) ---- */
+.chatapp-talk-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--win-border);
+  transition: background .12s;
+}
+.chatapp-talk-item:hover { background: rgba(255,255,255,.05); }
+.chatapp-talk-ava {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a4a2a, #1a3a1a);
+  border: 2px solid var(--line-green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.chatapp-talk-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.chatapp-talk-top  { display: flex; justify-content: space-between; align-items: baseline; }
+.chatapp-talk-name { font-size: 13px; font-weight: 700; }
+.chatapp-talk-time { font-size: 9px; color: var(--text-dim); flex-shrink: 0; }
+.chatapp-talk-preview {
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chatapp-talk-badge {
+  min-width: 18px; height: 18px;
+  background: #06c755;
+  color: #000;
+  border-radius: 9px;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+/* ---- Thread header ---- */
+.chatapp-thread-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--win-border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.chatapp-back-btn {
+  background: none;
+  border: none;
+  color: var(--line-green);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background .12s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.chatapp-back-btn:hover { background: rgba(255,255,255,.08); }
+/* ---- Bottom navigation ---- */
+.chatapp-nav {
+  display: flex;
+  flex-direction: row;
+  border-top: 1px solid var(--win-border);
+  background: var(--surface);
+  flex-shrink: 0;
+  height: 54px;
+}
+.chatapp-nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  color: var(--text-dim);
+  transition: color .15s, background .12s;
+  border-radius: 0;
+}
+.chatapp-nav-btn:hover { background: rgba(255,255,255,.05); }
+.chatapp-nav-btn.active { color: #06c755; }
+.chatapp-nav-icon-wrap { position: relative; }
+.chatapp-nav-icon { font-size: 20px; display: block; }
+.chatapp-nav-label { font-size: 9px; }
+.chatapp-nav-badge {
+  position: absolute;
+  top: -4px; right: -8px;
+  min-width: 14px; height: 14px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 7px;
+  font-size: 8px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+/* Thread screen: messages fill remaining space */
+#chatScreenThread { background: var(--bg); }
+#chatScreenThread .chat-messages { padding-bottom: 140px; }
 
 /* ===== STEP BAR ===== */
 .step-bar {

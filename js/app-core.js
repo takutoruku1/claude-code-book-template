@@ -114,6 +114,15 @@ function addChatMsg(from, text, ava, keyword) {
     if (!window._chatHistory) window._chatHistory = [];
     window._chatHistory.push({ type: 'msg', from, text, avatar: ava });
   }
+  if (from === 'client' && !window._skipChatHistory) {
+    updateChatContactPreview(text);
+    const winActive    = document.getElementById('chatWindow')?.classList.contains('active');
+    const threadActive = document.getElementById('chatScreenThread')?.classList.contains('active');
+    if (!(winActive && threadActive)) {
+      window._chatUnread = (window._chatUnread || 0) + 1;
+      updateChatBadge();
+    }
+  }
 }
 
 function addTyping() {

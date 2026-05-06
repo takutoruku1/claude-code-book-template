@@ -217,16 +217,73 @@
       <div class="titlebar-winbtn close" onclick="closeChatWindow()">&#x2715;</div>
     </div>
   </div>
-  <div class="chat-panel">
-    <div class="chat-panel-header">
-      <div class="chat-avatar" id="chatAvatarEl">🌿</div>
-      <div>
-        <div class="chat-name" id="chatNameEl">田中 みどり</div>
-        <div class="chat-status" id="chatStatus">オンライン</div>
+  <div class="chatapp-content">
+    <!-- 友達画面 -->
+    <div class="chatapp-screen" id="chatScreenFriends">
+      <div class="chatapp-my-profile">
+        <div class="chatapp-my-ava">👤</div>
+        <div>
+          <div class="chatapp-my-name">あなた</div>
+          <div class="chatapp-my-sub">プレイヤー</div>
+        </div>
+      </div>
+      <div class="chatapp-list-scroll">
+        <div class="chatapp-section-label">友達 1</div>
+        <div class="chatapp-friend-item" onclick="chatOpenThread()">
+          <div class="chatapp-contact-ava" id="chatFriendAva">💬</div>
+          <div class="chatapp-contact-info">
+            <div class="chatapp-contact-name" id="chatFriendName">---</div>
+            <div class="chatapp-contact-sub">オンライン</div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-choices" id="chatChoices"></div>
+    <!-- トーク一覧画面 -->
+    <div class="chatapp-screen active" id="chatScreenTalk">
+      <div class="chatapp-list-header">トーク</div>
+      <div class="chatapp-list-scroll">
+        <div class="chatapp-talk-item" onclick="chatOpenThread()">
+          <div class="chatapp-talk-ava" id="chatTalkAva">💬</div>
+          <div class="chatapp-talk-body">
+            <div class="chatapp-talk-top">
+              <span class="chatapp-talk-name" id="chatTalkName">---</span>
+              <span class="chatapp-talk-time" id="chatTalkTime"></span>
+            </div>
+            <span class="chatapp-talk-preview" id="chatTalkPreview">メッセージはありません</span>
+          </div>
+          <div class="chatapp-talk-badge" id="chatTalkBadge" style="display:none">0</div>
+        </div>
+      </div>
+    </div>
+    <!-- トーク画面 -->
+    <div class="chatapp-screen" id="chatScreenThread">
+      <div class="chatapp-thread-header">
+        <button class="chatapp-back-btn" onclick="chatShowScreen('talk')">&#8592;</button>
+        <div class="chat-avatar" id="chatAvatarEl">🌿</div>
+        <div>
+          <div class="chat-name" id="chatNameEl">田中 みどり</div>
+          <div class="chat-status" id="chatStatus">オンライン</div>
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-choices" id="chatChoices"></div>
+    </div>
+  </div>
+  <!-- ボトムナビ -->
+  <div class="chatapp-nav">
+    <div class="chatapp-nav-btn active" id="chatNavTalk" onclick="chatShowScreen('talk')">
+      <div class="chatapp-nav-icon-wrap">
+        <span class="chatapp-nav-icon">💬</span>
+        <div class="chatapp-nav-badge" id="chatNavBadge" style="display:none">0</div>
+      </div>
+      <span class="chatapp-nav-label">トーク</span>
+    </div>
+    <div class="chatapp-nav-btn" id="chatNavFriends" onclick="chatShowScreen('friends')">
+      <div class="chatapp-nav-icon-wrap">
+        <span class="chatapp-nav-icon">👥</span>
+      </div>
+      <span class="chatapp-nav-label">友達</span>
+    </div>
   </div>
 </div>
 

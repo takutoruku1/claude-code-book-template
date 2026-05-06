@@ -338,11 +338,66 @@ function refreshDesktopNotifs() {
   Object.keys(_notifConfig).forEach(_applyDesktopNotif);
 }
 
+function chatShowScreen(screen) {
+  ['Friends', 'Talk', 'Thread'].forEach(s => {
+    document.getElementById('chatScreen' + s)?.classList.toggle('active', s.toLowerCase() === screen);
+  });
+  document.getElementById('chatNavTalk')?.classList.toggle('active', screen === 'talk' || screen === 'thread');
+  document.getElementById('chatNavFriends')?.classList.toggle('active', screen === 'friends');
+  if (screen === 'thread') clearChatBadge();
+}
+
+function chatOpenThread() {
+  chatShowScreen('thread');
+  setTimeout(() => {
+    const msgs = document.getElementById('chatMessages');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  }, 50);
+}
+
+function updateChatContactPreview(text) {
+  const preview = document.getElementById('chatTalkPreview');
+  const timeEl  = document.getElementById('chatTalkTime');
+  if (preview) preview.textContent = text.length > 26 ? text.slice(0, 26) + '…' : text;
+  if (timeEl) {
+    const now = new Date();
+    timeEl.textContent = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  }
+}
+
+function updateChatBadge() {
+  const count = window._chatUnread || 0;
+  const str   = count > 9 ? '9+' : String(count);
+  const show  = count > 0 ? 'flex' : 'none';
+  const talkBadge = document.getElementById('chatTalkBadge');
+  const navBadge  = document.getElementById('chatNavBadge');
+  if (talkBadge) { talkBadge.textContent = str; talkBadge.style.display = show; }
+  if (navBadge)  { navBadge.textContent  = str; navBadge.style.display  = show; }
+}
+
+function clearChatBadge() {
+  window._chatUnread = 0;
+  updateChatBadge();
+}
+
+function _setChatCharInfo(char) {
+  const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+  setEl('chatAvatarEl',   char.avatar);
+  setEl('chatNameEl',     char.name);
+  setEl('chatTalkAva',    char.avatar);
+  setEl('chatTalkName',   char.name);
+  setEl('chatFriendAva',  char.avatar);
+  setEl('chatFriendName', char.name);
+  setEl('chatTalkPreview', 'メッセージはありません');
+  setEl('chatTalkTime', '');
+}
+
 function resetGame(route) {
   window._chatHistory    = [];
   window._pendingChoices = null;
   window._currentStep    = 1;
   window._currentArea    = 'gamePlaceholder';
+  window._chatUnread     = 0;
 
   initGS(route);
   buildFlowMap(route);
@@ -351,10 +406,11 @@ function resetGame(route) {
   document.getElementById('chatMessages').innerHTML  = '';
   document.getElementById('chatChoices').innerHTML   = '';
   document.getElementById('chatStatus').textContent  = 'オンライン';
-  document.getElementById('chatAvatarEl').textContent = char.avatar;
-  document.getElementById('chatNameEl').textContent   = char.name;
-  document.getElementById('phIcon').textContent       = char.avatar;
+  document.getElementById('phIcon').textContent      = char.avatar;
   document.getElementById('screen-ending').classList.remove('active');
+  _setChatCharInfo(char);
+  chatShowScreen('talk');
+  updateChatBadge();
 
   setStep(1);
   showArea('gamePlaceholder');
@@ -443,6 +499,7 @@ function taskbarToggleChat() {
     chatWin.classList.add('active');
     bringToFront(chatWin);
     window.chatMinimized = false;
+    clearChatBadge();
   } else if (chatWin.classList.contains('active')) {
     minimizeWin(chatWin);
     window.chatMinimized = true;
@@ -450,6 +507,7 @@ function taskbarToggleChat() {
     chatWin.classList.add('active');
     bringToFront(chatWin);
     window.chatMinimized = false;
+    clearChatBadge();
   }
   updateTaskbarIndicators();
   refreshDesktopNotifs();
