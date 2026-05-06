@@ -125,13 +125,18 @@ function closeAppWindow() {
   refreshDesktopNotifs();
 }
 
-function _onChatWindowOpen() {
-  clearChatBadge();
+function _showPendingChoicesInWidget() {
   if (window._pendingChoices && typeof showProtagChoices === 'function') {
     const box = document.getElementById('chatChoices');
     if (box) box.innerHTML = '';
     showProtagChoices(window._pendingChoices, _onChoiceSelect);
   }
+}
+
+function _onChatWindowOpen() {
+  clearChatBadge();
+  const onThread = !!document.getElementById('chatScreenThread')?.classList.contains('active');
+  if (onThread) _showPendingChoicesInWidget();
 }
 
 function closeChatWindow() {
@@ -366,6 +371,7 @@ function chatOpenThread() {
     const msgs = document.getElementById('chatMessages');
     if (msgs) msgs.scrollTop = msgs.scrollHeight;
   }, 50);
+  _showPendingChoicesInWidget();
 }
 
 function updateChatContactPreview(text) {

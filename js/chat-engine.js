@@ -93,7 +93,8 @@ const _PROTAG_GUIDE_POST = [
 ];
 
 function _isChatOpen() {
-  return !!document.getElementById('chatWindow')?.classList.contains('active');
+  return !!document.getElementById('chatWindow')?.classList.contains('active')
+    && !!document.getElementById('chatScreenThread')?.classList.contains('active');
 }
 function _isBuzzOpen() {
   return !!document.getElementById('appWindow')?.classList.contains('active');
