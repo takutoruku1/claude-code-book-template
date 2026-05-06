@@ -2491,3 +2491,55 @@ body:has(#screen-title.active) .taskbar { display: none; }
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-5px); }
 }
+
+/* ---- Protagonist choices ---- */
+#protagChoices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  width: 260px;
+}
+.protag-choice-btn {
+  background: rgba(18,14,30,.82);
+  border: 1px solid rgba(124,106,247,.28);
+  border-radius: 10px;
+  color: rgba(200,195,255,.85);
+  font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 9px 14px;
+  cursor: default;
+  pointer-events: none;
+  width: 100%;
+  text-align: left;
+  transition: background .18s, border-color .18s, color .18s;
+  opacity: 0;
+  transform: translateY(4px);
+  animation: protagChoiceIn .25s ease forwards;
+}
+.protag-choice-btn.ready {
+  cursor: pointer;
+  pointer-events: all;
+  border-color: rgba(124,106,247,.5);
+  color: rgba(220,215,255,.95);
+}
+.protag-choice-btn.ready:hover {
+  background: rgba(124,106,247,.18);
+  border-color: rgba(124,106,247,.8);
+}
+.protag-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 11px;
+  background: rgba(124,106,247,.9);
+  margin-left: 1px;
+  vertical-align: middle;
+  animation: protagCursorBlink .6s step-end infinite;
+}
+@keyframes protagChoiceIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes protagCursorBlink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0; }
+}

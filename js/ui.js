@@ -981,8 +981,9 @@ const _PROTAG_ON_ANSWER = [
   '（…どう受け取られるか）',
 ];
 
-let _protagTimer  = null;
-let _protagIdle   = null;
+let _protagTimer       = null;
+let _protagIdle        = null;
+let _protagChoiceTimers = [];
 
 function _pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -998,6 +999,58 @@ function showProtagMsg(text, thinking = false, duration = 3200) {
   bubble.classList.add('show');
 
   _protagTimer = setTimeout(() => bubble.classList.remove('show'), duration);
+}
+
+function clearProtagChoices() {
+  _protagChoiceTimers.forEach(t => { clearTimeout(t); clearInterval(t); });
+  _protagChoiceTimers = [];
+  const c = document.getElementById('protagChoices');
+  if (c) c.innerHTML = '';
+}
+
+function showProtagChoices(opts, onSelect) {
+  clearProtagChoices();
+  const container = document.getElementById('protagChoices');
+  if (!container) return;
+
+  let startDelay = 300;
+
+  opts.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'protag-choice-btn';
+    btn.style.animationDelay = `${idx * 80}ms`;
+
+    const textSpan   = document.createElement('span');
+    const cursor     = document.createElement('span');
+    cursor.className = 'protag-cursor';
+    btn.appendChild(textSpan);
+    btn.appendChild(cursor);
+    container.appendChild(btn);
+
+    const chars = [...opt.text];
+    const charDelay = 65;
+
+    const t = setTimeout(() => {
+      let i = 0;
+      const iv = setInterval(() => {
+        textSpan.textContent += chars[i];
+        i++;
+        if (i >= chars.length) {
+          clearInterval(iv);
+          cursor.remove();
+          btn.classList.add('ready');
+          btn.onclick = () => {
+            clearProtagChoices();
+            onSelect(opt);
+          };
+        }
+      }, charDelay);
+      _protagChoiceTimers.push(iv);
+    }, startDelay);
+
+    _protagChoiceTimers.push(t);
+    startDelay += chars.length * charDelay + 300;
+  });
 }
 
 function updateProtagWidget() {

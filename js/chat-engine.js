@@ -81,26 +81,41 @@ function showChoices(opts) {
   box.innerHTML = '';
   setDesktopNotif('notifChat', true);
   window._pendingChoices = opts;
+
   if (typeof showProtagMsg === 'function') {
     setTimeout(() => showProtagMsg(_pick(_PROTAG_ON_CHOICES), true, 4500), 400);
   }
-  opts.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'choice-btn';
-    btn.textContent = opt.text;
-    btn.onclick = () => {
+
+  if (typeof showProtagChoices === 'function') {
+    showProtagChoices(opts, (opt) => {
       window._pendingChoices = null;
       setDesktopNotif('notifChat', false);
       addChatMsg('self', opt.text, '👤');
-      box.innerHTML = '';
       if (opt.selfBonus) GS.chatSelfBonus += opt.selfBonus;
       if (opt.buzzBonus) GS.chatBuzzBonus += opt.buzzBonus;
       if (opt.egoPlus)   GS.egoScore++;
       if (opt.setFlag)   GS.flags[opt.setFlag] = true;
       setTimeout(() => runChatId(opt.next), 300);
-    };
-    box.appendChild(btn);
-  });
+    });
+  } else {
+    opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = opt.text;
+      btn.onclick = () => {
+        window._pendingChoices = null;
+        setDesktopNotif('notifChat', false);
+        addChatMsg('self', opt.text, '👤');
+        box.innerHTML = '';
+        if (opt.selfBonus) GS.chatSelfBonus += opt.selfBonus;
+        if (opt.buzzBonus) GS.chatBuzzBonus += opt.buzzBonus;
+        if (opt.egoPlus)   GS.egoScore++;
+        if (opt.setFlag)   GS.flags[opt.setFlag] = true;
+        setTimeout(() => runChatId(opt.next), 300);
+      };
+      box.appendChild(btn);
+    });
+  }
 }
 
 function handleTrigger(node, idx) {
