@@ -175,6 +175,79 @@ function closeTrashWindow() {
   document.getElementById('trashWindow').classList.remove('active');
 }
 
+/* ============================================================
+   EXPLORER NAVIGATION
+============================================================ */
+const _DESKTOP_ITEMS = [
+  { icon: '📱', name: 'ばずったー', action: (_wid) => openApp()         },
+  { icon: '💬', name: 'チャトル',   action: (_wid) => openChatApp()     },
+  { icon: '📝', name: 'メモ帳',     action: (_wid) => openMemoApp()     },
+  { icon: '🎮', name: 'ゲーム',     action: (_wid) => openGamesWindow() },
+  { icon: '🗑️', name: 'ゴミ箱',   action: (wid)  => {
+      if (wid === 'trashWindow') {
+        explorerNavTo('trashWindow', 'home');
+      } else {
+        explorerNavTo('trashWindow', 'home');
+        openTrashWindow();
+      }
+    }
+  },
+];
+
+const _explorerOriginal = {};
+
+function explorerNavTo(winId, view) {
+  const win = document.getElementById(winId);
+  if (!win) return;
+
+  const titleEl = win.querySelector('.titlebar-title');
+  const content = win.querySelector('.explorer-content');
+  const addrBar = win.querySelector('.explorer-address-bar');
+  const sidebar = win.querySelectorAll('.explorer-sidebar-item');
+
+  if (view === 'desktop') {
+    if (!_explorerOriginal[winId]) {
+      _explorerOriginal[winId] = {
+        title:   titleEl?.innerHTML   || '',
+        content: content.innerHTML,
+        addrBar: addrBar.innerHTML,
+      };
+    }
+
+    if (titleEl) titleEl.innerHTML = '🖥️ デスクトップ';
+    addrBar.innerHTML = `🖥️&nbsp;<span style="color:var(--text-dim)">PC</span><span class="explorer-address-sep">&rsaquo;</span><span>デスクトップ</span>`;
+    sidebar.forEach(item => item.classList.toggle('active', item.textContent.includes('デスクトップ')));
+
+    content.innerHTML = '';
+    content.style.alignContent   = 'flex-start';
+    content.style.justifyContent = 'flex-start';
+
+    _DESKTOP_ITEMS.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'explorer-file-item';
+      el.innerHTML = `
+        <div class="explorer-file-icon" style="display:flex;align-items:center;justify-content:center;font-size:38px;width:56px;height:56px;">${item.icon}</div>
+        <div class="explorer-file-name">${item.name}</div>`;
+      el.onclick    = () => { win.querySelectorAll('.explorer-file-item').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); };
+      el.ondblclick = () => item.action(winId);
+      content.appendChild(el);
+    });
+
+  } else if (view === 'home') {
+    const saved = _explorerOriginal[winId];
+    if (!saved) return;
+    if (titleEl) titleEl.innerHTML   = saved.title;
+    content.innerHTML                = saved.content;
+    addrBar.innerHTML                = saved.addrBar;
+    content.style.alignContent       = '';
+    content.style.justifyContent     = '';
+    sidebar.forEach(item => item.classList.remove('active'));
+    const homeLabel = winId === 'gamesWindow' ? 'ゲーム' : 'ゴミ箱';
+    sidebar.forEach(item => { if (item.textContent.includes(homeLabel)) item.classList.add('active'); });
+    delete _explorerOriginal[winId];
+  }
+}
+
 function openGamesWindow() {
   const win = document.getElementById('gamesWindow');
   win.classList.add('active');
@@ -289,7 +362,7 @@ function _renderNotifList() {
   }
   list.innerHTML = _notifications.map(n => {
     const t = `${String(n.time.getHours()).padStart(2,'0')}:${String(n.time.getMinutes()).padStart(2,'0')}`;
-    return `<div class="notif-item" onclick="showWindowFromNotif('${n.appId}')"
+    return `<div class="notif-item" onclick="showWindowFromNotif('${n.appId}')">
       <div class="notif-item-icon">${n.appIcon}</div>
       <div class="notif-item-body">
         <div class="notif-item-app">${n.appName}</div>

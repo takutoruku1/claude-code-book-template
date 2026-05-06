@@ -26,6 +26,10 @@
       <div class="icon-label">メモ帳</div>
       <div class="desktop-notif" id="notifMemo"></div>
     </div>
+    <div class="desktop-icon" onclick="openGamesWindow()">
+      <div class="icon-img">🎮</div>
+      <div class="icon-label">ゲーム</div>
+    </div>
     <div class="desktop-icon" onclick="openTrashWindow()">
       <div class="icon-img">🗑️</div>
       <div class="icon-label">ゴミ箱</div>
@@ -485,9 +489,9 @@
     <div class="explorer-sidebar">
       <div class="explorer-sidebar-group">
         <div class="explorer-sidebar-label">クイックアクセス</div>
-        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">🏠</span>ホーム</div>
-        <div class="explorer-sidebar-item active"><span class="explorer-sidebar-icon">🎮</span>ゲーム</div>
-        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">🖥</span>デスクトップ</div>
+        <div class="explorer-sidebar-item" onclick="explorerNavTo('gamesWindow','home')"><span class="explorer-sidebar-icon">🏠</span>ホーム</div>
+        <div class="explorer-sidebar-item active" onclick="explorerNavTo('gamesWindow','home')"><span class="explorer-sidebar-icon">🎮</span>ゲーム</div>
+        <div class="explorer-sidebar-item" onclick="explorerNavTo('gamesWindow','desktop')"><span class="explorer-sidebar-icon">🖥</span>デスクトップ</div>
         <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">📥</span>ダウンロード</div>
         <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">📄</span>ドキュメント</div>
         <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">🖼</span>ピクチャ</div>
@@ -597,14 +601,14 @@
     <div class="explorer-sidebar">
       <div class="explorer-sidebar-group">
         <div class="explorer-sidebar-label">クイックアクセス</div>
-        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">🏠</span>ホーム</div>
-        <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">🖥</span>デスクトップ</div>
+        <div class="explorer-sidebar-item" onclick="explorerNavTo('trashWindow','home')"><span class="explorer-sidebar-icon">🏠</span>ホーム</div>
+        <div class="explorer-sidebar-item" onclick="explorerNavTo('trashWindow','desktop')"><span class="explorer-sidebar-icon">🖥</span>デスクトップ</div>
         <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">📥</span>ダウンロード</div>
         <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">📄</span>ドキュメント</div>
       </div>
       <div class="explorer-sidebar-group">
         <div class="explorer-sidebar-label">PC</div>
-        <div class="explorer-sidebar-item active"><span class="explorer-sidebar-icon">🗑️</span>ゴミ箱</div>
+        <div class="explorer-sidebar-item active" onclick="explorerNavTo('trashWindow','home')"><span class="explorer-sidebar-icon">🗑️</span>ゴミ箱</div>
         <div class="explorer-sidebar-item"><span class="explorer-sidebar-icon">💾</span>ローカルディスク (C:)</div>
       </div>
     </div>
