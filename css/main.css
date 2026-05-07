@@ -517,7 +517,9 @@ body:has(#screen-title.active) .taskbar { display: none; }
 
 .app-window.maximized,
 .note-window.maximized,
-.chat-window.maximized {
+.chat-window.maximized,
+.explorer-window.maximized,
+.y-window.maximized {
   position: fixed !important;
   inset: 0 0 var(--taskbar-height) 0 !important;
   width: 100vw !important;
@@ -620,7 +622,9 @@ body:has(#screen-title.active) .taskbar { display: none; }
 }
 .app-window.maximized .resize-handle,
 .note-window.maximized .resize-handle,
-.chat-window.maximized .resize-handle { display: none; }
+.chat-window.maximized .resize-handle,
+.explorer-window.maximized .resize-handle,
+.y-window.maximized .resize-handle { display: none; }
 .rh-n  { top:    0; left: 8px; right: 8px; height: 5px; cursor: n-resize; }
 .rh-s  { bottom: 0; left: 8px; right: 8px; height: 5px; cursor: s-resize; }
 .rh-e  { right:  0; top: 8px; bottom: 8px; width:  5px; cursor: e-resize; }
@@ -2558,4 +2562,224 @@ body:has(#screen-title.active) .taskbar { display: none; }
 @keyframes protagCursorBlink {
   0%,100% { opacity: 1; }
   50%      { opacity: 0; }
+}
+
+/* =====================================================
+   Y APP  (Twitter/X 風)
+   ===================================================== */
+.y-window {
+  position: fixed;
+  top: 60px; left: 160px;
+  width: 900px; height: 620px;
+  min-width: 560px; min-height: 360px;
+  background: #000;
+  border: 1px solid #2f3336;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  resize: both;
+  z-index: 200;
+}
+.y-window.active { display: flex; }
+.y-window .titlebar { background: #000; border-bottom: 1px solid #2f3336; flex-shrink: 0; }
+.y-window .titlebar-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: #e7e9ea;
+}
+.y-logo-title { width: 16px; height: 16px; fill: #e7e9ea; flex-shrink: 0; }
+
+/* body */
+.y-app-body {
+  flex: 1; display: flex; overflow: hidden; min-height: 0;
+}
+
+/* LEFT SIDEBAR */
+.y-sidebar {
+  width: 200px; min-width: 200px;
+  background: #000;
+  border-right: 1px solid #2f3336;
+  display: flex; flex-direction: column;
+  padding: 8px 0; overflow-y: auto;
+  flex-shrink: 0;
+}
+.y-nav { flex: 1; padding: 0 8px; }
+.y-nav-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 10px 12px; border-radius: 9999px;
+  cursor: pointer; color: #e7e9ea; font-size: 18px;
+  transition: background .15s;
+}
+.y-nav-item svg { width: 24px; height: 24px; fill: #e7e9ea; flex-shrink: 0; }
+.y-nav-item span { font-size: 18px; line-height: 1; }
+.y-nav-item:hover { background: rgba(231,233,234,.1); }
+.y-nav-item.active { font-weight: 700; }
+
+.y-my-profile {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; margin: 4px 8px;
+  border-radius: 9999px; cursor: pointer;
+  transition: background .15s;
+}
+.y-my-profile:hover { background: rgba(231,233,234,.1); }
+.y-my-avatar { font-size: 36px; line-height: 1; }
+.y-my-info { flex: 1; min-width: 0; }
+.y-my-name { font-size: 14px; font-weight: 700; color: #e7e9ea; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.y-my-handle { font-size: 13px; color: #71767b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.y-my-more { color: #71767b; font-size: 18px; }
+
+/* MAIN FEED */
+.y-feed-col {
+  flex: 1; display: flex; flex-direction: column;
+  border-right: 1px solid #2f3336;
+  overflow: hidden;
+}
+.y-feed-header {
+  display: flex; border-bottom: 1px solid #2f3336;
+  position: sticky; top: 0; background: rgba(0,0,0,.85);
+  backdrop-filter: blur(8px); z-index: 1; flex-shrink: 0;
+}
+.y-feed-tab {
+  flex: 1; text-align: center; padding: 14px 4px;
+  font-size: 14px; font-weight: 500; color: #71767b;
+  cursor: pointer; position: relative;
+  transition: background .15s;
+}
+.y-feed-tab:hover { background: rgba(231,233,234,.05); }
+.y-feed-tab.active { color: #e7e9ea; font-weight: 700; }
+.y-feed-tab.active::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 60px; height: 3px; border-radius: 9999px; background: #1d9bf0;
+}
+
+.y-feed { flex: 1; overflow-y: auto; }
+.y-feed::-webkit-scrollbar { width: 4px; }
+.y-feed::-webkit-scrollbar-thumb { background: #2f3336; border-radius: 2px; }
+
+/* TWEET / POST CARD */
+.y-post {
+  display: flex; gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #2f3336;
+  cursor: default;
+  transition: background .12s;
+}
+.y-post:hover { background: rgba(231,233,234,.03); }
+.y-post-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #1e1e2e;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.y-post-main { flex: 1; min-width: 0; }
+.y-post-header { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.y-post-name { font-size: 14px; font-weight: 700; color: #e7e9ea; }
+.y-post-handle { font-size: 13px; color: #71767b; }
+.y-post-dot { color: #71767b; font-size: 12px; }
+.y-post-time { font-size: 13px; color: #71767b; }
+.y-post-verified { color: #1d9bf0; font-size: 13px; }
+.y-post-body { margin-top: 4px; font-size: 14px; color: #e7e9ea; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.y-post-tag { color: #1d9bf0; }
+.y-post-actions {
+  display: flex; gap: 28px; margin-top: 10px;
+}
+.y-post-action {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #71767b;
+  cursor: pointer; transition: color .15s;
+  user-select: none;
+}
+.y-post-action:hover { color: #1d9bf0; }
+.y-post-action.liked { color: var(--heart); }
+.y-post-action:hover.y-rt:hover { color: #00ba7c; }
+.y-post-action svg { width: 16px; height: 16px; fill: currentColor; }
+.y-post-label { font-size: 12px; }
+
+.y-post-badge {
+  display: inline-block; font-size: 11px;
+  padding: 1px 8px; border-radius: 9999px;
+  background: rgba(29,155,240,.12); color: #1d9bf0;
+  margin-bottom: 4px;
+}
+.y-post-quote {
+  margin-top: 8px; padding: 10px 12px;
+  border: 1px solid #2f3336; border-radius: 12px;
+  font-size: 13px; color: #71767b; line-height: 1.5;
+}
+.y-post-quote-name { font-weight: 700; color: #e7e9ea; margin-bottom: 2px; }
+
+/* RIGHT SIDEBAR */
+.y-right-col {
+  width: 280px; min-width: 280px;
+  background: #000; padding: 12px;
+  overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+  flex-shrink: 0;
+}
+.y-right-col::-webkit-scrollbar { width: 4px; }
+.y-right-col::-webkit-scrollbar-thumb { background: #2f3336; border-radius: 2px; }
+
+.y-search-box {
+  display: flex; align-items: center; gap: 10px;
+  background: #202327; border: 1px solid transparent;
+  border-radius: 9999px; padding: 8px 16px;
+  transition: border-color .15s;
+}
+.y-search-box:focus-within { border-color: #1d9bf0; background: #000; }
+.y-search-box svg { width: 18px; height: 18px; color: #71767b; flex-shrink: 0; }
+.y-search-box input { background: none; border: none; outline: none; color: #e7e9ea; font-size: 14px; width: 100%; }
+.y-search-box input::placeholder { color: #71767b; }
+
+.y-card {
+  background: #16181c; border-radius: 16px; overflow: hidden;
+}
+.y-card-title { font-size: 19px; font-weight: 800; color: #e7e9ea; padding: 12px 16px 8px; }
+.y-card-more { font-size: 14px; color: #1d9bf0; padding: 12px 16px; cursor: pointer; }
+.y-card-more:hover { background: rgba(29,155,240,.08); }
+
+.y-trend-item {
+  padding: 10px 16px; cursor: pointer; transition: background .12s;
+}
+.y-trend-item:hover { background: rgba(231,233,234,.05); }
+.y-trend-cat { font-size: 12px; color: #71767b; }
+.y-trend-name { font-size: 14px; font-weight: 700; color: #e7e9ea; margin: 2px 0; }
+.y-trend-count { font-size: 12px; color: #71767b; }
+
+.y-suggest-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; cursor: pointer; transition: background .12s;
+}
+.y-suggest-item:hover { background: rgba(231,233,234,.05); }
+.y-suggest-avatar { font-size: 36px; line-height: 1; }
+.y-suggest-info { flex: 1; min-width: 0; }
+.y-suggest-name { font-size: 14px; font-weight: 700; color: #e7e9ea; }
+.y-suggest-handle { font-size: 13px; color: #71767b; }
+.y-follow-btn {
+  background: #e7e9ea; color: #0f1419;
+  border: none; border-radius: 9999px;
+  padding: 5px 14px; font-size: 13px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: background .15s;
+}
+.y-follow-btn:hover { background: #d0d3d7; }
+
+.y-right-footer { font-size: 11px; color: #71767b; line-height: 1.6; padding: 0 4px; }
+
+/* taskbar icon for Y */
+.y-taskbar-icon {
+  font-size: 16px; font-weight: 900; font-family: 'Georgia', serif; color: #e7e9ea;
+}
+
+/* desktop icon letter */
+.y-desktop-icon-letter {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 900; color: #e7e9ea;
+  font-family: 'Georgia', serif;
+  line-height: 1;
+}
+
+/* responsive: hide right col on narrow window */
+@media (max-width: 700px) {
+  .y-right-col { display: none; }
+  .y-sidebar span { display: none; }
 }

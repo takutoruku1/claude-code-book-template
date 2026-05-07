@@ -30,6 +30,10 @@
       <div class="icon-img">🎮</div>
       <div class="icon-label">ゲーム</div>
     </div>
+    <div class="desktop-icon" onclick="openYWindow()">
+      <div class="icon-img y-desktop-icon-letter">Y</div>
+      <div class="icon-label">Y</div>
+    </div>
     <div class="desktop-icon" onclick="openTrashWindow()">
       <div class="icon-img">🗑️</div>
       <div class="icon-label">ゴミ箱</div>
@@ -188,6 +192,7 @@
       <div class="taskbar-icon" id="taskbarIconApp" onclick="taskbarToggleApp()">📱</div>
       <div class="taskbar-icon" id="taskbarIconChat" onclick="taskbarToggleChat()">💬</div>
       <div class="taskbar-icon" id="taskbarIconMemo" onclick="taskbarToggleMemo()">📝</div>
+      <div class="taskbar-icon y-taskbar-icon" id="taskbarIconY" onclick="taskbarToggleY()" title="Y">Y</div>
       <div class="taskbar-icon" id="taskbarIconGames" onclick="taskbarToggleGames()">🎮</div>
       <div class="taskbar-icon" id="taskbarIconMinesweeper" onclick="taskbarToggleMinesweeper()">💣</div>
     </div>
@@ -352,6 +357,12 @@
     <div class="start-pin-item">
       <div class="start-pin-icon">⚙️</div>
       <div class="start-pin-label">設定</div>
+    </div>
+    <div class="start-pin-item" onclick="startMenuOpen('y')">
+      <div class="start-pin-icon" style="display:flex;align-items:center;justify-content:center;">
+        <svg style="width:28px;height:28px;fill:#e7e9ea;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.26 5.632 5.905-5.632Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </div>
+      <div class="start-pin-label">Y</div>
     </div>
     <div class="start-pin-item" onclick="startMenuOpen('games')">
       <div class="start-pin-icon">🎮</div>
@@ -620,6 +631,101 @@
     </div>
   </div>
 </div>
+
+<!-- Y (Twitter/X風) APP WINDOW -->
+<div class="y-window" id="yWindow">
+  <div class="titlebar">
+    <div class="titlebar-title">Y</div>
+    <div class="titlebar-winbtns">
+      <div class="titlebar-winbtn min" onclick="taskbarToggleY()">&#x2500;</div>
+      <div class="snap-btn-wrap">
+        <div class="titlebar-winbtn max" id="maxBtnY" onclick="toggleMaximize('yWindow','maxBtnY')">&#x25A1;</div>
+        <div class="snap-layouts">
+          <div class="snap-layouts-label">スナップレイアウト</div>
+          <div class="snap-layouts-row">
+            <div class="snap-layout-cell snapleft"  onclick="snapLayout('yWindow','left',event)"><div class="snap-ind"></div></div>
+            <div class="snap-layout-cell snapfull"  onclick="snapLayout('yWindow','full',event)"><div class="snap-ind"></div></div>
+            <div class="snap-layout-cell snapright" onclick="snapLayout('yWindow','right',event)"><div class="snap-ind"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="titlebar-winbtn close" onclick="closeYWindow()">&#x2715;</div>
+    </div>
+  </div>
+
+  <!-- Y APP BODY -->
+  <div class="y-app-body">
+
+    <!-- LEFT SIDEBAR -->
+    <div class="y-sidebar">
+      <nav class="y-nav">
+        <div class="y-nav-item active" onclick="yShowTab('home')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>ホーム</span>
+        </div>
+        <div class="y-nav-item" onclick="yShowTab('search')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span>話題を検索</span>
+        </div>
+        <div class="y-nav-item" onclick="yShowTab('notif')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+          <span>通知</span>
+        </div>
+        <div class="y-nav-item" onclick="yShowTab('profile')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          <span>プロフィール</span>
+        </div>
+      </nav>
+
+      <!-- MY PROFILE -->
+      <div class="y-my-profile">
+        <div class="y-my-avatar">👤</div>
+        <div class="y-my-info">
+          <div class="y-my-name">SNS担当者</div>
+          <div class="y-my-handle">@daiko_works</div>
+        </div>
+        <div class="y-my-more">⋯</div>
+      </div>
+    </div>
+
+    <!-- MAIN FEED -->
+    <div class="y-feed-col">
+      <div class="y-feed-header">
+        <div class="y-feed-tab active" id="yTabRecommend" onclick="yFeedTab('recommend')">おすすめ</div>
+        <div class="y-feed-tab" id="yTabFollowing" onclick="yFeedTab('following')">フォロー中</div>
+      </div>
+      <div class="y-feed" id="yFeed"></div>
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="y-right-col">
+      <!-- SEARCH BOX -->
+      <div class="y-search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Yを検索" readonly>
+      </div>
+
+      <!-- TRENDING -->
+      <div class="y-card">
+        <div class="y-card-title">いまどうしてる</div>
+        <div id="yTrends"></div>
+        <div class="y-card-more">さらに表示</div>
+      </div>
+
+      <!-- FOLLOW SUGGESTIONS -->
+      <div class="y-card">
+        <div class="y-card-title">おすすめユーザー</div>
+        <div id="ySuggest"></div>
+        <div class="y-card-more">さらに表示</div>
+      </div>
+
+      <div class="y-right-footer">
+        プライバシーポリシー &nbsp;·&nbsp; 利用規約 &nbsp;·&nbsp; © 2024 Y Corp.
+      </div>
+    </div>
+
+  </div><!-- /y-app-body -->
+</div><!-- /yWindow -->
 
 <!-- MINESWEEPER WINDOW -->
 <div id="minesweeperWindow" onmousedown="bringToFront(this)">
