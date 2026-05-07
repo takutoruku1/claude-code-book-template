@@ -2,8 +2,56 @@
    WINDOW MANAGER
 ============================================================ */
 let _zTop = 100;
+let _protagTrackedWin = null;
+
 function bringToFront(el) {
   el.style.zIndex = ++_zTop;
+  moveProtagWidgetToWindow(el);
+}
+
+function _protagTargetPos(winEl) {
+  const rect     = winEl.getBoundingClientRect();
+  const taskbarH = 48;
+  const w        = document.getElementById('protagonistWidget');
+  const wW       = (w ? w.offsetWidth  : 60) || 60;
+
+  // アバターがウィンドウ右下コーナーに重なる位置
+  // bottom 基準で固定することで、選択肢が増えても上向きに伸びタスクバー下に潜らない
+  let left   = rect.right - wW * 0.6;
+  // ビューポート下端からの距離 = ビューポート高さ - ウィンドウ下端
+  let bottom = window.innerHeight - rect.bottom;
+
+  // 左右クランプ
+  left   = Math.max(0, Math.min(left, window.innerWidth - wW));
+  // タスクバー上に確保（bottom が負 = タスクバー内 にならないよう）
+  bottom = Math.max(taskbarH, bottom);
+  return { left, bottom };
+}
+
+function moveProtagWidgetToWindow(winEl) {
+  const w = document.getElementById('protagonistWidget');
+  if (!w || !w.classList.contains('visible')) return;
+  const rect = winEl.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) return;
+
+  _protagTrackedWin = winEl;
+  const { left, bottom } = _protagTargetPos(winEl);
+  w.classList.add('tracking');
+  w.style.transition = ''; // CSSで定義した遅いtransitionを使う
+  w.style.top    = 'auto';
+  w.style.left   = left   + 'px';
+  w.style.bottom = bottom + 'px';
+}
+
+function _protagFollowNow(winEl) {
+  const w = document.getElementById('protagonistWidget');
+  if (!w || !w.classList.contains('visible')) return;
+  _protagTrackedWin = winEl;
+  const { left, bottom } = _protagTargetPos(winEl);
+  // transition は CSS 定義（6s）のまま使う — ドラッグ中も同じ速度で追尾
+  w.style.top    = 'auto';
+  w.style.left   = left   + 'px';
+  w.style.bottom = bottom + 'px';
 }
 document.addEventListener('DOMContentLoaded', () => {
   ['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow', 'minesweeperWindow', 'trashWindow', 'yWindow'].forEach(id => {
@@ -1072,6 +1120,7 @@ function makeDraggable(windowEl) {
     const zone = getSnapZone(e.clientX, e.clientY);
     if (zone) showSnapPreview(zone);
     else hideSnapPreview();
+    _protagFollowNow(windowEl);
   });
 
   document.addEventListener('mouseup', (e) => {
@@ -1118,6 +1167,7 @@ function makeDraggable(windowEl) {
     if (!dragging) return;
     win.style.left = (e.clientX - ox) + 'px';
     win.style.top  = Math.max(0, e.clientY - oy) + 'px';
+    _protagFollowNow(win);
   });
   document.addEventListener('mouseup', () => {
     if (!dragging) return;
@@ -1596,12 +1646,30 @@ function updateProtagWidget() {
   if (!w) return;
   if (window.appIsRunning) {
     w.classList.add('visible');
-    const char = GS?.route ? CHARACTERS[GS.route] : null;
-    const ava  = document.getElementById('protagAvatar');
+    const ava = document.getElementById('protagAvatar');
     if (ava) ava.textContent = '👤';
+    // 現在最前面のウィンドウへ移動
+    const topWin = _getTopWindow();
+    if (topWin) moveProtagWidgetToWindow(topWin);
   } else {
-    w.classList.remove('visible');
+    _protagTrackedWin = null;
+    w.classList.remove('visible', 'tracking');
+    w.style.left   = '';
+    w.style.top    = '';
+    w.style.bottom = '';
     clearTimeout(_protagTimer);
     document.getElementById('protagBubble')?.classList.remove('show');
   }
+}
+
+function _getTopWindow() {
+  const ids = ['appWindow','chatWindow','memoAppWindow','gamesWindow','trashWindow','minesweeperWindow','yWindow'];
+  let top = null, maxZ = -1;
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el || !el.classList.contains('active')) return;
+    const z = parseInt(el.style.zIndex) || 0;
+    if (z > maxZ) { maxZ = z; top = el; }
+  });
+  return top;
 }

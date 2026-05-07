@@ -2135,7 +2135,7 @@ body:has(#screen-title.active) .taskbar { display: none; }
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
   box-shadow: 0 16px 56px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.04);
-  z-index: 10001;
+  z-index: 10004;
   padding: 28px 28px 16px;
   display: none;
   opacity: 0;
@@ -2448,17 +2448,24 @@ body:has(#screen-title.active) .taskbar { display: none; }
 /* ===== PROTAGONIST WIDGET ===== */
 #protagonistWidget {
   position: fixed;
-  bottom: calc(var(--taskbar-height) + 16px);
   left: 50%;
+  top: auto;
+  bottom: calc(var(--taskbar-height) + 16px);
   transform: translateX(-50%);
   display: none;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  z-index: 500;
+  z-index: 10003;
   pointer-events: none;
+  transition: left   6s cubic-bezier(0.33, 1, 0.68, 1),
+              bottom 6s cubic-bezier(0.33, 1, 0.68, 1);
 }
 #protagonistWidget.visible { display: flex; }
+#protagonistWidget.tracking {
+  transform: none;
+  top: auto;
+}
 .protag-avatar {
   width: 56px; height: 56px;
   border-radius: 50%;
