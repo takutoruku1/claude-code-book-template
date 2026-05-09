@@ -234,6 +234,22 @@ function buildReactionFeed() {
   const replies = R.replies[GS.route] ?? R.replies.midori;
   const char   = CHARACTERS[GS.route];
 
+  // Y フィード用に投稿内容を保存（全ルートをまたいで保持）
+  const _postedItem = {
+    avatar:      char.avatar,
+    name:        char.name,
+    handle:      `@${GS.route}_sns`,
+    text:        s ? s.textFn() : '',
+    tags:        h ? h.val : '',
+    replies:     replies,
+    likesDelta:  R.likesDelta,
+    rtsDelta:    R.rtsDelta,
+    route:       GS.route,
+  };
+  window._lastPostedContent = _postedItem;
+  if (!window._allPostedContents) window._allPostedContents = [];
+  window._allPostedContents.push(_postedItem);
+
   const postCard = document.createElement('div');
   postCard.className = 'feed-card';
   postCard.innerHTML = `
@@ -323,13 +339,26 @@ function afterReactions() {
   const oldBtn = area.querySelector('.btn-next-phase');
   if (oldBtn) oldBtn.remove();
 
+  showArea('gamePlaceholder');
+
+  // 全ルート共通：チャトルを開いて現在ルートのトーク画面へ
+  const chatWin = document.getElementById('chatWindow');
+  if (chatWin) {
+    chatWin.classList.add('active');
+    window.chatMinimized = false;
+    if (typeof bringToFront === 'function') bringToFront(chatWin);
+    if (typeof updateTaskbarIndicators === 'function') updateTaskbarIndicators();
+  }
+  // トーク画面をアクティブにして _activeChatRoute を更新
+  if (typeof chatOpenThread === 'function') chatOpenThread(GS.route);
+
   if (GS.postResumeAt) {
-    // saku: resume chat at saku_dilemma2
+    // 朔など：チャットの続きを再開（依頼人からの反応メッセージを含む）
     const id = GS.postResumeAt;
     GS.postResumeAt = null;
-    showArea('gamePlaceholder');
-    runChatId(id);
+    setTimeout(() => runChatId(id), 400);
   } else {
+    // みどり・誠司：CLIENT_REACTIONS から返信を表示
     showClientReaction();
   }
 }
@@ -337,8 +366,28 @@ function afterReactions() {
 /* ============================================================
    CLIENT REACTION (midori / seiji)
 ============================================================ */
+const _PROTAG_Y_BEFORE_END = [
+  '（結末を見る前に、Yで反響を確認しておこう）',
+  '（投稿の影響を自分の目で確認する）',
+  '（Yの空気を読んでから、結末へ）',
+  '（コメントまで見てから判断しよう）',
+];
+
+function _showEndingBtn() {
+  const chatMsgs = document.getElementById('chatMessages');
+  if (typeof showProtagMsg === 'function') {
+    setTimeout(() => showProtagMsg(_pick(_PROTAG_Y_BEFORE_END), false, 5000, true), 200);
+  }
+  const btn = document.createElement('button');
+  btn.className = 'btn-next-phase';
+  btn.style.cssText = 'display:block;margin:12px auto 4px;';
+  btn.textContent = '結末を見る →';
+  btn.onclick = () => { btn.remove(); showEnding(resolveEnding()); };
+  chatMsgs.appendChild(btn);
+  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+}
+
 function showClientReaction() {
-  const area = document.getElementById('reactionArea');
   const char = CHARACTERS[GS.route];
   const msgs = CLIENT_REACTIONS[GS.route];
   const msg  = msgs ? msgs[activeReactionKey] : null;
@@ -348,22 +397,10 @@ function showClientReaction() {
     setTimeout(() => {
       removeTyping();
       addChatMsg('client', msg, char.avatar);
-      document.getElementById('chatStatus').textContent = 'メッセージが届きました';
-
-      const btn = document.createElement('button');
-      btn.className = 'btn-next-phase';
-      btn.style.marginTop = '8px';
-      btn.textContent = '結末を見る →';
-      btn.onclick = () => showEnding(resolveEnding());
-      area.appendChild(btn);
-      area.scrollTop = area.scrollHeight;
-    }, 1400);
+      setTimeout(() => _showEndingBtn(), 400);
+    }, 1800);
   } else {
-    const btn = document.createElement('button');
-    btn.className = 'btn-next-phase';
-    btn.textContent = '結末を見る →';
-    btn.onclick = () => showEnding(resolveEnding());
-    area.appendChild(btn);
+    _showEndingBtn();
   }
 }
 

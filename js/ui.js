@@ -9,7 +9,23 @@ let _winFocusCooldown = null;
 function bringToFront(el) {
   el.style.zIndex = ++_zTop;
   moveProtagWidgetToWindow(el);
+
   const winId = el.id;
+
+  // チャット以外のウィンドウがアクティブになったら選択肢を非表示
+  if (winId === 'yWindow') {
+    // Y が最前面に来るたびフィードを最新化
+    if (typeof renderYTimeline === 'function') renderYTimeline('recommend');
+  }
+  if (winId !== 'chatWindow') {
+    if (typeof clearProtagChoices === 'function') clearProtagChoices();
+  } else if (_lastFocusedWinId !== 'chatWindow') {
+    // 別のウィンドウから chatWindow に切り替えたときだけスレッドを開いて選択肢を復元
+    if (window.appIsRunning && GS?.route && typeof chatOpenThread === 'function') {
+      setTimeout(() => chatOpenThread(GS.route), 100);
+    }
+  }
+
   if (winId && winId !== _lastFocusedWinId && !_winFocusCooldown) {
     _lastFocusedWinId = winId;
     const lines = _PROTAG_ON_WINDOW[winId];
@@ -47,11 +63,14 @@ function moveProtagWidgetToWindow(winEl) {
 
   _protagTrackedWin = winEl;
   const { left, bottom } = _protagTargetPos(winEl);
-  w.classList.add('tracking');
+  w.classList.add('tracking', 'moving');
   w.style.transition = ''; // CSSで定義した遅いtransitionを使う
   w.style.top    = 'auto';
   w.style.left   = left   + 'px';
   w.style.bottom = bottom + 'px';
+  // 移動完了後に .moving を除去
+  const onEnd = () => { w.classList.remove('moving'); w.removeEventListener('transitionend', onEnd); };
+  w.addEventListener('transitionend', onEnd);
 }
 
 function _protagFollowNow(winEl) {
@@ -159,23 +178,31 @@ function startRoute(route) {
   resetGame(route);
 }
 
+function _closeAllGameWindows() {
+  ['appWindow','chatWindow','memoAppWindow','gamesWindow','minesweeperWindow',
+   'invadersWindow','trashWindow','yWindow'].forEach(id => {
+    document.getElementById(id)?.classList.remove('active');
+  });
+  window.appIsRunning  = false;
+  window.appMinimized  = false;
+  window.chatMinimized = false;
+  window.memoMinimized = false;
+  window.yMinimized    = false;
+  window._routeChats   = {};
+  window._allPostedContents = [];
+  window._allMemoNotes  = [];
+  clearProtagChoices();
+  updateTaskbarIndicators();
+  updateProtagWidget();
+}
+
 function closeApp() {
-  document.getElementById('appWindow').classList.remove('active');
-  document.getElementById('memoAppWindow').classList.remove('active');
   document.getElementById('screen-charselect').classList.remove('active');
   document.getElementById('screen-title').classList.add('active');
   window.IS_DEBUG_MODE = null;
   window.MAIN_MODE_ROUTES = null;
   window.MAIN_MODE_ROUTE_INDEX = null;
-  document.getElementById('chatWindow').classList.remove('active');
-  window.appIsRunning  = false;
-  window.appMinimized  = false;
-  window.chatMinimized = false;
-  window.memoMinimized = false;
-  window._routeChats   = {};
-  clearProtagChoices();
-  updateTaskbarIndicators();
-  updateProtagWidget();
+  _closeAllGameWindows();
 }
 
 function closeAppWindow() {
@@ -186,11 +213,22 @@ function closeAppWindow() {
 }
 
 function _showPendingChoicesInWidget() {
-  if (typeof _isChatOpen === 'function' && !_isChatOpen()) return;
-  if (window._pendingChoices && typeof showProtagChoices === 'function') {
-    const box = document.getElementById('chatChoices');
-    if (box) box.innerHTML = '';
-    showProtagChoices(window._pendingChoices, _onChoiceSelect);
+  if (!window._pendingChoices || typeof showProtagChoices !== 'function') return;
+  const box = document.getElementById('chatChoices');
+  if (box) box.innerHTML = '';
+  // ウィジェットがまだチャトルの位置にいない場合は移動アニメーション分だけ待つ
+  const alreadyAtChat = _protagTrackedWin?.id === 'chatWindow';
+  const delay = alreadyAtChat ? 0 : 1300;
+  setTimeout(() => {
+    if (window._pendingChoices) showProtagChoices(window._pendingChoices, _onChoiceSelect);
+  }, delay);
+}
+
+function _resumePendingPlayerMsg() {
+  if (window._pendingPlayerIdx !== null && window._pendingPlayerIdx !== undefined) {
+    const idx = window._pendingPlayerIdx;
+    window._pendingPlayerIdx = null;
+    if (typeof runChat === 'function') setTimeout(() => runChat(idx), 300);
   }
 }
 
@@ -198,7 +236,10 @@ function _onChatWindowOpen() {
   clearChatBadge();
   const onThread    = !!document.getElementById('chatScreenThread')?.classList.contains('active');
   const pastVisible = document.getElementById('chatPastMessages')?.style.display !== 'none';
-  if (onThread && !pastVisible) _showPendingChoicesInWidget();
+  if (onThread && !pastVisible) {
+    _showPendingChoicesInWidget();
+    _resumePendingPlayerMsg();
+  }
 }
 
 function closeChatWindow() {
@@ -424,6 +465,7 @@ function showWindowFromNotif(appId) {
     win.classList.add('active');
     bringToFront(win);
     window.chatMinimized = false;
+    _onChatWindowOpen();
     updateTaskbarIndicators();
     refreshDesktopNotifs();
   } else if (appId === 'memo') {
@@ -563,6 +605,7 @@ function chatShowScreen(screen) {
 
 function chatOpenThread(route) {
   const target = route || GS?.route;
+  window._activeChatRoute = target;
   const isCurrent = !target || target === GS?.route;
   const char = (target ? CHARACTERS[target] : null) || CHARACTERS[GS?.route];
 
@@ -582,6 +625,7 @@ function chatOpenThread(route) {
     if (msgsEl)    { msgsEl.style.display = ''; msgsEl.scrollTop = msgsEl.scrollHeight; }
     if (choicesEl) { choicesEl.style.display = ''; }
     _showPendingChoicesInWidget();
+    _resumePendingPlayerMsg();
   } else {
     const snap = window._routeChats?.[target]?.messagesHTML || '';
     if (msgsEl)    { msgsEl.style.display = 'none'; }
@@ -702,9 +746,13 @@ function resetGame(route) {
     window._routeChats[GS.route].done = true;
   }
 
-  window._chatHistory    = [];
-  window._pendingChoices = null;
-  window._currentStep    = 1;
+  window._chatHistory       = [];
+  window._pendingChoices    = null;
+  window._lastPostedContent = null;
+  window._pendingPlayerIdx  = null;
+  // _allPostedContents はルートをまたいで保持するためリセットしない
+  window._activeChatRoute   = route;
+  window._currentStep       = 1;
   window._currentArea    = 'gamePlaceholder';
   window._chatUnread     = 0;
 
@@ -752,21 +800,34 @@ function retryGame() {
       window.IS_DEBUG_MODE = null;
       window.MAIN_MODE_ROUTES = null;
       window.MAIN_MODE_ROUTE_INDEX = null;
+      _closeAllGameWindows();
     }
   }
 }
 
 function renderMemoNotes() {
-  const list = document.getElementById('noteList');
+  const list  = document.getElementById('noteList');
   const empty = document.getElementById('noteEmpty');
   if (!list || !empty) return;
   list.innerHTML = '';
-  if (!GS.collectedNotes || GS.collectedNotes.length === 0) {
+
+  const notes = window._allMemoNotes || [];
+  if (notes.length === 0) {
     empty.style.display = 'block';
     return;
   }
   empty.style.display = 'none';
-  GS.collectedNotes.forEach(note => {
+
+  // 依頼者ごとにグループ化してラベルを付ける
+  let lastRoute = null;
+  notes.forEach(note => {
+    if (note.route !== lastRoute) {
+      lastRoute = note.route;
+      const header = document.createElement('div');
+      header.className = 'note-client-header';
+      header.innerHTML = `<span class="note-client-avatar">${note.clientAvatar}</span>${note.clientName}`;
+      list.appendChild(header);
+    }
     const item = document.createElement('div');
     item.className = 'note-item';
     item.innerHTML = `
@@ -1365,7 +1426,7 @@ const _PROTAG_ON_CLIENT = {
   midori:   ['（感情系だ。言葉を慎重に選べ）', '（言葉の裏にある感情を読む）', '（傷つきやすい。急ぐな）', '（何を本当に求めている？）'],
   saku:     ['（職人気質か。行動で語る人間だ）', '（この人の「核」は何だ）', '（まず傾聴する）', '（何かが引っかかる…）'],
   seiji:    ['（経営者。数字で動く人間だ）', '（要件を整理する）', '（効率を求めている）', '（話がまとまってきた）'],
-  karen:    ['（何かを隠している）', '（情報が足りない。もっと引き出せ）', '（…読めない。慎重に）', '（依頼の裏を探る）'],
+  karen:    ['（何かを隠している）', '（情報が足りない。もっと引き出せ）', '（慎重に進む）', '（依頼の裏を探る）'],
   _default: ['（まず相手を読む）', '（パターンを探せ）', '（情報を整理しよう）', '（何を求めている？）'],
 };
 const _PROTAG_ON_CHOICES = {
@@ -1393,7 +1454,7 @@ const _PROTAG_ON_WINDOW = {
   invadersWindow:    ['（標的を捕捉）', '（反射神経の訓練だ）', '（集中）'],
   solitaireWindow:   ['（パターン認識の訓練になる）', '（一手ずつ積み上げる）', '（論理的に解け）'],
   trashWindow:       ['（不要な情報を整理する）', '（断捨離も仕事のうちだ）', '（精査する）'],
-  yWindow:           ['（…Yか。何の情報がある）', '（調べてみるか）', '（気になるな）'],
+  yWindow:           ['（…Yか。世間の空気を読む）', '（情報収集。ここが一番早い）', '（トレンドを把握しておく）', '（数字と感情、両方ある場所だ）'],
 };
 
 // ドラッグ中のセリフ
@@ -1423,14 +1484,28 @@ let _choiceHesitationTimer = null;
 
 // 選択肢表示中の迷いセリフ（ルート別）
 const _PROTAG_HESITATING = {
-  midori:   ['（…感情的な選択か、論理的な選択か）', '（変数が多い）', '（彼女にとって何が正解なんだろう）', '（情報から判断しよう）', '（…読めない）'],
-  saku:     ['（どちらが核心に近い）', '（職人に刺さるのはどっちだ）', '（…分析中）', '（根拠のある方を選ぶ）', '（変数が多い）'],
+  midori:   ['（…感情的な選択か、論理的な選択か）', '（彼女にとって何が正解なんだろう）', '（情報から判断しよう）', '（言葉の温度を合わせる）'],
+  saku:     ['（どちらが核心に近い）', '（職人に刺さるのはどっちだ）', '（…分析中）', '（根拠のある方を選ぶ）'],
   seiji:    ['（費用対効果を考えよう）', '（どちらがリターンが高い）', '（…）', '（論理的に考える）', '（計算する）'],
-  karen:    ['（…情報が少なすぎる）', '（地雷原を歩いている気分だ）', '（どちらがリスクが低い）', '（…読めない）', '（勘か、慎重か）'],
+  karen:    ['（…情報が少なすぎる）', '（地雷原を歩いている気分だ）', '（どちらがリスクが低い）', '（勘か、慎重か）', '（慎重に進む）'],
   _default: ['（変数を絞っていこう）', '（…考える）', '（論理か感情か）', '（可能性を排除していく）', '（どちらのリスクが低い）'],
 };
 
-function _pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function _pick(arr) {
+  if (!arr || arr.length === 0) return '';
+  if (arr.length === 1) return arr[0];
+  // シャッフルキューを配列オブジェクトに保持して重複を防ぐ
+  if (!arr._sq || arr._sq.length === 0) {
+    const last = arr._sl ?? null;
+    const idxs = arr.map((_, i) => i).sort(() => Math.random() - 0.5);
+    // 直前と同じものが先頭に来たらずらす
+    if (last !== null && arr[idxs[0]] === last && idxs.length > 1) idxs.push(idxs.shift());
+    arr._sq = idxs;
+  }
+  const idx = arr._sq.shift();
+  arr._sl = arr[idx];
+  return arr[idx];
+}
 function _protagMsg(map) {
   const arr = (GS?.route && map[GS.route]) || map._default || [];
   return _pick(arr);
@@ -1536,6 +1611,13 @@ function showProtagChoices(opts, onSelect) {
    ============================================================ */
 
 // ── ウィンドウ開閉 ──────────────────────────────────────────
+const _PROTAG_Y_POST_CHECK = [
+  '（実際の反響を自分でも確認しておこう）',
+  '（投稿のコメントを見てみよう。数字の裏に何がある）',
+  '（反応の質を確認する。数だけじゃない）',
+  '（コメント欄は生の声だ）',
+];
+
 function openYWindow() {
   const win = document.getElementById('yWindow');
   win.classList.add('active');
@@ -1545,6 +1627,10 @@ function openYWindow() {
   renderYTrends();
   renderYSuggestions();
   updateTaskbarIndicators();
+
+  if (window._allPostedContents?.length && typeof showProtagMsg === 'function') {
+    setTimeout(() => showProtagMsg(_pick(_PROTAG_Y_POST_CHECK), false, 4000, true), 700);
+  }
 }
 
 function closeYWindow() {
@@ -1561,6 +1647,7 @@ function taskbarToggleY() {
     win.classList.add('active');
     bringToFront(win);
     window.yMinimized = false;
+    renderYTimeline('recommend');
     updateTaskbarIndicators();
   } else {
     win.classList.remove('active');
@@ -1744,11 +1831,68 @@ const Y_SUGGESTIONS = [
 ];
 
 // ── 描画 ────────────────────────────────────────────────────
+function toggleYReplies(el) {
+  const box = el.nextElementSibling;
+  const open = box.classList.toggle('open');
+  el.textContent = open ? '▲ コメントを閉じる' : `💬 コメントを見る (${box.dataset.count}件)`;
+}
+
+function _buildOwnPostEl(p) {
+  const repliesHtml = p.replies.map(r => `
+    <div class="y-reply-item">
+      <div class="y-reply-ava">${r.ava}</div>
+      <div>
+        <div class="y-reply-name">${r.name}</div>
+        <div class="y-reply-text">${r.text}</div>
+      </div>
+    </div>`).join('');
+  const own = document.createElement('div');
+  own.className = 'y-post y-post-own';
+  own.innerHTML = `
+    <div class="y-post-avatar">${p.avatar}</div>
+    <div class="y-post-main">
+      <div class="y-post-badge">自分の投稿</div>
+      <div class="y-post-header">
+        <span class="y-post-name">${p.name}</span>
+        <span class="y-post-handle">${p.handle}</span>
+        <span class="y-post-dot">·</span>
+        <span class="y-post-time">たった今</span>
+      </div>
+      <div class="y-post-body">${p.text.replace(/\n/g,'<br>')}</div>
+      <div class="y-post-body" style="margin-top:4px"><span class="y-post-tag">${p.tags}</span></div>
+      <div class="y-post-actions">
+        <div class="y-post-action">
+          <svg viewBox="0 0 24 24"><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 7.501 3.58 7.501 8 0 4.421-3.01 8-7.5 8h-4.135c-1.006 2.834-3.27 4.818-6.636 5-.392.022-.615-.38-.461-.749C3.498 19.208 3.75 17.564 3.75 16c0-3.916.017-6-2-6zm8.005-6c-3.317 0-6.005 2.686-6.005 6 0 1.876-.23 3.408-1.073 5.122C5.136 15.124 7.03 13.568 8 11.5h5.756c2.995 0 5.5-2.685 5.5-5.5S16.756 0 13.756 0H9.756z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span class="y-post-label">${p.replies.length}</span>
+        </div>
+        <div class="y-post-action y-rt" onclick="this.classList.toggle('liked'); const n=parseInt(this.querySelector('.y-post-label').textContent.replace(/[^\\d]/g,''))||0; this.querySelector('.y-post-label').textContent=this.classList.contains('liked')?(n+1)+'' : Math.max(0,n-1)+''">
+          <svg viewBox="0 0 24 24"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"/></svg>
+          <span class="y-post-label">${p.rtsDelta}</span>
+        </div>
+        <div class="y-post-action" onclick="this.classList.toggle('liked'); const n=parseInt(this.querySelector('.y-post-label').textContent.replace(/[^\\d]/g,''))||0; this.querySelector('.y-post-label').textContent=this.classList.contains('liked')?(n+1)+'' : Math.max(0,n-1)+''">
+          <svg viewBox="0 0 24 24"><path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.805 1.09-.806-1.09C9.984 6.01 8.526 5.44 7.304 5.5c-1.243.07-2.349.78-2.91 1.91-.552 1.12-.633 2.78.479 4.82 1.074 1.97 3.257 4.27 7.129 6.61 3.87-2.34 6.052-4.64 7.126-6.61 1.111-2.04 1.03-3.7.477-4.82-.561-1.13-1.666-1.84-2.908-1.91zm4.187 7.69c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z"/></svg>
+          <span class="y-post-label">${p.likesDelta}</span>
+        </div>
+      </div>
+      <div class="y-post-reply-toggle" onclick="toggleYReplies(this)">💬 コメントを見る (${p.replies.length}件)</div>
+      <div class="y-post-replies" data-count="${p.replies.length}">${repliesHtml}</div>
+    </div>`;
+  return own;
+}
+
 function renderYTimeline(tab) {
   const feed = document.getElementById('yFeed');
   if (!feed) return;
-  const posts = tab === 'following' ? Y_POSTS_FOLLOWING : Y_POSTS_RECOMMEND;
   feed.innerHTML = '';
+
+  // 自分の投稿をフィード先頭に表示（おすすめタブのみ）
+  if (tab === 'recommend' && window._allPostedContents?.length) {
+    window._allPostedContents.forEach(p => {
+      try { feed.appendChild(_buildOwnPostEl(p)); } catch(e) { console.error('own post error', e, p); }
+    });
+  }
+
+  const posts = tab === 'following' ? Y_POSTS_FOLLOWING : Y_POSTS_RECOMMEND;
   posts.forEach((p, idx) => {
     const el = document.createElement('div');
     el.className = 'y-post';

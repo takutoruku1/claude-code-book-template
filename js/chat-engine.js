@@ -7,6 +7,18 @@ function collectKeyword(keyword, bubbleEl) {
   GS.collectedKeywords.push(keyword);
   GS.collectedNotes.push({ keyword, text: originalText });
   GS.chatSelfBonus += 8;
+
+  // グローバルメモに依頼者情報付きで保存（ルートをまたいで保持）
+  if (!window._allMemoNotes) window._allMemoNotes = [];
+  const char = (typeof CHARACTERS !== 'undefined' && GS.route) ? CHARACTERS[GS.route] : null;
+  window._allMemoNotes.push({
+    keyword,
+    text: originalText,
+    clientName:   char ? char.name   : '不明',
+    clientAvatar: char ? char.avatar : '👤',
+    route: GS.route,
+  });
+
   bubbleEl.classList.remove('clippable');
   bubbleEl.classList.add('clipped');
   bubbleEl.title = '';
@@ -57,6 +69,11 @@ function runChat(idx) {
     }, pause + 900 + Math.random() * 600);
 
   } else if (node.from === 'player') {
+    if (!_isChatOpen()) {
+      // チャトルのトーク画面を開いている間だけ主人公の返信を送信（保留）
+      window._pendingPlayerIdx = idx;
+      return;
+    }
     setTimeout(() => {
       addChatMsg('self', node.text, '👤');
       setTimeout(() => runChat(idx + 1), 400);
@@ -77,11 +94,7 @@ function runChat(idx) {
 }
 
 const _PROTAG_GUIDE_CHAT = {
-  midori:   ['みどりから連絡が来ている。チャトルを見よう', '依頼人が待っている'],
-  saku:     ['朔から連絡だ。チャトルを開こう', '依頼人が待っている'],
-  seiji:    ['誠司からメッセージが来ている。チャトルを確認しよう', 'チャトルに返信が必要だ'],
-  karen:    ['…チャトルに連絡が入った。花蓮からだ', '依頼人から連絡が来ている。慎重に'],
-  _default: ['依頼人から連絡が来ている。チャトルを見よう', 'メッセージが届いている'],
+  _default: ['依頼人から連絡が来ている。チャトルを見よう', 'メッセージが届いている', 'チャトルを確認しよう'],
 };
 const _PROTAG_GUIDE_BUZZ = {
   midori:   ['ばずったーで言葉を組み立てよう。みどりらしい言葉を', '彼女の声を文章にする時間だ'],
@@ -99,8 +112,11 @@ const _PROTAG_GUIDE_POST = {
 };
 
 function _isChatOpen() {
-  return !!document.getElementById('chatWindow')?.classList.contains('active')
-    && !!document.getElementById('chatScreenThread')?.classList.contains('active');
+  const winActive    = !!document.getElementById('chatWindow')?.classList.contains('active');
+  const threadActive = !!document.getElementById('chatScreenThread')?.classList.contains('active');
+  const pastVisible  = document.getElementById('chatPastMessages')?.style.display !== 'none';
+  const rightRoute   = !GS?.route || !window._activeChatRoute || window._activeChatRoute === GS.route;
+  return winActive && threadActive && !pastVisible && rightRoute;
 }
 function _isBuzzOpen() {
   return !!document.getElementById('appWindow')?.classList.contains('active');
@@ -128,30 +144,18 @@ function _onChoiceSelect(opt) {
 
 function showChoices(opts) {
   const box = document.getElementById('chatChoices');
-  box.innerHTML = '';
+  if (box) box.innerHTML = '';
   setDesktopNotif('notifChat', true);
   window._pendingChoices = opts;
 
-  const chatOpen = _isChatOpen();
-
-  if (typeof showProtagMsg === 'function') {
-    if (chatOpen) {
-      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_ON_CHOICES), true, 4500), 400);
-    } else {
-      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_GUIDE_CHAT), false, 7000), 400);
-    }
-  }
-
-  if (chatOpen && typeof showProtagChoices === 'function') {
-    showProtagChoices(opts, _onChoiceSelect);
+  if (_isChatOpen()) {
+    // チャトルのトーク画面が既に開いているときはウィジェットに直接表示
+    if (typeof _showPendingChoicesInWidget === 'function') _showPendingChoicesInWidget();
   } else {
-    opts.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.className = 'choice-btn';
-      btn.textContent = opt.text;
-      btn.onclick = () => _onChoiceSelect(opt);
-      box.appendChild(btn);
-    });
+    // チャトルが閉じているときはガイドメッセージを表示（選択肢はチャトルを開いたときに表示）
+    if (typeof showProtagMsg === 'function') {
+      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_GUIDE_CHAT), false, 5000), 400);
+    }
   }
 }
 
@@ -199,27 +203,34 @@ function onChatEnd() {
       showEnding(endKey);
     }
   } else {
-    // saku: chat ends after post-reaction dilemma → show ending
-    showEnding(resolveEnding());
+    // 朔など：チャット会話終了後、「結末を見る」ボタンをチャトルに表示
+    const chatWin = document.getElementById('chatWindow');
+    if (chatWin && !chatWin.classList.contains('active')) {
+      chatWin.classList.add('active');
+      window.chatMinimized = false;
+      if (typeof bringToFront === 'function') bringToFront(chatWin);
+      if (typeof updateTaskbarIndicators === 'function') updateTaskbarIndicators();
+    }
+    if (typeof _showEndingBtn === 'function') _showEndingBtn();
   }
 }
 
 function showKidokuLastChoice(choices) {
   const box = document.getElementById('chatChoices');
-  box.innerHTML = '';
-  choices.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'choice-btn';
-    btn.textContent = opt.text;
-    btn.onclick = () => {
-      box.innerHTML = '';
-      if (opt.egoPlus) GS.egoScore++;
-      addChatMsg('self', opt.text, '👤');
-      const finalKey = GS.egoScore > 0 ? 'zange' : 'chinmoku';
-      setTimeout(() => showEnding(finalKey), 500);
-    };
-    box.appendChild(btn);
-  });
+  if (box) box.innerHTML = '';
+
+  const onSelect = (opt) => {
+    if (typeof clearProtagChoices === 'function') clearProtagChoices();
+    if (box) box.innerHTML = '';
+    if (opt.egoPlus) GS.egoScore++;
+    addChatMsg('self', opt.text, '👤');
+    const finalKey = GS.egoScore > 0 ? 'zange' : 'chinmoku';
+    setTimeout(() => showEnding(finalKey), 500);
+  };
+
+  if (typeof showProtagChoices === 'function') {
+    showProtagChoices(choices, onSelect);
+  }
 }
 
 /* ============================================================

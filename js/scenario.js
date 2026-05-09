@@ -205,14 +205,7 @@ const CHAT_FLOWS = {
       from: 'player',
       text: 'では、投稿を作ってみましょう。'
     },
-    { id: 'midori_post_trigger', from: 'trigger', action: 'showPost', resumeAt: 'midori_post_end' },
-
-    // ---- 投稿後 ----
-    {
-      id: 'midori_post_end',
-      from: 'system',
-      text: ''
-    }
+    { id: 'midori_post_trigger', from: 'trigger', action: 'showPost' }
   ],
 
   // =====================================================================
@@ -392,35 +385,23 @@ const CHAT_FLOWS = {
       ]
     },
     { id: 'karen_system',  from: 'system',  text: '→ 素材が届きました' },
-    // resumeAt: 素材確認完了後に karen_mystery_choice から会話を再開する
-    { id: 'karen_trigger', from: 'trigger', action: 'showMaterial', resumeAt: 'karen_mystery_choice' },
+    // 素材確認完了後、投稿フェーズへ。投稿後の反響完了後に karen_mystery_choice から再開する
+    { id: 'karen_trigger',      from: 'trigger', action: 'showMaterial', resumeAt: 'karen_post_trigger' },
+    { id: 'karen_post_trigger', from: 'trigger', action: 'showPost',     resumeAt: 'karen_mystery_choice' },
     // flashback3 は cards.js 内で k_memo カードをめくった時にトリガー
 
     // ---- 謎収束選択肢（mysteryClues に 2件以上たまった場合のみ表示）----
-    // condition: 'mysteryClues.length >= 2' はエンジンが動的に評価する式。
-    // エンジン側の評価処理: canShowStep(step) で condition が文字列の場合は
-    // Function('GAME_STATE', 'return ' + step.condition)(GAME_STATE) で評価すること。
     {
       id: 'karen_mystery_choice',
       from: 'choices',
       condition: 'mysteryClues.length >= 2',
       opts: [
-        // setFlag:'zange' をここで立てることで、次の karen_zange_response が確実に表示される
         { text: 'あなたのお姉さんに…記事を書いたのは私です', next: 'karen_zange_response', egoPlus: true, setFlag: 'zange' },
         { text: '（何も言わない）',                          next: 'karen_end' }
       ]
     },
 
-    // フォールバック：伏線が未回収のままルートを終えた場合（mysteryClues < 2）
-    // system ノードはフォールスルーで次要素へ進むため、karen_end を直後に配置する
-    {
-      id: 'karen_mystery_fallback',
-      from: 'system',
-      condition: 'mysteryClues.length < 2',
-      text: '— 花蓮の依頼の真意は、まだわからない —'
-    },
-
-    { id: 'karen_end', from: 'system', text: '' }, // 終端マーカー（fallback のフォールスルー先）
+    { id: 'karen_end', from: 'system', text: '' }, // 終端マーカー
 
     // 贖罪エンド方向（endings.js の zange と連動）
     // karen_mystery_choice の next: 'karen_zange_response' でのみ到達。配列の順序では到達しない

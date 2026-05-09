@@ -17,10 +17,20 @@ const CLIENT_REACTIONS = {
     high_buzz: 'すごいいいねが来てる…！\nでもなんか、私じゃない感じがして\nちょっとこわいです😢',
     balanced:  'お母さんが毎日見てくれてる…！\nこれくらいのペースが自分に合ってる気がする。\n次、自分で書いてみたいかも',
   },
+  saku: {
+    high_self: '…ありがとうございます。\nこんなに見てもらえるとは思ってなくて。\nなんか、続けてみようかなって思いました。',
+    high_buzz: 'すごい数字で。\nちょっと、こわいくらいです。\n俺の模型で合ってますよね…？',
+    balanced:  'ゆっくり見てくれてる人がいるんですね。\nそれだけで、なんか十分な気がして。',
+  },
   seiji: {
     high_self: '先週、若いお客さんが来てくれて。SNSで見たって言ってくれました。\nなんか嬉しかったです笑',
     high_buzz: 'すごい反応ですね笑\nでもなんかうちっぽくないな…',
     balanced:  '常連さんが「見たよ」って言ってくれました。\nこれくらいがちょうどいいのかも。',
+  },
+  karen: {
+    high_self: '…見てもらえている、という感じがします。\n姉にも届いていたらいいのですが。',
+    high_buzz: '思ったより広がってしまいました。\n少し、怖いです。',
+    balanced:  'ゆっくり、でもちゃんと届いている気がします。\nありがとうございました。',
   },
 };
 
@@ -113,7 +123,7 @@ function addChatMsg(from, text, ava, keyword) {
   if (!pastVisible) msgs.scrollTop = msgs.scrollHeight;
   if (!window._skipChatHistory) {
     if (!window._chatHistory) window._chatHistory = [];
-    window._chatHistory.push({ type: 'msg', from, text, avatar: ava });
+    window._chatHistory.push({ type: 'msg', from, text, avatar: ava, route: GS?.route });
   }
   if (from === 'client' && !window._skipChatHistory) {
     updateChatContactPreview(text);
