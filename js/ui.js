@@ -2012,6 +2012,7 @@ function _getTopWindow() {
 function _playTitleBgm() {
   const bgm = document.getElementById('titleBgm');
   if (!bgm) return;
+  bgm.volume = _getBgmVolume();
   bgm.currentTime = 0;
   bgm.play().catch(() => {});
 }
@@ -2021,17 +2022,42 @@ function _stopTitleBgm() {
   bgm.pause();
   bgm.currentTime = 0;
 }
+function _getBgmVolume() {
+  return parseFloat(localStorage.getItem('bgmVolume') ?? '0.7');
+}
+
+function onBgmVolumeChange(val) {
+  const v = val / 100;
+  localStorage.setItem('bgmVolume', v);
+  const bgm = document.getElementById('titleBgm');
+  if (bgm) bgm.volume = v;
+  const label = document.getElementById('bgmVolumeVal');
+  if (label) label.textContent = val;
+}
+
+function toggleTitleSettings() {
+  const btn   = document.querySelector('.title-settings-btn');
+  const panel = document.getElementById('titleSettingsPanel');
+  btn?.classList.toggle('open');
+  panel?.classList.toggle('open');
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-  // タイトル画面が初期表示されているときに BGM 再生開始
-  // ブラウザの自動再生ポリシーのため、ユーザー操作後に再生する
+  // 保存済み音量をスライダーに反映
+  const saved = Math.round(_getBgmVolume() * 100);
+  const slider = document.getElementById('bgmVolumeSlider');
+  const label  = document.getElementById('bgmVolumeVal');
+  if (slider) slider.value = saved;
+  if (label)  label.textContent = saved;
+
   const titleEl = document.getElementById('screen-title');
   if (!titleEl?.classList.contains('active')) return;
-  const startOnInteraction = () => {
-    _playTitleBgm();
-    document.removeEventListener('click', startOnInteraction);
-    document.removeEventListener('keydown', startOnInteraction);
-  };
-  document.addEventListener('click', startOnInteraction);
-  document.addEventListener('keydown', startOnInteraction);
+  // アプリ環境では即再生、ブラウザの自動再生制限がある場合は最初の操作で再生
+  const bgm = document.getElementById('titleBgm');
+  if (!bgm) return;
+  bgm.volume = _getBgmVolume();
+  bgm.play().catch(() => {
+    const start = () => { _playTitleBgm(); document.removeEventListener('click', start); };
+    document.addEventListener('click', start);
+  });
 });

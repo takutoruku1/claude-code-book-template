@@ -68,6 +68,21 @@
         </button>
       </div>
     </div>
+
+    <!-- 設定ボタン -->
+    <button class="title-settings-btn" onclick="toggleTitleSettings()" title="設定">⚙</button>
+    <div class="title-settings-panel" id="titleSettingsPanel">
+      <div class="title-settings-title">設定</div>
+      <div class="title-settings-row">
+        <label class="title-settings-label">🎵 BGM音量</label>
+        <div class="title-settings-slider-wrap">
+          <input type="range" id="bgmVolumeSlider" class="title-settings-slider"
+            min="0" max="100" value="70"
+            oninput="onBgmVolumeChange(this.value)">
+          <span class="title-settings-val" id="bgmVolumeVal">70</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- BGM -->
