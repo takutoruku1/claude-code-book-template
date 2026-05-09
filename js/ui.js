@@ -140,6 +140,8 @@ function openApp(isDebugMode) {
     return;
   }
 
+  _stopTitleBgm();
+
   const overlay = document.getElementById('boot-overlay');
   document.getElementById('screen-title').classList.remove('active');
   overlay.classList.add('active');
@@ -805,6 +807,7 @@ function retryGame() {
       window.MAIN_MODE_ROUTES = null;
       window.MAIN_MODE_ROUTE_INDEX = null;
       _closeAllGameWindows();
+      _playTitleBgm();
     }
   }
 }
@@ -2002,3 +2005,33 @@ function _getTopWindow() {
   });
   return top;
 }
+
+/* ============================================================
+   TITLE BGM
+============================================================ */
+function _playTitleBgm() {
+  const bgm = document.getElementById('titleBgm');
+  if (!bgm) return;
+  bgm.currentTime = 0;
+  bgm.play().catch(() => {});
+}
+function _stopTitleBgm() {
+  const bgm = document.getElementById('titleBgm');
+  if (!bgm) return;
+  bgm.pause();
+  bgm.currentTime = 0;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // タイトル画面が初期表示されているときに BGM 再生開始
+  // ブラウザの自動再生ポリシーのため、ユーザー操作後に再生する
+  const titleEl = document.getElementById('screen-title');
+  if (!titleEl?.classList.contains('active')) return;
+  const startOnInteraction = () => {
+    _playTitleBgm();
+    document.removeEventListener('click', startOnInteraction);
+    document.removeEventListener('keydown', startOnInteraction);
+  };
+  document.addEventListener('click', startOnInteraction);
+  document.addEventListener('keydown', startOnInteraction);
+});
