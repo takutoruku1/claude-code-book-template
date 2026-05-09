@@ -3,6 +3,10 @@
 ============================================================ */
 (function () {
 
+function _gev(type, thinking) {
+  document.dispatchEvent(new CustomEvent('gameEvent', { detail: { type, thinking: !!thinking } }));
+}
+
 const S        = 2;     // pixel scale (1 sprite-px = 2 canvas-px)
 const CW       = 400;   // canvas width
 const CH       = 480;   // canvas height
@@ -65,6 +69,7 @@ function startGame() {
   updateHUD();
   if (raf) cancelAnimationFrame(raf);
   raf = requestAnimationFrame(loop);
+  _gev('invaders:start');
 }
 
 // ── game loop ──────────────────────────────────────────────
@@ -129,7 +134,7 @@ function update() {
   checkBottom();
   tickExplosions();
 
-  if (state === 'playing' && aliveCount() === 0) state = 'win';
+  if (state === 'playing' && aliveCount() === 0) { state = 'win'; _gev('invaders:win'); }
 }
 
 function moveFormation() {
@@ -176,7 +181,7 @@ function hitBulletVsUfo() {
     score += 200;
     if (score > hiscore) hiscore = score;
     explosions.push({ x: ufo.x, y: ufo.y, ttl: 20, phase: 0, color: '#ff4444', isPlayer: false });
-    ufo = null; bullet = null;
+    ufo = null; bullet = null; _gev('invaders:ufo');
     updateHUD();
   }
 }
@@ -241,7 +246,8 @@ function tickExplosions() {
 function playerHit() {
   explosions.push({ x: plrX, y: PLR_Y, ttl: 40, phase: 0, color: '#ff6b9d', isPlayer: true });
   lives--;
-  if (lives <= 0) { state = 'gameover'; return; }
+  if (lives <= 0) { state = 'gameover'; _gev('invaders:gameover'); return; }
+  _gev('invaders:playerHit');
   plrX = Math.round(CW / 2 - SPRITES.CANNON.w * S / 2);
   bullet = null;
   updateHUD();

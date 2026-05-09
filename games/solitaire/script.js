@@ -1,5 +1,9 @@
 'use strict';
 
+function _solGev(type) {
+  document.dispatchEvent(new CustomEvent('gameEvent', { detail: { type } }));
+}
+
 // ── Card model ──────────────────────────────────────────────────────────────
 const SUITS  = ['♠','♥','♦','♣'];
 const RANKS  = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
@@ -340,6 +344,7 @@ function placeSelected(cards, destType, destIdx) {
   if (destType === 'foundation') {
     foundation[destIdx].push(...cards);
     addScore(cards.length === 1 ? 10 : 10);
+    _solGev('sol:foundation');
   } else if (destType === 'tableau') {
     tableau[destIdx].push(...cards);
   }
@@ -359,6 +364,7 @@ function checkWin() {
   const won = foundation.every(pile => pile.length === 13);
   if (won) {
     clearInterval(timerID);
+    _solGev('sol:win');
     const bonus = Math.max(0, Math.floor((700 - elapsed) * 2));
     score += bonus;
     $('winStats').textContent =
@@ -428,6 +434,7 @@ function newGame() {
     $('statTime').textContent = fmtTime(elapsed);
   }, 1000);
 
+  _solGev('sol:start');
   renderAll();
 }
 

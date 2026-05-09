@@ -3,10 +3,21 @@
 ============================================================ */
 let _zTop = 100;
 let _protagTrackedWin = null;
+let _lastFocusedWinId = null;
+let _winFocusCooldown = null;
 
 function bringToFront(el) {
   el.style.zIndex = ++_zTop;
   moveProtagWidgetToWindow(el);
+  const winId = el.id;
+  if (winId && winId !== _lastFocusedWinId && !_winFocusCooldown) {
+    _lastFocusedWinId = winId;
+    const lines = _PROTAG_ON_WINDOW[winId];
+    if (lines && typeof showProtagMsg === 'function') {
+      setTimeout(() => showProtagMsg(_pick(lines), false, 2800), 600);
+    }
+    _winFocusCooldown = setTimeout(() => { _winFocusCooldown = null; }, 3500);
+  }
 }
 
 function _protagTargetPos(winEl) {
@@ -175,6 +186,7 @@ function closeAppWindow() {
 }
 
 function _showPendingChoicesInWidget() {
+  if (typeof _isChatOpen === 'function' && !_isChatOpen()) return;
   if (window._pendingChoices && typeof showProtagChoices === 'function') {
     const box = document.getElementById('chatChoices');
     if (box) box.innerHTML = '';
@@ -1122,6 +1134,37 @@ function snapLayout(windowId, zone, e) {
   applySnap(win, zone);
 }
 
+/* ===== DRAG DIALOGUE HELPERS ===== */
+let _dragSpeechTimer = null;
+let _dragActive = false;
+function _onDragStart() {
+  if (_dragActive) return;
+  _dragActive = true;
+  const w = document.getElementById('protagonistWidget');
+  if (w) w.classList.add('drag-following');
+  clearTimeout(_dragSpeechTimer);
+  _dragSpeechTimer = setTimeout(() => {
+    if (_dragActive && typeof showProtagMsg === 'function')
+      showProtagMsg(_pick(_PROTAG_ON_DRAG_START), false, 2000);
+  }, 400);
+}
+function _onDragEnd() {
+  if (!_dragActive) return;
+  _dragActive = false;
+  const w = document.getElementById('protagonistWidget');
+  if (w) w.classList.remove('drag-following');
+  clearTimeout(_dragSpeechTimer);
+  if (typeof showProtagMsg === 'function')
+    setTimeout(() => showProtagMsg(_pick(_PROTAG_ON_DRAG_END), false, 2200), 200);
+}
+
+/* ===== GAME EVENT LISTENER ===== */
+document.addEventListener('gameEvent', (e) => {
+  const lines = _PROTAG_ON_GAME[e.detail?.type];
+  if (lines && typeof showProtagMsg === 'function')
+    showProtagMsg(_pick(lines), e.detail?.thinking ?? false, 2800, true);
+});
+
 /* ===== DRAGGABLE WINDOWS ===== */
 function makeDraggable(windowEl) {
   const titlebar = windowEl.querySelector('.titlebar');
@@ -1171,6 +1214,7 @@ function makeDraggable(windowEl) {
     titlebar.style.cursor = 'grabbing';
     document.body.style.userSelect = 'none';
     e.preventDefault();
+    _onDragStart();
   });
 
   document.addEventListener('mousemove', (e) => {
@@ -1197,6 +1241,7 @@ function makeDraggable(windowEl) {
       applySnap(windowEl, zone);
     }
     hideSnapPreview();
+    _onDragEnd();
   });
 }
 
@@ -1224,6 +1269,7 @@ function makeDraggable(windowEl) {
     bar.style.cursor = 'grabbing';
     document.body.style.userSelect = 'none';
     e.preventDefault();
+    _onDragStart();
   });
   document.addEventListener('mousemove', (e) => {
     if (!dragging) return;
@@ -1236,6 +1282,7 @@ function makeDraggable(windowEl) {
     dragging = false;
     bar.style.cursor = '';
     document.body.style.userSelect = '';
+    _onDragEnd();
   });
 })();
 
@@ -1315,30 +1362,73 @@ function makeResizable(windowEl) {
    PROTAGONIST WIDGET
 ============================================================ */
 const _PROTAG_ON_CLIENT = {
-  midori:   ['（…大丈夫そうかな）', '（うん、聞いている）', '（もう少し聞かせてほしい）', '（この人の気持ち、丁寧に受け取ろう）'],
-  saku:     ['（…なるほど）', '（じっくり読む）', '（この人の孤独、わかる気がする）', '（何かが引っかかる…）'],
-  seiji:    ['（要件を整理しよう）', '（なるほど）', '（現実的に考えよう）', '（話がまとまってきた）'],
-  karen:    ['（…どこまで知っているんだろう）', '（慎重に、慎重に）', '（…読んでいる）', '（この人が何を求めているのか）'],
-  _default: ['（…読んでいる）', '（なるほど）', '（そうか…）', '（うん…）'],
+  midori:   ['（感情系だ。言葉を慎重に選べ）', '（言葉の裏にある感情を読む）', '（傷つきやすい。急ぐな）', '（何を本当に求めている？）'],
+  saku:     ['（職人気質か。行動で語る人間だ）', '（この人の「核」は何だ）', '（まず傾聴する）', '（何かが引っかかる…）'],
+  seiji:    ['（経営者。数字で動く人間だ）', '（要件を整理する）', '（効率を求めている）', '（話がまとまってきた）'],
+  karen:    ['（何かを隠している）', '（情報が足りない。もっと引き出せ）', '（…読めない。慎重に）', '（依頼の裏を探る）'],
+  _default: ['（まず相手を読む）', '（パターンを探せ）', '（情報を整理しよう）', '（何を求めている？）'],
 };
 const _PROTAG_ON_CHOICES = {
-  midori:   ['（この人に合う言葉を選ぼう）', '（焦らず、丁寧に）', '（やさしく、でも正直に）', '（気持ちを引き出せるかな）'],
-  saku:     ['（この人の気持ち、尊重したい）', '（どう言えばいいんだろう）', '（慎重に…）', '（…何かが引っかかる）'],
-  seiji:    ['（何が一番いいか）', '（プロとして判断しよう）', '（実務的に答えよう）', '（ここは正直に言おう）'],
-  karen:    ['（…何て答えれば）', '（正直に言うべきか）', '（言葉を選ばないと）', '（…逃げられない）'],
-  _default: ['（どう答えようか）', '（慎重に…）', '（正直に言うか）', '（何て返そう）'],
+  midori:   ['（感情に寄り添う選択か、論理的な選択か）', '（彼女が求めているのは共感だ）', '（言葉が武器になる）', '（慎重に選べ）'],
+  saku:     ['（職人の言語で話そう）', '（直感より根拠が響く）', '（核心に近い言葉を選ぶ）', '（言葉を絞る）'],
+  seiji:    ['（ROIで考える）', '（ビジネス言語で組み立てよう）', '（シンプルに）', '（結論から話した方がいい）'],
+  karen:    ['（地雷がある。慎重に）', '（どちらがリスクが低い）', '（…情報が少なすぎる）', '（感情のトリガーを避けながら進む）'],
+  _default: ['（変数を整理する）', '（論理か感情か）', '（可能性を絞っていく）', '（どちらのリスクが低い）'],
 };
 const _PROTAG_ON_ANSWER = {
-  midori:   ['（伝わったかな）', '（よかったかな、これで）', '（この人の背中を少し押せたら）', '（…喜んでくれるといいな）'],
-  saku:     ['（…これでよかったのか）', '（何か、胸に引っかかる）', '（この人には届いたかな）', '（うまく言えたかな…）'],
-  seiji:    ['（これで動いてくれるといい）', '（あとは本人次第だ）', '（伝わったはず）', '（プロとして言うべきことは言った）'],
-  karen:    ['（…よかったのか、これで）', '（どう受け取られたか）', '（取り返しのつかないことを言った気がする）', '（…もう戻れない）'],
-  _default: ['（…これでよかったのかな）', '（伝わったかな）', '（うまく言えたか）', '（…どう受け取られるか）'],
+  midori:   ['（…伝わったか）', '（反応を待つ）', '（彼女の心に届いていれば）', '（計算通りか確認しよう）'],
+  saku:     ['（狙い通りか）', '（職人には正直さが一番響く）', '（手応えはある）', '（データを待つ）'],
+  seiji:    ['（数字が答えを出す）', '（結果を見よう）', '（打てる手は打った）', '（あとは市場が決める）'],
+  karen:    ['（…読み違えていなければいいが）', '（予想外の反応があるかもしれない）', '（監視を続ける）', '（変数が多すぎた）'],
+  _default: ['（結果を分析しよう）', '（狙い通りか？）', '（次のデータを待つ）', '（手応えはある）'],
 };
 
-let _protagTimer        = null;
-let _protagIdle         = null;
-let _protagChoiceTimers = [];
+// ウィンドウ別セリフ（前面に来たとき）
+const _PROTAG_ON_WINDOW = {
+  appWindow:         ['（ばずったー。言葉を設計する）', '（戦略を立てよう）', '（ターゲットは何を求めている）'],
+  chatWindow:        ['（依頼人からの情報収集）', '（会話から手がかりを探す）', '（言葉の裏を読め）'],
+  memoAppWindow:     ['（情報を整理する）', '（記録を確認しよう）', '（メモを分析する）'],
+  gamesWindow:       ['（…休憩か）', '（リフレッシュも戦略のうちだ）', '（少し頭を冷やす）'],
+  minesweeperWindow: ['（リスク管理。一手一手確認しよう）', '（論理で解ける）', '（慎重に）'],
+  invadersWindow:    ['（標的を捕捉）', '（反射神経の訓練だ）', '（集中）'],
+  solitaireWindow:   ['（パターン認識の訓練になる）', '（一手ずつ積み上げる）', '（論理的に解け）'],
+  trashWindow:       ['（不要な情報を整理する）', '（断捨離も仕事のうちだ）', '（精査する）'],
+  yWindow:           ['（…Yか。何の情報がある）', '（調べてみるか）', '（気になるな）'],
+};
+
+// ドラッグ中のセリフ
+const _PROTAG_ON_DRAG_START = ['（移動か）', '（追跡する）', '（位置を変えるのか）', '（了解）'];
+const _PROTAG_ON_DRAG_END   = ['（位置確認）', '（ここか）', '（よし）', '（確定）'];
+
+// ゲームイベントセリフ
+const _PROTAG_ON_GAME = {
+  'invaders:start':     ['（始めるか）', '（ひとつずつ）', '（集中）'],
+  'invaders:playerHit': ['（被弾）', '（…くそ）', '（想定外だった）'],
+  'invaders:gameover':  ['（…任務失敗）', '（データを見直す）', '（次は対策する）'],
+  'invaders:win':       ['（全標的排除。完了）', '（作戦成功）', '（計算通り）'],
+  'invaders:ufo':       ['（UFOか）', '（チャンスだ）', '（狙える）'],
+  'ms:start':           ['（リスクマップの解析開始）', '（論理で解ける）', '（慎重に進む）'],
+  'ms:lose':            ['（…読み違えた）', '（データ不足だった）', '（失敗。分析しよう）'],
+  'ms:win':             ['（完全解析。クリア）', '（論理通りだ）', '（計算通り）'],
+  'sol:start':          ['（組み合わせパターンを解析する）', '（最適解を探せ）', '（始めるか）'],
+  'sol:foundation':     ['（一手進んだ）', '（順調だ）', '（パターン通り）'],
+  'sol:win':            ['（全パターン解析完了）', '（クリア）', '（論理は裏切らない）'],
+};
+
+let _protagTimer           = null;
+let _protagIdle            = null;
+let _protagChoiceTimers    = [];
+let _protagMsgExpiry       = 0;       // timestamp: no new low-priority msg before this
+let _choiceHesitationTimer = null;
+
+// 選択肢表示中の迷いセリフ（ルート別）
+const _PROTAG_HESITATING = {
+  midori:   ['（…感情的な選択か、論理的な選択か）', '（変数が多い）', '（彼女にとって何が正解なんだろう）', '（情報から判断しよう）', '（…読めない）'],
+  saku:     ['（どちらが核心に近い）', '（職人に刺さるのはどっちだ）', '（…分析中）', '（根拠のある方を選ぶ）', '（変数が多い）'],
+  seiji:    ['（費用対効果を考えよう）', '（どちらがリターンが高い）', '（…）', '（論理的に考える）', '（計算する）'],
+  karen:    ['（…情報が少なすぎる）', '（地雷原を歩いている気分だ）', '（どちらがリスクが低い）', '（…読めない）', '（勘か、慎重か）'],
+  _default: ['（変数を絞っていこう）', '（…考える）', '（論理か感情か）', '（可能性を排除していく）', '（どちらのリスクが低い）'],
+};
 
 function _pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function _protagMsg(map) {
@@ -1346,21 +1436,49 @@ function _protagMsg(map) {
   return _pick(arr);
 }
 
-function showProtagMsg(text, thinking = false, duration = 3200) {
+// force=true のときは読了ガードを無視して割り込む
+function showProtagMsg(text, thinking = false, duration = 3200, force = false) {
+  if (!force && Date.now() < _protagMsgExpiry) return;
+
   const widget = document.getElementById('protagonistWidget');
   const bubble = document.getElementById('protagBubble');
   const textEl = document.getElementById('protagText');
   if (!widget || !bubble || !textEl) return;
 
   clearTimeout(_protagTimer);
+  _protagMsgExpiry = Date.now() + duration;
   textEl.textContent = text;
   bubble.classList.toggle('thinking', thinking);
   bubble.classList.add('show');
 
-  _protagTimer = setTimeout(() => bubble.classList.remove('show'), duration);
+  _protagTimer = setTimeout(() => {
+    bubble.classList.remove('show');
+    _protagMsgExpiry = 0;
+  }, duration);
+}
+
+// 選択肢が出ているあいだ、迷いセリフをバブルが空いたタイミングで繰り返す
+function _startChoiceHesitation() {
+  _stopChoiceHesitation();
+  function tick() {
+    const bubble = document.getElementById('protagBubble');
+    if (!bubble) return;
+    if (!bubble.classList.contains('show')) {
+      showProtagMsg(_protagMsg(_PROTAG_HESITATING), true, 4200, true);
+      _choiceHesitationTimer = setTimeout(tick, 5400);
+    } else {
+      _choiceHesitationTimer = setTimeout(tick, 500);
+    }
+  }
+  _choiceHesitationTimer = setTimeout(tick, 1600);
+}
+function _stopChoiceHesitation() {
+  clearTimeout(_choiceHesitationTimer);
+  _choiceHesitationTimer = null;
 }
 
 function clearProtagChoices() {
+  _stopChoiceHesitation();
   _protagChoiceTimers.forEach(t => { clearTimeout(t); clearInterval(t); });
   _protagChoiceTimers = [];
   const c = document.getElementById('protagChoices');
@@ -1369,6 +1487,7 @@ function clearProtagChoices() {
 
 function showProtagChoices(opts, onSelect) {
   clearProtagChoices();
+  _startChoiceHesitation();
   const container = document.getElementById('protagChoices');
   if (!container) return;
 

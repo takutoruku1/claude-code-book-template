@@ -51,8 +51,8 @@ const CHAT_FLOWS = {
     {
       id: 'midori_hello_reply',
       from: 'choices', opts: [
-        { text: 'こちらこそ！よろしくお願いします。まず少し聞かせてもらえますか？', next: 'midori_sns_start' },
-        { text: 'はじめまして。どんなご依頼か教えてください',                      next: 'midori_sns_start' }
+        { text: 'こちらこそ。少し話を聞かせてもらえますか。', next: 'midori_sns_start' },
+        { text: 'はじめまして。どんな依頼か教えてください。',  next: 'midori_sns_start' }
       ]
     },
 
@@ -80,7 +80,7 @@ const CHAT_FLOWS = {
       id: 'midori_photo_reply',
       from: 'choices', opts: [
         { text: 'どんな植物ですか？',            next: 'midori_plant_detail' },
-        { text: '料理も作るんですね！どんな料理ですか？', next: 'midori_plant_detail' }
+        { text: '料理も。どんな料理ですか。',            next: 'midori_plant_detail' }
       ]
     },
 
@@ -136,8 +136,8 @@ const CHAT_FLOWS = {
     {
       id: 'midori_wobble_reply',
       from: 'choices', opts: [
-        { text: 'それが「みどりさんらしさ」だと思います', next: 'midori_reason_lead' },
-        { text: 'その感覚、ちゃんと伝わりますよ',       next: 'midori_reason_lead' }
+        { text: 'それが「みどりさんらしさ」です',  next: 'midori_reason_lead' },
+        { text: 'その感覚、そのまま出せばいい', next: 'midori_reason_lead' }
       ]
     },
 
@@ -165,8 +165,8 @@ const CHAT_FLOWS = {
     {
       id: 'midori_mother_reply',
       from: 'choices', opts: [
-        { text: 'お母さんに届く投稿、一緒に作りましょう', next: 'midori_closing_client', selfBonus: 5 },
-        { text: 'それは…素敵な理由ですね',               next: 'midori_closing_client' }
+        { text: 'お母さんに届く投稿を作りましょう', next: 'midori_closing_client', selfBonus: 5 },
+        { text: '…そういう理由があったんですね',     next: 'midori_closing_client' }
       ]
     },
 
@@ -179,7 +179,7 @@ const CHAT_FLOWS = {
     {
       id: 'midori_closing_player1',
       from: 'player',
-      text: 'じゃあ、その感覚を素材にしましょう。\n写真とか、メモとか、送ってもらえますか？'
+      text: 'じゃあ、その感覚を素材にしよう。\n写真とかメモ、送ってもらえますか。'
     },
     {
       id: 'midori_send1',
@@ -252,7 +252,7 @@ const CHAT_FLOWS = {
     {
       id: 'saku_fb2_after',
       from: 'player',
-      text: '…残す、か。\nじゃあ、何を残したいか聞かせてもらえますか。'
+      text: '…残す、か。\nじゃあ、何を残したいか教えてもらえますか。'
     },
     {
       id: 'saku_send',
@@ -310,7 +310,7 @@ const CHAT_FLOWS = {
     {
       id: 'saku_dm_name_reply',
       from: 'player',
-      text: '……いえ。\n知らない人だと思います。\n気にしないでください。'
+      text: '……いえ。\n他人です。\n気にしないでください。'
     },
 
     { id: 'saku_dm_end', from: 'system', text: '' } // 終端マーカー
@@ -369,7 +369,7 @@ const CHAT_FLOWS = {
     {
       id: 'karen_hello_reply',
       from: 'player',
-      text: 'ご連絡ありがとうございます。どんな発信を考えていますか？'
+      text: 'こちらこそ。どんな発信を考えていますか。'
     },
     {
       id: 'karen_flower',

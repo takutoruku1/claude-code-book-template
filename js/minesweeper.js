@@ -1,6 +1,9 @@
 /* ============================================================
    MINESWEEPER  5×5
 ============================================================ */
+function _msGev(type) {
+  document.dispatchEvent(new CustomEvent('gameEvent', { detail: { type } }));
+}
 const MS_SIZE  = 5;
 const MS_MINES = 5;
 
@@ -65,6 +68,7 @@ function msReveal(r, c) {
   if (msState === 'idle') {
     msState = 'playing';
     msPlaceMines(r, c);
+    _msGev('ms:start');
     msTimerInt = setInterval(() => {
       msTimerVal = Math.min(999, msTimerVal + 1);
       msLCD('msTimerEl', msTimerVal);
@@ -77,6 +81,7 @@ function msReveal(r, c) {
     msState   = 'lost';
     msLostCell = { r, c };
     clearInterval(msTimerInt);
+    _msGev('ms:lose');
     document.getElementById('msFace').textContent = '😵';
     for (let row = 0; row < MS_SIZE; row++)
       for (let col = 0; col < MS_SIZE; col++)
@@ -93,6 +98,7 @@ function msReveal(r, c) {
   if (msCheckWin()) {
     msState = 'won';
     clearInterval(msTimerInt);
+    _msGev('ms:win');
     document.getElementById('msFace').textContent = '😎';
   }
 

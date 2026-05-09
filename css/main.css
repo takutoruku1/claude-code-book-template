@@ -2518,6 +2518,13 @@ body:has(#screen-title.active) .taskbar { display: none; }
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-5px); }
 }
+#protagonistWidget.drag-following .protag-avatar {
+  animation: protagDragWobble 0.35s ease-in-out infinite;
+}
+@keyframes protagDragWobble {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50%       { transform: translateY(-4px) rotate(4deg); }
+}
 
 /* ---- Protagonist choices ---- */
 #protagChoices {
