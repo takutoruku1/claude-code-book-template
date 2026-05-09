@@ -219,9 +219,13 @@ function _showPendingChoicesInWidget() {
   // ウィジェットがまだチャトルの位置にいない場合は移動アニメーション分だけ待つ
   const alreadyAtChat = _protagTrackedWin?.id === 'chatWindow';
   const delay = alreadyAtChat ? 0 : 1300;
-  setTimeout(() => {
-    if (window._pendingChoices) showProtagChoices(window._pendingChoices, _onChoiceSelect);
+  const tid = setTimeout(() => {
+    // チャトルが依然アクティブなときだけ表示
+    if (window._pendingChoices && _isChatOpen()) {
+      showProtagChoices(window._pendingChoices, _onChoiceSelect);
+    }
   }, delay);
+  _protagChoiceTimers.push(tid);
 }
 
 function _resumePendingPlayerMsg() {
@@ -1831,6 +1835,7 @@ const Y_SUGGESTIONS = [
 ];
 
 // ── 描画 ────────────────────────────────────────────────────
+const _yCountCache = {};
 function toggleYReplies(el) {
   const box = el.nextElementSibling;
   const open = box.classList.toggle('open');
@@ -1851,7 +1856,6 @@ function _buildOwnPostEl(p) {
   own.innerHTML = `
     <div class="y-post-avatar">${p.avatar}</div>
     <div class="y-post-main">
-      <div class="y-post-badge">自分の投稿</div>
       <div class="y-post-header">
         <span class="y-post-name">${p.name}</span>
         <span class="y-post-handle">${p.handle}</span>
@@ -1887,7 +1891,7 @@ function renderYTimeline(tab) {
 
   // 自分の投稿をフィード先頭に表示（おすすめタブのみ）
   if (tab === 'recommend' && window._allPostedContents?.length) {
-    window._allPostedContents.forEach(p => {
+    window._allPostedContents.slice().reverse().forEach(p => {
       try { feed.appendChild(_buildOwnPostEl(p)); } catch(e) { console.error('own post error', e, p); }
     });
   }
@@ -1920,9 +1924,9 @@ function renderYTimeline(tab) {
         <div class="y-post-body">${p.body.replace(/\n/g,'<br>')}${tagsHtml ? '<br>' + tagsHtml : ''}</div>
         ${quoteHtml}
         <div class="y-post-actions">
-          <div class="y-post-action" onclick="this.querySelector('.y-post-label').textContent = (parseInt(this.querySelector('.y-post-label').textContent.replace(/[^\d]/g,''))||0)+1 + ''">
+          <div class="y-post-action">
             <svg viewBox="0 0 24 24"><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 7.501 3.58 7.501 8 0 4.421-3.01 8-7.5 8h-4.135c-1.006 2.834-3.27 4.818-6.636 5-.392.022-.615-.38-.461-.749C3.498 19.208 3.75 17.564 3.75 16c0-3.916.017-6 -2-6zm8.005-6c-3.317 0-6.005 2.686-6.005 6 0 1.876-.23 3.408-1.073 5.122C5.136 15.124 7.03 13.568 8 11.5h5.756c2.995 0 5.5-2.685 5.5-5.5S16.756 0 13.756 0H9.756z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
-            <span class="y-post-label">${Math.floor(Math.random()*80+5)}</span>
+            <span class="y-post-label">${(_yCountCache[tab+idx] = _yCountCache[tab+idx] ?? Math.floor(Math.random()*80+5))}</span>
           </div>
           <div class="y-post-action y-rt" onclick="this.classList.toggle('liked'); const n=parseInt(this.querySelector('.y-post-label').textContent.replace(/[^\d]/g,''))||0; this.querySelector('.y-post-label').textContent=this.classList.contains('liked')? (n+1)+'' : Math.max(0,n-1)+''">
             <svg viewBox="0 0 24 24"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"/></svg>
