@@ -41,48 +41,130 @@
   </div>
 
   <!-- TITLE SCREEN -->
-  <div id="screen-title" class="active">
-    <div class="title-deco">
-      <span style="top:5%;left:8%;">📱</span>
-      <span style="top:18%;right:10%;animation-delay:.5s">💬</span>
-      <span style="bottom:22%;left:12%;animation-delay:1s">❤️</span>
-      <span style="bottom:12%;right:18%;animation-delay:1.5s">🔁</span>
-      <span style="top:50%;left:3%;animation-delay:.8s">✨</span>
-    </div>
-    <div class="title-logo">
-      <div class="sub">SNS運用代行 ADV</div>
-      <h1>ば<span>ず</span>ったー</h1>
-      <div class="catch">「この人らしさ」を翻訳せよ</div>
-    </div>
-    <div class="title-button-group">
-      <button class="btn-start" onclick="openApp(false)">▶ メインモード</button>
-      <button class="btn-start btn-start-debug" onclick="openApp(true)">🔧 デバッグモード</button>
-      <div class="btn-continue-wrap">
-        <button class="btn-start btn-continue" id="btnContinue" onclick="showLoadSlotPicker()" style="display:none">
-          ↩ 続きから始める<br><span class="btn-continue-sub" id="btnContinueSub"></span>
-        </button>
-      </div>
-      <div class="btn-continue-wrap" id="btnDeleteWrap" style="display:none">
-        <button class="btn-start btn-delete-slot" onclick="showDeleteSlotPicker()">
-          🗑 セーブデータを削除
-        </button>
-      </div>
-    </div>
+  <div id="screen-title" class="active" data-design="new">
 
-    <!-- 設定ボタン -->
-    <button class="title-settings-btn" onclick="toggleTitleSettings()" title="設定">⚙</button>
-    <div class="title-settings-panel" id="titleSettingsPanel">
-      <div class="title-settings-title">設定</div>
-      <div class="title-settings-row">
-        <label class="title-settings-label">🎵 BGM音量</label>
-        <div class="title-settings-slider-wrap">
-          <input type="range" id="bgmVolumeSlider" class="title-settings-slider"
-            min="0" max="100" value="70"
-            oninput="onBgmVolumeChange(this.value)">
-          <span class="title-settings-val" id="bgmVolumeVal">70</span>
+    <!-- ══ NEW DESIGN ══════════════════════════════════════════ -->
+    <div class="ts-wrapper ts-new-wrapper">
+      <div class="ts-timeline" id="tsTimeline"></div>
+      <div class="ts-stage">
+        <div class="ts-window">
+          <div class="ts-titlebar">
+            <div class="ts-titlebar-title"><span>📱</span><span>ばずったー</span></div>
+            <div class="ts-titlebar-ctrls">
+              <div class="ts-ctrl"><svg viewBox="0 0 11 11"><line x1="0" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1"/></svg></div>
+              <div class="ts-ctrl"><svg viewBox="0 0 11 11"><rect x="0.5" y="0.5" width="10" height="10" stroke="currentColor" fill="none" stroke-width="1"/></svg></div>
+              <div class="ts-ctrl ts-ctrl-close"><svg viewBox="0 0 11 11"><line x1="0" y1="0" x2="11" y2="11" stroke="currentColor" stroke-width="1"/><line x1="11" y1="0" x2="0" y2="11" stroke="currentColor" stroke-width="1"/></svg></div>
+            </div>
+          </div>
+          <div class="ts-body">
+            <div class="ts-eyebrow">SNS 運 用 代 行 ADV</div>
+            <h1 class="ts-title-text">ばずったー</h1>
+            <div class="ts-tagline">「この人らしさ」を<b>翻訳せよ</b></div>
+            <div class="ts-quiet-note">QUIET TEXT ADV · 4 STORIES</div>
+            <div class="ts-typer">
+              <span class="ts-prompt">&gt;</span>
+              <span class="ts-typer-text" id="tsTyper"></span>
+              <span class="ts-caret"></span>
+            </div>
+            <div class="ts-divider"></div>
+            <div class="ts-actions">
+              <button class="ts-action ts-primary" onclick="openApp(false)">
+                <span class="ts-ic">▶</span>
+                <span class="ts-action-body"><span class="ts-action-head">メインモード</span><span class="ts-action-sub">最初から始める</span></span>
+                <span class="ts-arrow">›</span>
+              </button>
+              <button class="ts-action ts-continue" id="tsBtnContinue" onclick="showLoadSlotPicker()" hidden>
+                <span class="ts-ic">↩</span>
+                <span class="ts-action-body"><span class="ts-action-head">続きから</span><span class="ts-action-sub" id="tsContinueSub">最終セーブ：—</span></span>
+                <span class="ts-arrow">›</span>
+              </button>
+              <button class="ts-action ts-subtle" id="tsBtnOptions" onclick="toggleTsOptions()">
+                <span class="ts-ic">⚙</span>
+                <span class="ts-action-body"><span class="ts-action-head">オプション</span><span class="ts-action-sub">BGM音量・デザイン設定</span></span>
+                <span class="ts-arrow" id="tsOptArrow">›</span>
+              </button>
+              <div class="ts-drawer" id="tsDrawer">
+                <div class="ts-options-card">
+                  <div class="ts-opt-row">
+                    <span class="ts-opt-label">🎵 BGM</span>
+                    <div class="ts-slider-wrap">
+                      <div class="ts-slider-track"><div class="ts-slider-fill" id="tsBgmFill"></div></div>
+                      <input type="range" class="ts-slider" id="tsBgmSlider" min="0" max="100" value="70" oninput="onBgmVolumeChange(this.value)">
+                    </div>
+                    <span class="ts-opt-val" id="tsBgmVal">70</span>
+                  </div>
+                  <div class="ts-opt-row ts-opt-row-btn">
+                    <span class="ts-opt-label">🎨 デザイン</span>
+                    <button class="ts-design-switch" onclick="toggleTitleDesign()">クラシックに切り替え</button>
+                  </div>
+                </div>
+              </div>
+              <button class="ts-action ts-subtle" onclick="openApp(true)">
+                <span class="ts-ic">🔧</span>
+                <span class="ts-action-body"><span class="ts-action-head">デバッグモード</span><span class="ts-action-sub">開発者用 / developer</span></span>
+                <span class="ts-arrow">›</span>
+              </button>
+              <button class="ts-action ts-danger" id="tsBtnDelete" onclick="showDeleteSlotPicker()" hidden>
+                <span class="ts-ic">🗑</span>
+                <span class="ts-action-body"><span class="ts-action-head">セーブデータを削除</span><span class="ts-action-sub">この操作は取り消せません</span></span>
+                <span class="ts-arrow">›</span>
+              </button>
+            </div>
+            <div class="ts-meta">
+              <span>BUZZTER v1.0.0</span>
+              <span id="tsMetaSave">SAVE: NONE</span>
+              <span>4 STORIES</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- ══ OLD DESIGN ══════════════════════════════════════════ -->
+    <div class="ts-wrapper ts-old-wrapper">
+      <div class="title-deco">
+        <span style="top:5%;left:8%;">📱</span>
+        <span style="top:18%;right:10%;animation-delay:.5s">💬</span>
+        <span style="bottom:22%;left:12%;animation-delay:1s">❤️</span>
+        <span style="bottom:12%;right:18%;animation-delay:1.5s">🔁</span>
+        <span style="top:50%;left:3%;animation-delay:.8s">✨</span>
+      </div>
+      <div class="title-logo">
+        <div class="sub">SNS運用代行 ADV</div>
+        <h1>ば<span>ず</span>ったー</h1>
+        <div class="catch">「この人らしさ」を翻訳せよ</div>
+      </div>
+      <div class="title-button-group">
+        <button class="btn-start" onclick="openApp(false)">▶ メインモード</button>
+        <button class="btn-start btn-start-debug" onclick="openApp(true)">🔧 デバッグモード</button>
+        <div class="btn-continue-wrap">
+          <button class="btn-start btn-continue" id="btnContinue" onclick="showLoadSlotPicker()" style="display:none">
+            ↩ 続きから始める<br><span class="btn-continue-sub" id="btnContinueSub"></span>
+          </button>
+        </div>
+        <div class="btn-continue-wrap" id="btnDeleteWrap" style="display:none">
+          <button class="btn-start btn-delete-slot" onclick="showDeleteSlotPicker()">
+            🗑 セーブデータを削除
+          </button>
+        </div>
+      </div>
+      <button class="title-settings-btn" onclick="toggleTitleSettings()" title="設定">⚙</button>
+      <div class="title-settings-panel" id="titleSettingsPanel">
+        <div class="title-settings-title">設定</div>
+        <div class="title-settings-row">
+          <label class="title-settings-label">🎵 BGM音量</label>
+          <div class="title-settings-slider-wrap">
+            <input type="range" id="bgmVolumeSlider" class="title-settings-slider"
+              min="0" max="100" value="70" oninput="onBgmVolumeChange(this.value)">
+            <span class="title-settings-val" id="bgmVolumeVal">70</span>
+          </div>
+        </div>
+        <div class="title-settings-row" style="margin-top:6px">
+          <button class="ts-design-switch" onclick="toggleTitleDesign()">新デザインに切り替え</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- BGM -->

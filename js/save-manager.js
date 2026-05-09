@@ -389,17 +389,32 @@ function _refreshTitleContinueBtn() {
   const has = hasSaveData();
   btn.style.display = has ? '' : 'none';
   if (delWrap) delWrap.style.display = has ? '' : 'none';
+
+  // 新デザインのボタンを同期
+  const tsContinue = document.getElementById('tsBtnContinue');
+  const tsDelete   = document.getElementById('tsBtnDelete');
+  if (tsContinue) tsContinue.hidden = !has;
+  if (tsDelete)   tsDelete.hidden   = !has;
+
   const sub = document.getElementById('btnContinueSub');
-  if (sub && has) {
-    let latest = null;
+  let latest = null;
+  if (has) {
     SAVE_SLOT_KEYS.forEach((_, i) => {
       const d = _getSlotData(i + 1);
       if (d && (!latest || new Date(d.savedAt) > new Date(latest.savedAt))) latest = d;
     });
-    if (latest) {
-      const date = new Date(latest.savedAt);
-      sub.textContent = `最終セーブ: ${latest.routeLabel}  ${date.toLocaleDateString('ja-JP')} ${date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}`;
-    }
+  }
+  if (latest) {
+    const date  = new Date(latest.savedAt);
+    const stamp = `最終セーブ: ${latest.routeLabel}  ${date.toLocaleDateString('ja-JP')} ${date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}`;
+    if (sub) sub.textContent = stamp;
+    const tsSub = document.getElementById('tsContinueSub');
+    if (tsSub) tsSub.textContent = stamp;
+    const tsMeta = document.getElementById('tsMetaSave');
+    if (tsMeta) tsMeta.textContent = `SAVE: ${date.toLocaleDateString('ja-JP')}`;
+  } else {
+    const tsMeta = document.getElementById('tsMetaSave');
+    if (tsMeta) tsMeta.textContent = 'SAVE: NONE';
   }
 }
 
