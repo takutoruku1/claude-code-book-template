@@ -194,6 +194,8 @@
       <div class="taskbar-icon" id="taskbarIconMemo" onclick="taskbarToggleMemo()">📝</div>
       <div class="taskbar-icon y-taskbar-icon" id="taskbarIconY" onclick="taskbarToggleY()" title="Y">Y</div>
       <div class="taskbar-icon" id="taskbarIconGames" onclick="taskbarToggleGames()">🎮</div>
+      <div class="taskbar-icon" id="taskbarIconInvaders" onclick="taskbarToggleInvaders()">👾</div>
+      <div class="taskbar-icon" id="taskbarIconSolitaire" onclick="taskbarToggleSolitaire()">🃏</div>
       <div class="taskbar-icon" id="taskbarIconMinesweeper" onclick="taskbarToggleMinesweeper()">💣</div>
     </div>
     <div class="taskbar-tray">
@@ -513,7 +515,49 @@
       </div>
     </div>
     <div class="explorer-content">
-      <div class="explorer-file-item" onclick="this.classList.toggle('selected')" ondblclick="openMinesweeper()">
+      <div class="explorer-file-item" onclick="this.classList.toggle('selected')" ondblclick="openInvaders()">
+          <div class="explorer-file-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+              <rect width="48" height="48" rx="6" fill="#0a0a14"/>
+              <!-- antennae -->
+              <rect x="14" y="6"  width="4" height="4" fill="#6bffff"/>
+              <rect x="30" y="6"  width="4" height="4" fill="#6bffff"/>
+              <!-- head row 1 -->
+              <rect x="10" y="10" width="28" height="4" fill="#6bffff"/>
+              <!-- eyes -->
+              <rect x="10" y="14" width="8"  height="4" fill="#6bffff"/>
+              <rect x="30" y="14" width="8"  height="4" fill="#6bffff"/>
+              <!-- body -->
+              <rect x="10" y="18" width="28" height="4" fill="#6bffff"/>
+              <!-- legs row 1 -->
+              <rect x="10" y="22" width="8"  height="4" fill="#6bffff"/>
+              <rect x="30" y="22" width="8"  height="4" fill="#6bffff"/>
+              <!-- legs row 2 -->
+              <rect x="6"  y="26" width="8"  height="4" fill="#6bffff"/>
+              <rect x="16" y="26" width="4"  height="4" fill="#6bffff"/>
+              <rect x="28" y="26" width="4"  height="4" fill="#6bffff"/>
+              <rect x="34" y="26" width="8"  height="4" fill="#6bffff"/>
+              <text x="24" y="42" text-anchor="middle" font-family="'Courier New',monospace" font-size="6" fill="#6bffff">INVADERS</text>
+            </svg>
+          </div>
+          <div class="explorer-file-name">インベーダー</div>
+        </div>
+        <div class="explorer-file-item" onclick="this.classList.toggle('selected')" ondblclick="openSolitaire()">
+          <div class="explorer-file-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+              <rect width="48" height="48" rx="6" fill="#1b6b35"/>
+              <!-- card backs -->
+              <rect x="4" y="6" width="18" height="26" rx="3" fill="#1a4d8a" stroke="#0d2d5a" stroke-width="1"/>
+              <rect x="6" y="8" width="14" height="22" rx="2" fill="#1e5599"/>
+              <!-- face card -->
+              <rect x="18" y="16" width="22" height="26" rx="3" fill="#fefcf5" stroke="#bbb" stroke-width="1"/>
+              <text x="21" y="28" font-family="serif" font-size="10" font-weight="bold" fill="#cc1f1f">A</text>
+              <text x="21" y="38" font-family="serif" font-size="10" fill="#cc1f1f">♥</text>
+            </svg>
+          </div>
+          <div class="explorer-file-name">ソリティア</div>
+        </div>
+        <div class="explorer-file-item" onclick="this.classList.toggle('selected')" ondblclick="openMinesweeper()">
         <div class="explorer-file-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
             <rect width="48" height="48" rx="6" fill="#2d2d44"/>
@@ -556,7 +600,7 @@
       </div>
     </div>
   </div>
-  <div class="explorer-statusbar">1 個の項目</div>
+  <div class="explorer-statusbar">3 個の項目</div>
 </div>
 
 <!-- WINDOWS BOOT OVERLAY -->
@@ -727,7 +771,35 @@
   </div><!-- /y-app-body -->
 </div><!-- /yWindow -->
 
+<!-- INVADERS WINDOW -->
+<div id="invadersWindow" onmousedown="bringToFront(this)">
+  <div class="inv-titlebar">
+    <span class="inv-titlebar-text">👾 スペースインベーダー</span>
+    <div style="display:flex;gap:2px;">
+      <button class="ms-titlebar-close" style="background:transparent;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:13px;padding:2px 6px;" onclick="taskbarToggleInvaders()">&#x2500;</button>
+      <button class="ms-titlebar-close" onclick="closeInvaders()">✕</button>
+    </div>
+  </div>
+  <div class="inv-body">
+    <canvas id="invCanvas" width="400" height="480"></canvas>
+    <div class="inv-touch-btns">
+      <button class="inv-touch-btn" id="invBtnLeft">&#9664;</button>
+      <button class="inv-touch-btn inv-touch-fire" id="invBtnFire">FIRE</button>
+      <button class="inv-touch-btn" id="invBtnRight">&#9654;</button>
+    </div>
+  </div>
+</div>
+
 <!-- MINESWEEPER WINDOW -->
+<div id="solitaireWindow" onmousedown="bringToFront(this)" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1b6b35;border-top:3px solid #fff;border-left:3px solid #fff;border-right:3px solid #404040;border-bottom:3px solid #404040;padding:3px;z-index:100;display:none;user-select:none;width:440px;">
+  <div class="inv-titlebar" style="background:#1a4a2e;">
+    <span class="inv-titlebar-text">🃏 ソリティア</span>
+    <button style="background:transparent;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:13px;padding:2px 6px;" onclick="taskbarToggleSolitaire()">─</button>
+    <button class="ms-titlebar-close" onclick="closeSolitaire()">✕</button>
+  </div>
+  <iframe id="solitaireFrame" src="games/solitaire/solitaire.html" style="width:100%;height:560px;border:none;display:block;"></iframe>
+</div>
+
 <div id="minesweeperWindow" onmousedown="bringToFront(this)">
   <div class="ms-titlebar">
     <span class="ms-titlebar-text">💣 マインスイーパー</span>
@@ -780,6 +852,8 @@
 </div>
 <script src="js/game-logic.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/invaders.js"></script>
 <script src="js/minesweeper.js"></script>
 <script src="js/save-manager.js"></script>
 </body>

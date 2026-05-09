@@ -54,7 +54,7 @@ function _protagFollowNow(winEl) {
   w.style.bottom = bottom + 'px';
 }
 document.addEventListener('DOMContentLoaded', () => {
-  ['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow', 'minesweeperWindow', 'trashWindow', 'yWindow'].forEach(id => {
+  ['appWindow', 'chatWindow', 'memoAppWindow', 'gamesWindow', 'minesweeperWindow', 'invadersWindow', 'trashWindow', 'yWindow'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('mousedown', () => bringToFront(el));
   });
@@ -328,6 +328,57 @@ function toggleGamesWindow() {
 
 function taskbarToggleGames() {
   toggleGamesWindow();
+}
+
+function taskbarToggleInvaders() {
+  const win = document.getElementById('invadersWindow');
+  if (!win) return;
+  if (window.invadersMinimized) {
+    win.classList.add('active');
+    window.invadersMinimized = false;
+    bringToFront(win);
+    updateTaskbarIndicators();
+  } else if (win.classList.contains('active')) {
+    minimizeWin(win);
+    window.invadersMinimized = true;
+    updateTaskbarIndicators();
+  } else {
+    openInvaders();
+  }
+}
+
+function openSolitaire() {
+  const win = document.getElementById('solitaireWindow');
+  if (!win) return;
+  win.style.display = 'block';
+  window.solitaireMinimized = false;
+  bringToFront(win);
+  updateTaskbarIndicators();
+}
+
+function closeSolitaire() {
+  const win = document.getElementById('solitaireWindow');
+  if (!win) return;
+  win.style.display = 'none';
+  window.solitaireMinimized = false;
+  updateTaskbarIndicators();
+}
+
+function taskbarToggleSolitaire() {
+  const win = document.getElementById('solitaireWindow');
+  if (!win) return;
+  if (window.solitaireMinimized) {
+    win.style.display = 'block';
+    window.solitaireMinimized = false;
+    bringToFront(win);
+    updateTaskbarIndicators();
+  } else if (win.style.display !== 'none') {
+    win.style.display = 'none';
+    window.solitaireMinimized = true;
+    updateTaskbarIndicators();
+  } else {
+    openSolitaire();
+  }
 }
 
 function taskbarToggleMinesweeper() {
@@ -745,6 +796,17 @@ function updateTaskbarIndicators() {
   if (iconMinesweeper) iconMinesweeper.classList.toggle('running',
     document.getElementById('minesweeperWindow').classList.contains('active') || !!window.minesweeperMinimized
   );
+  const iconInvaders = document.getElementById('taskbarIconInvaders');
+  if (iconInvaders) iconInvaders.classList.toggle('running',
+    document.getElementById('invadersWindow').classList.contains('active') || !!window.invadersMinimized
+  );
+  const iconSolitaire = document.getElementById('taskbarIconSolitaire');
+  if (iconSolitaire) {
+    const solWin = document.getElementById('solitaireWindow');
+    iconSolitaire.classList.toggle('running',
+      !!(solWin && (solWin.style.display !== 'none' || window.solitaireMinimized))
+    );
+  }
   const iconY = document.getElementById('taskbarIconY');
   if (iconY) iconY.classList.toggle('running',
     document.getElementById('yWindow').classList.contains('active') || !!window.yMinimized

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Klondike Solitaire</title>
+<style>
+  :root {
+    --felt: #1b6b35;
+    --felt-dark: #124a25;
+    --felt-border: #0a3518;
+    --card-bg: #fefcf5;
+    --card-shadow: rgba(0,0,0,0.45);
+    --suit-red: #cc1f1f;
+    --suit-black: #111;
+    --slot-border: rgba(255,255,255,0.18);
+    --slot-bg: rgba(0,0,0,0.18);
+    --selected-glow: #ffe066;
+    --ui-bg: #1a1a2e;
+    --ui-text: #e8e0c8;
+    --ui-accent: #4fc3a1;
+    --card-w: 72px;
+    --card-h: 100px;
+    --card-radius: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--felt-dark);
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  /* ── Board bar ── */
+  #boardBar {
+    width: 100%;
+    max-width: 600px;
+    background: var(--ui-bg);
+    color: var(--ui-text);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-bottom: 2px solid var(--felt-border);
+    flex-wrap: wrap;
+  }
+  #boardBar .stat { display: flex; flex-direction: column; align-items: center; }
+  #boardBar .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #888; }
+  #boardBar .stat-val { font-size: 16px; font-weight: 700; color: var(--ui-accent); font-variant-numeric: tabular-nums; }
+  #boardBar .spacer { flex: 1; }
+  #boardBar button {
+    background: #2a2a4a;
+    border: 1px solid #444;
+    color: var(--ui-text);
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  #boardBar button:hover { background: #3a3a5a; }
+
+  /* ── Board ── */
+  .board {
+    background: var(--felt);
+    width: 100%;
+    max-width: 600px;
+    min-height: calc(100vh - 40px);
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ── Top row: stock | waste | gap | f1 f2 f3 f4 ── */
+  #topRow {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+
+  /* ── Tableau ── */
+  #tableau {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    align-items: start;
+    flex: 1;
+  }
+
+  /* ── Slots (empty placeholders) ── */
+  .slot {
+    width: 100%;
+    aspect-ratio: 72 / 100;
+    border: 2px dashed var(--slot-border);
+    border-radius: var(--card-radius);
+    background: var(--slot-bg);
+    position: relative;
+    cursor: pointer;
+  }
+  .slot.foundation::after {
+    content: attr(data-suit);
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 22px;
+    opacity: 0.35;
+  }
+  .slot.stock::after {
+    content: '♻';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 22px;
+    opacity: 0.35;
+  }
+  #gap { visibility: hidden; }
+
+  /* ── Cards ── */
+  .card {
+    width: 100%;
+    aspect-ratio: 72 / 100;
+    background: var(--card-bg);
+    border-radius: var(--card-radius);
+    border: 1px solid #bbb;
+    box-shadow: 1px 2px 5px var(--card-shadow);
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    transition: outline 0.07s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 3px 4px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .card.red { color: var(--suit-red); }
+  .card.black { color: var(--suit-black); }
+
+  .card .corner { display: flex; flex-direction: column; line-height: 1; }
+  .card .corner.tl { align-items: flex-start; }
+  .card .corner.br { align-items: flex-end; transform: rotate(180deg); }
+  .card .center-suit {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 26px;
+    opacity: 0.12;
+  }
+
+  .card.face-down {
+    background: repeating-linear-gradient(
+      45deg,
+      #1a4d8a 0px, #1a4d8a 4px,
+      #1e5599 4px, #1e5599 8px
+    );
+    border-color: #0d2d5a;
+    cursor: default;
+  }
+  .card.face-down .corner,
+  .card.face-down .center-suit { display: none; }
+
+  .card.selected {
+    outline: 3px solid var(--selected-glow);
+    outline-offset: 1px;
+    box-shadow: 0 0 10px var(--selected-glow), 1px 2px 5px var(--card-shadow);
+  }
+
+  /* ── Cascade columns ── */
+  .cascade {
+    position: relative;
+    width: 100%;
+  }
+  .cascade .card-wrap {
+    position: absolute;
+    width: 100%;
+  }
+
+  /* ── Win overlay ── */
+  #winOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    color: #fff;
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+  }
+  #winOverlay.show { display: flex; }
+  #winOverlay button {
+    font-size: 16px;
+    padding: 10px 28px;
+    background: var(--ui-accent);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #111;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div id="boardBar">
+  <div class="stat"><span class="stat-label">SCORE</span><span class="stat-val" id="statScore">0</span></div>
+  <div class="stat"><span class="stat-label">MOVES</span><span class="stat-val" id="statMoves">0</span></div>
+  <div class="stat"><span class="stat-label">TIME</span><span class="stat-val" id="statTime">0:00</span></div>
+  <div class="spacer"></div>
+  <button id="btnUndo">↩ Undo</button>
+  <button id="btnNew">New</button>
+</div>
+
+<div class="board" id="board">
+  <div id="topRow">
+    <div class="slot stock" id="slotStock"></div>
+    <div class="slot" id="slotWaste"></div>
+    <div id="gap"></div>
+    <div class="slot foundation" id="f0" data-suit="♠"></div>
+    <div class="slot foundation" id="f1" data-suit="♥"></div>
+    <div class="slot foundation" id="f2" data-suit="♦"></div>
+    <div class="slot foundation" id="f3" data-suit="♣"></div>
+  </div>
+  <div id="tableau">
+    <div class="cascade" id="col0"></div>
+    <div class="cascade" id="col1"></div>
+    <div class="cascade" id="col2"></div>
+    <div class="cascade" id="col3"></div>
+    <div class="cascade" id="col4"></div>
+    <div class="cascade" id="col5"></div>
+    <div class="cascade" id="col6"></div>
+  </div>
+</div>
+
+<div id="winOverlay">
+  <div>🎉 クリア！</div>
+  <div id="winStats" style="font-size:18px;font-weight:400;"></div>
+  <button onclick="newGame()">もう一度</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

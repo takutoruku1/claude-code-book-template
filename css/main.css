@@ -2790,3 +2790,63 @@ body:has(#screen-title.active) .taskbar { display: none; }
   .y-right-col { display: none; }
   .y-sidebar span { display: none; }
 }
+
+/* ===== SPACE INVADERS ===== */
+#invadersWindow {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #000;
+  border-top: 3px solid #fff;
+  border-left: 3px solid #fff;
+  border-right: 3px solid #404040;
+  border-bottom: 3px solid #404040;
+  padding: 3px;
+  z-index: 100;
+  display: none;
+  user-select: none;
+  font-family: 'Arial', sans-serif;
+}
+#invadersWindow.active { display: block; }
+.inv-titlebar {
+  background: #000080;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  gap: 8px;
+}
+.inv-titlebar-text { font-size: 11px; white-space: nowrap; }
+#invCanvas { display: block; }
+.inv-touch-btns {
+  display: flex;
+  gap: 4px;
+  padding: 4px 2px 2px;
+  justify-content: center;
+  background: #000;
+}
+.inv-touch-btn {
+  background: #0a0a1a;
+  border: 1px solid #444;
+  color: #ccc;
+  font-size: 14px;
+  padding: 6px 0;
+  cursor: pointer;
+  border-radius: 3px;
+  font-family: monospace;
+  flex: 1;
+  max-width: 90px;
+  text-align: center;
+}
+.inv-touch-btn:active, .inv-touch-btn.pressed { background: #222; color: #fff; }
+.inv-touch-fire {
+  background: #0d0020;
+  border-color: #7c6af7;
+  color: #7c6af7;
+  max-width: 130px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
