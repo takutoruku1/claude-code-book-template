@@ -60,7 +60,7 @@ const CHAT_FLOWS = {
     {
       id: 'midori_sns_start',
       from: 'client',
-      text: 'Instagramをやってみたいなって思って。\nでも…何から始めればいいかわからなくて。'
+      text: 'Ｙをやってみたいなって思って。\nでも…何から始めればいいかわからなくて。'
     },
     {
       id: 'midori_sns_reply',
@@ -126,20 +126,20 @@ const CHAT_FLOWS = {
     {
       id: 'midori_photo_exists',
       from: 'client',
-      text: 'あ、あります…でも見せるのが恥ずかしくて。\n全然インスタっぽくなくて。'
+      text: 'あ、あります…でも見せるのが恥ずかしくて。\n全然Ｙっぽくなくて。'
     },
 
     // --- センスの話 ---
     {
       id: 'midori_sense_talk',
       from: 'client',
-      text: 'なんか…インスタっぽくないというか。\nきれいに撮れてないし、ぼけてたりして。\n人のを見ると全然違うなって。'
+      text: 'なんか…Ｙっぽくないというか。\nきれいに撮れてないし、ぼけてたりして。\n人のを見ると全然違うなって。'
     },
     {
       id: 'midori_sense_reply',
       from: 'choices', opts: [
         { text: 'ぼけてる写真、嫌いですか？',          next: 'midori_wobble' },
-        { text: '「インスタっぽい」のを目指してたんですか？', next: 'midori_wobble' }
+        { text: '「Ｙっぽい」のを目指してたんですか？', next: 'midori_wobble' }
       ]
     },
 
@@ -346,13 +346,13 @@ const CHAT_FLOWS = {
       id: 'seiji_hello_reply',
       from: 'choices', opts: [
         { text: 'どんなお店ですか？',            next: 'seiji_shop' },
-        { text: 'インスタ映えを意識してみますか', next: 'seiji_insta_bridge' }
+        { text: '映えを意識してみますか', next: 'seiji_insta_bridge' }
       ]
     },
     {
       id: 'seiji_insta_bridge',
       from: 'client',
-      text: 'インスタ映え…難しいかなあ笑'
+      text: '映え…難しいかなあ笑'
     },
     {
       id: 'seiji_shop',
@@ -364,7 +364,7 @@ const CHAT_FLOWS = {
       id: 'seiji_shop_reply',
       from: 'choices', opts: [
         { text: 'その「古さ」が強みかもしれません', next: 'seiji_send',      selfBonus: 5 },
-        { text: 'インスタ映えを意識してみますか',   next: 'seiji_send_buzz', buzzBonus: 5 }
+        { text: '映えを意識してみますか',   next: 'seiji_send_buzz', buzzBonus: 5 }
       ]
     },
     {
@@ -378,7 +378,7 @@ const CHAT_FLOWS = {
     {
       id: 'seiji_send_buzz',
       from: 'client',
-      text: 'インスタ映え…難しいかな笑\nでも、やれることはやってみます。写真送りますね。'
+      text: '映え…難しいかな笑\nでも、やれることはやってみます。写真送りますね。'
     },
     { id: 'seiji_system_buzz',  from: 'system',  text: '→ 素材が届きました' },
     { id: 'seiji_trigger_buzz', from: 'trigger', action: 'showMaterial', resumeAt: 'seiji_post_reaction' },
@@ -481,7 +481,7 @@ const CHAT_FLOWS = {
 const MATERIALS = {
   midori: [
     {
-      id: 'm_line', icon: '💬', type: 'スクリーンショット', title: 'お母さんへのLINE',
+      id: 'm_line', icon: '💬', type: 'スクリーンショット', title: 'お母さんへのチャトル',
       desc: '「今日もゼラニウム咲いたよ。去年より元気な気がする。」既読あり・返信あり。',
       tags: ['日常的', '家族へ', '植物愛'],
       styleUnlock: [0, 1], hashUnlock: [0, 1, 3],
@@ -578,7 +578,7 @@ const MATERIALS = {
       flashback3Trigger: false, imgSrc: null
     },
     {
-      id: 'k_line', icon: '💬', type: 'スクリーンショット', title: '姉へのLINE（既読なし）',
+      id: 'k_line', icon: '💬', type: 'スクリーンショット', title: '姉へのチャトル（既読なし）',
       desc: '「お姉ちゃん、私もSNS始めてみる。見ててね」。返信なし・既読なし。',
       tags: ['家族へ', '希望'],
       styleUnlock: [0, 1, 3], hashUnlock: [0, 1, 3],
@@ -687,7 +687,7 @@ const CHAT_QUIZ = {
     opts: [
       { text: 'フォロワーを増やしてバズりたい',       correct: false },
       { text: 'お母さんに日常を届けたい',              correct: true  },
-      { text: 'インスタ映えする写真を上手に撮りたい', correct: false },
+      { text: '映えする写真を上手に撮りたい', correct: false },
     ]
   },
   saku: {
@@ -703,7 +703,7 @@ const CHAT_QUIZ = {
     opts: [
       { text: '若い客を増やして店を繁盛させたい',         correct: false },
       { text: 'この店の空気を、知ってほしい人に届けたい', correct: true  },
-      { text: 'インスタ映えメニューで話題にしたい',       correct: false },
+      { text: '映えメニューで話題にしたい',       correct: false },
     ]
   },
   karen: {

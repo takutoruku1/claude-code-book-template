@@ -156,7 +156,7 @@ const ENDINGS = {
     bgmNote: '完全な無音から始まり、ピアノの単音が1つだけ鳴る。その後また無音に戻る。',
     bgmDelay: 3000,          // 追加：暗転開始から3秒後にピアノ1音が鳴る
 
-    clientMessage: 'あの。姉のLINE、今朝、既読がついていました。\n返信はまだないけど。でも、読んでくれた。\n……ありがとうございました。',
+    clientMessage: 'あの。姉のチャトル、今朝、既読がついていました。\n返信はまだないけど。でも、読んでくれた。\n……ありがとうございました。',
     noReplyEffect: false,
     lastChoice: [
       { text: '「……よかった」とだけ送る', egoPlus: true },

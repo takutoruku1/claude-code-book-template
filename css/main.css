@@ -3275,3 +3275,70 @@ body:has(#screen-title.active) .taskbar { display: none; }
   font-weight: bold;
   letter-spacing: 1px;
 }
+
+/* ========== ENDROLL ========== */
+#screen-endroll {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  overflow: hidden;
+  cursor: pointer;
+}
+#screen-endroll.active { display: block; }
+.endroll-skip {
+  position: absolute;
+  bottom: 24px;
+  right: 28px;
+  color: #3a3a3a;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+}
+.endroll-track {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+.endroll-inner {
+  width: 100%;
+  max-width: 440px;
+  text-align: center;
+  padding-top: 100vh;
+  padding-bottom: 80px;
+  animation: endroll-scroll 30s linear forwards;
+}
+@keyframes endroll-scroll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-100%); }
+}
+.endroll-game-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.3em;
+  margin-bottom: 100px;
+}
+.endroll-section { margin-bottom: 72px; }
+.endroll-label {
+  font-size: 0.7rem;
+  color: #444;
+  letter-spacing: 0.3em;
+  margin-bottom: 20px;
+}
+.endroll-name {
+  font-size: 1.05rem;
+  color: #bbb;
+  margin-bottom: 10px;
+  letter-spacing: 0.1em;
+}
+.endroll-thanks {
+  margin-top: 120px;
+  color: #555;
+  font-size: 0.88rem;
+  line-height: 2.4;
+  letter-spacing: 0.1em;
+}

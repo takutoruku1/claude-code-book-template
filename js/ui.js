@@ -696,8 +696,10 @@ function retryGame() {
   document.getElementById('appWindow').classList.remove('active');
 
   if (window.IS_DEBUG_MODE) {
-    document.getElementById('screen-charselect').classList.add('active');
-    buildCharSelect();
+    showEndroll(() => {
+      document.getElementById('screen-charselect').classList.add('active');
+      buildCharSelect();
+    });
   } else {
     window.MAIN_MODE_ROUTE_INDEX++;
     if (window.MAIN_MODE_ROUTE_INDEX < window.MAIN_MODE_ROUTES.length) {
@@ -705,14 +707,31 @@ function retryGame() {
       document.getElementById('appWindow').classList.add('active');
       resetGame(nextRoute);
     } else {
-      document.getElementById('screen-title').classList.add('active');
-      window.IS_DEBUG_MODE = null;
-      window.MAIN_MODE_ROUTES = null;
-      window.MAIN_MODE_ROUTE_INDEX = null;
-      _closeAllGameWindows();
-      _playTitleBgm();
+      showEndroll(goToTitle);
     }
   }
+}
+
+function showEndroll(callback) {
+  const el = document.getElementById('screen-endroll');
+  const cb = callback || goToTitle;
+  if (!el) { cb(); return; }
+  el.classList.add('active');
+  const onEnd = () => {
+    el.classList.remove('active');
+    cb();
+  };
+  el.addEventListener('click', onEnd, { once: true });
+  document.getElementById('endrollInner')?.addEventListener('animationend', onEnd, { once: true });
+}
+
+function goToTitle() {
+  document.getElementById('screen-title').classList.add('active');
+  window.IS_DEBUG_MODE = null;
+  window.MAIN_MODE_ROUTES = null;
+  window.MAIN_MODE_ROUTE_INDEX = null;
+  _closeAllGameWindows();
+  _playTitleBgm();
 }
 
 function renderMemoNotes() {
