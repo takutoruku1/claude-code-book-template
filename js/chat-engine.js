@@ -64,7 +64,7 @@ function runChat(idx) {
     addTyping();
     setTimeout(() => {
       removeTyping();
-      addChatMsg('client', node.text, CHARACTERS[GS.route].avatar, node.keyword || null);
+      addChatMsg('client', node.text, CHARACTERS[GS.route].avatar, node.keyword || null, node.image || null);
       runChat(idx + 1);
     }, pause + 900 + Math.random() * 600);
 

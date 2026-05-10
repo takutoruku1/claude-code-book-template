@@ -50,9 +50,10 @@ function initGS(route) {
     mysteryClues: [],
     chatResumeAt: null,
     postResumeAt: null,
-    selectedStyle: null,
-    selectedHash:  null,
-    selectedTime:  null,
+    selectedStyle:    null,
+    selectedHash:     null,
+    selectedTime:     null,
+    selectedImageSrc: null,
     selectedCards: [],
     flippedCards:  [],
     baseFollowers: 1240,
@@ -102,16 +103,20 @@ function showArea(name) {
   setDesktopNotif('notifApp', needsAction);
 }
 
-function addChatMsg(from, text, ava, keyword) {
+function addChatMsg(from, text, ava, keyword, imageSrc) {
   const msgs = document.getElementById('chatMessages');
   const row  = document.createElement('div');
   row.className = 'msg-row' + (from === 'self' ? ' self' : '');
   const now = new Date();
   const t   = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
   const extraClass = (from === 'client' && keyword) ? ' clippable' : '';
+  // Build image HTML if imageSrc is provided
+  const imgHtml = imageSrc
+    ? `<div class="msg-image-wrap"><img class="msg-image" src="${imageSrc}" alt="" loading="lazy" onclick="openChatImageViewer(this.src)"></div>`
+    : '';
   row.innerHTML = `
     <div class="msg-ava ${from}">${ava}</div>
-    <div class="msg-bubble ${from}${extraClass}">${text.replace(/\n/g,'<br>')}</div>
+    <div class="msg-bubble ${from}${extraClass}">${imgHtml}${text.replace(/\n/g,'<br>')}</div>
     <div class="msg-time">${t}</div>`;
   if (from === 'client' && keyword) {
     const bubble = row.querySelector('.msg-bubble');
@@ -123,7 +128,11 @@ function addChatMsg(from, text, ava, keyword) {
   if (!pastVisible) msgs.scrollTop = msgs.scrollHeight;
   if (!window._skipChatHistory) {
     if (!window._chatHistory) window._chatHistory = [];
-    window._chatHistory.push({ type: 'msg', from, text, avatar: ava, route: GS?.route });
+    window._chatHistory.push({ type: 'msg', from, text, avatar: ava, route: GS?.route, image: imageSrc || null });
+    if (from === 'client' && imageSrc) {
+      if (!window._chatImages) window._chatImages = [];
+      if (!window._chatImages.includes(imageSrc)) window._chatImages.push(imageSrc);
+    }
   }
   if (from === 'client' && !window._skipChatHistory) {
     updateChatContactPreview(text);

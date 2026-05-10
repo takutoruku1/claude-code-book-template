@@ -31,6 +31,19 @@ function setupMaterials() {
     wrapper.onclick = () => handleCardClick(wrapper, i, m);
     grid.appendChild(wrapper);
   });
+
+  (window._chatImages || []).forEach((src, i) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'card-flip-wrapper card-image-wrap';
+    wrapper.dataset.imgIdx = i;
+    wrapper.innerHTML = `
+      <div class="card-check">✓</div>
+      <img class="card-image-thumb" src="${src}" alt="">
+      <div class="card-image-label">📷 チャトルの写真</div>`;
+    wrapper.onclick = () => handleImageCardClick(wrapper, src);
+    grid.appendChild(wrapper);
+  });
+
   updateCardBadge();
 }
 
@@ -70,6 +83,18 @@ function handleCardClick(wrapper, i, m) {
   }
   updateCardBadge();
   lockExcessCards();
+}
+
+function handleImageCardClick(wrapper, src) {
+  const alreadySelected = GS.selectedImageSrc === src;
+  if (alreadySelected) {
+    wrapper.classList.remove('selected');
+    GS.selectedImageSrc = null;
+  } else {
+    document.querySelectorAll('.card-image-wrap.selected').forEach(w => w.classList.remove('selected'));
+    wrapper.classList.add('selected');
+    GS.selectedImageSrc = src;
+  }
 }
 
 function updateCardBadge() {
@@ -241,6 +266,7 @@ function buildReactionFeed() {
     handle:      `@${GS.route}_sns`,
     text:        s ? s.textFn() : '',
     tags:        h ? h.val : '',
+    imageSrc:    GS.selectedImageSrc || null,
     replies:     replies,
     likesDelta:  R.likesDelta,
     rtsDelta:    R.rtsDelta,
@@ -249,9 +275,13 @@ function buildReactionFeed() {
   window._lastPostedContent = _postedItem;
   if (!window._allPostedContents) window._allPostedContents = [];
   window._allPostedContents.push(_postedItem);
+  if (typeof setDesktopNotif === 'function') setDesktopNotif('notifY', true);
 
   const postCard = document.createElement('div');
   postCard.className = 'feed-card';
+  const _feedImgHtml = GS.selectedImageSrc
+    ? `<img class="feed-post-image" src="${GS.selectedImageSrc}" alt="" onclick="openChatImageViewer(this.src)" style="max-width:100%;border-radius:8px;margin-top:6px;cursor:pointer;">`
+    : '';
   postCard.innerHTML = `
     <div class="feed-top">
       <div class="feed-avatar">${char.avatar}</div>
@@ -261,6 +291,7 @@ function buildReactionFeed() {
       </div>
     </div>
     <div class="feed-text">${s.textFn().replace(/\n/g,'<br>')}</div>
+    ${_feedImgHtml}
     <div class="feed-tags">${h.val}</div>
     <div class="feed-actions">
       <div class="feed-action" id="likeBtn" onclick="toggleLike(this)">🤍 <span id="likeCount">0</span></div>

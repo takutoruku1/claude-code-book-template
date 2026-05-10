@@ -565,12 +565,13 @@ function _dismissToast(toast) {
 }
 
 /* ===== DESKTOP NOTIF ===== */
-window._notifPending = { notifApp: false, notifChat: false, notifMemo: false };
+window._notifPending = { notifApp: false, notifChat: false, notifMemo: false, notifY: false };
 
 const _notifConfig = {
   notifApp:  { winId: 'appWindow',      appId: 'app',  appName: 'ばずったー', appIcon: '📱', msg: 'ばずったーに通知がきています' },
   notifChat: { winId: 'chatWindow',     appId: 'chat', appName: 'チャトル',   appIcon: '💬', msg: 'チャトルに通知がきています' },
   notifMemo: { winId: 'memoAppWindow',  appId: 'memo', appName: 'メモ帳',     appIcon: '📝', msg: 'メモ帳にメモが追加されました' },
+  notifY:    { winId: 'yWindow',        appId: 'y',    appName: 'Y',          appIcon: 'Y',  msg: '依頼者がYに投稿しました' },
 };
 
 function setDesktopNotif(id, show) {
@@ -756,6 +757,7 @@ function resetGame(route) {
   window._pendingChoices    = null;
   window._lastPostedContent = null;
   window._pendingPlayerIdx  = null;
+  window._chatImages        = [];
   // _allPostedContents はルートをまたいで保持するためリセットしない
   window._activeChatRoute   = route;
   window._currentStep       = 1;
@@ -1634,6 +1636,7 @@ function openYWindow() {
   renderYTrends();
   renderYSuggestions();
   updateTaskbarIndicators();
+  setDesktopNotif('notifY', false);
 
   if (window._allPostedContents?.length && typeof showProtagMsg === 'function') {
     setTimeout(() => showProtagMsg(_pick(_PROTAG_Y_POST_CHECK), false, 4000, true), 700);
@@ -1866,6 +1869,7 @@ function _buildOwnPostEl(p) {
         <span class="y-post-time">たった今</span>
       </div>
       <div class="y-post-body">${p.text.replace(/\n/g,'<br>')}</div>
+      ${p.imageSrc ? `<img src="${p.imageSrc}" alt="" onclick="openChatImageViewer(this.src)" style="max-width:100%;border-radius:12px;margin-top:8px;cursor:pointer;display:block;">` : ''}
       <div class="y-post-body" style="margin-top:4px"><span class="y-post-tag">${p.tags}</span></div>
       <div class="y-post-actions">
         <div class="y-post-action">

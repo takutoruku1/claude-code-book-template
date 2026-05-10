@@ -89,6 +89,7 @@ const CHAT_FLOWS = {
       id: 'midori_plant_detail',
       from: 'client',
       text: 'ゼラニウムが多いですね。あとハーブとか。\n窓際に並べてるんですけど、毎朝見るのが好きで。',
+      image: 'images/chat/midori_geranium.png',
       clippable: true, keyword: '毎朝見るのが好き'
     },
     {
@@ -184,7 +185,8 @@ const CHAT_FLOWS = {
     {
       id: 'midori_send1',
       from: 'client',
-      text: 'はい！今から送りますね。\nうまく撮れてないやつばっかりだけど…笑'
+      text: 'はい！今から送りますね。\nうまく撮れてないやつばっかりだけど…笑',
+      image: 'images/chat/midori_morning.png'
     },
     {
       id: 'midori_closing_player2',

@@ -33,6 +33,7 @@
     <div class="desktop-icon" onclick="openYWindow()">
       <div class="icon-img y-desktop-icon-letter">Y</div>
       <div class="icon-label">Y</div>
+      <div class="desktop-notif" id="notifY"></div>
     </div>
     <div class="desktop-icon" onclick="openTrashWindow()">
       <div class="icon-img">🗑️</div>
@@ -935,6 +936,24 @@
 </div>
 
 <div id="snapPreview"></div>
+
+<!-- Chat Image Viewer -->
+<script>
+function openChatImageViewer(src) {
+  if (document.querySelector('.chat-image-viewer')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'chat-image-viewer';
+  overlay.innerHTML = `
+    <button class="chat-image-viewer-close" onclick="closeChatImageViewer()">\u2715</button>
+    <img src="${src}" alt="">`;
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeChatImageViewer(); });
+  document.body.appendChild(overlay);
+}
+function closeChatImageViewer() {
+  const v = document.querySelector('.chat-image-viewer');
+  if (v) v.remove();
+}
+</script>
 
 <script src="js/scenario.js"></script>
 <script src="js/postOptions.js"></script>
