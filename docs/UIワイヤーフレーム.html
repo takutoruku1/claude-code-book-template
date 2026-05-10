@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ばずったー — UIワイヤーフレーム</title>
+  <style>
+    /* ============================================================
+       BASE / DESIGN TOKENS
+       ※ --bg〜--text-dim は css/main.css の実際の値に合わせている
+       ※ --text-mid は main.css に存在しないためワイヤーフレーム専用変数として注記
+       ※ --midori〜--yellow / --saku〜--karen はワイヤーフレーム専用の仮置き変数
+         （main.css には存在しない。実装時は設計書6章の定義に従うこと）
+    ============================================================ */
+    :root {
+      /* main.css 定義値 */
+      --bg:        #0d0d14;
+      --surface:   #16161f;
+      --surface2:  #1e1e2e;
+      --border:    #2a2a40;
+      --border2:   #2e2e42;
+      --text:      #e8e8f0;
+      --text-dim:  #888899;
+      /* main.css に定義なし（ワイヤーフレーム専用・実装時は --text-dim を参照） */
+      --text-mid:  #888899;
+      /* main.css 定義値 */
+      --accent:    #ff6b9d;
+      --accent2:   #7c6af7;
+      --chat-self:  #2a1f4a;
+      --chat-other: #1e2a1e;
+      --buzz-blue:  #1d9bf0;
+      /* ワイヤーフレーム専用仮置き変数（main.css には存在しない） */
+      --midori:    #06c755;
+      --saku:      #c084fc;
+      --seiji:     #fb923c;
+      --karen:     #f9a8d4;
+      --blue:      #38bdf8;
+      --green:     #34d399;
+      --purple:    #a78bfa;
+      --red:       #f87171;
+      --yellow:    #fbbf24;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       PAGE HEADER
+    ============================================================ */
+    .page-header {
+      padding: 28px 32px 20px;
+      border-bottom: 1px solid var(--border2);
+      background: var(--surface);
+    }
+    .page-header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .doc-badge {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: .12em;
+      color: var(--accent);
+      border: 1px solid rgba(255,107,157,.25);
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-bottom: 10px;
+    }
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: .04em;
+    }
+    .page-desc {
+      font-size: 0.8rem;
+      color: var(--text-mid);
+      margin-top: 6px;
+      line-height: 1.7;
+    }
+    .page-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .chip {
+      font-size: 10px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      border: 1px solid var(--border2);
+      color: var(--text-mid);
+    }
+    .chip.blue   { background: rgba(56,189,248,.1);  color: var(--blue);   border-color: rgba(56,189,248,.25); }
+    .chip.green  { background: rgba(52,211,153,.1);  color: var(--green);  border-color: rgba(52,211,153,.25); }
+    .chip.purple { background: rgba(167,139,250,.1); color: var(--purple); border-color: rgba(167,139,250,.25); }
+    .chip.red    { background: rgba(248,113,113,.1); color: var(--red);    border-color: rgba(248,113,113,.25); }
+
+    /* ============================================================
+       TAB NAV
+    ============================================================ */
+    .tab-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border2);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-nav-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+    }
+    .tab-btn {
+      flex: none;
+      padding: 12px 18px;
+      font-size: 0.78rem;
+      color: var(--text-mid);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color .2s, border-color .2s;
+      white-space: nowrap;
+      user-select: none;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ============================================================
+       MAIN LAYOUT
+    ============================================================ */
+    .main-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    .screen-panel { display: none; }
+    .screen-panel.active { display: block; }
+
+    /* ============================================================
+       ANNOTATION SYSTEM
+    ============================================================ */
+    .screen-header {
+      margin-bottom: 20px;
+    }
+    .screen-num {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: .1em;
+      margin-bottom: 4px;
+    }
+    .screen-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .screen-desc {
+      font-size: 0.78rem;
+      color: var(--text-mid);
+      margin-top: 6px;
+      line-height: 1.7;
+    }
+
+    .annot {
+      font-size: 10px;
+      color: var(--yellow);
+      background: rgba(251,191,36,.08);
+      border: 1px dashed rgba(251,191,36,.3);
+      border-radius: 4px;
+      padding: 2px 7px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+    .annot-block {
+      font-size: 11px;
+      color: var(--text-mid);
+      background: rgba(34,34,50,.5);
+      border-left: 2px solid var(--border2);
+      padding: 8px 12px;
+      border-radius: 0 6px 6px 0;
+      margin: 8px 0;
+      line-height: 1.8;
+    }
+    .annot-block strong { color: var(--text); }
+
+    /* ============================================================
+       MOCK UI BASE COMPONENTS
+    ============================================================ */
+    .mock-window {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 32px rgba(0,0,0,.6);
+    }
+    .mock-titlebar {
+      height: 36px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 8px;
+    }
+    .mock-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+    .mock-dot.red    { background: #ff5f57; }
+    .mock-dot.yellow { background: #febc2e; }
+    .mock-dot.green  { background: #28c840; }
+    .mock-titlebar-title {
+      margin-left: 8px;
+      font-size: 11px;
+      color: var(--text-mid);
+    }
+
+    .mock-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: default;
+      border: none;
+      transition: opacity .2s;
+    }
+    .mock-btn:hover { opacity: .85; }
+    .mock-btn.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .mock-btn.secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border2);
+    }
+    .mock-btn.midori { background: var(--midori); color: #000; }
+    .mock-btn.blue   { background: var(--blue); color: #000; }
+    .mock-btn.purple { background: var(--purple); color: #000; }
+
+    .mock-input {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 9px 12px;
+      font-size: 13px;
+      color: var(--text-mid);
+      width: 100%;
+    }
+
+    .mock-tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.06);
+      color: var(--text-mid);
+      border: 1px solid var(--border2);
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-mid);
+      margin-bottom: 8px;
+    }
+    .label-row span { color: var(--text-dim); }
+
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 28px 0;
+    }
+
+    /* ============================================================
+       SCREEN 1 — TITLE
+    ============================================================ */
+    .title-mock {
+      background: radial-gradient(ellipse 140% 90% at 50% 50%, #1a2454 0%, #0f1a3d 45%, #0a1230 100%);
+      border-radius: 10px;
+      overflow: hidden;
+      min-height: 460px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border2);
+    }
+    .title-floating-cards {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .tfc {
+      position: absolute;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 10px;
+      color: #8a8fa8;
+      width: 160px;
+    }
+    .tfc-name { font-size: 10px; color: #c8cbe0; font-weight: 600; margin-bottom: 2px; }
+    .tfc-handle { font-size: 9px; color: #5a5f7a; margin-bottom: 4px; }
+    .tfc-stat { font-size: 9px; color: #6a6f8a; margin-top: 4px; }
+    .tfc1 { top: 10%; left: 2%; }
+    .tfc2 { top: 35%; left: 1%; }
+    .tfc3 { top: 15%; right: 3%; }
+    .tfc4 { top: 60%; right: 2%; }
+    .tfc5 { bottom: 10%; left: 3%; }
+
+    .title-stage {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .title-window {
+      background: rgba(28,34,64,.7);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 8px;
+      box-shadow: 0 28px 80px rgba(0,0,0,.65);
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+      width: min(480px, 90vw);
+    }
+    .title-titlebar {
+      height: 32px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 7px;
+    }
+    .title-body {
+      padding: 32px 40px 24px;
+      text-align: center;
+    }
+    .title-eyebrow {
+      font-size: 10px;
+      letter-spacing: .45em;
+      color: #ff5fa2;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .title-logo {
+      font-family: 'DotGothic16', monospace, 'Courier New';
+      font-size: clamp(52px, 9vw, 86px);
+      letter-spacing: .04em;
+      font-weight: 400;
+      background: linear-gradient(180deg, #fff 0%, #ffd4e6 55%, #ff5fa2 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .title-sub {
+      font-size: 11px;
+      color: #8890b0;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .title-typer {
+      font-size: 10px;
+      color: #5a6080;
+      min-height: 14px;
+      margin-bottom: 20px;
+      font-family: monospace;
+    }
+    .title-typer::after { content: '|'; animation: blink .8s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .title-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+    .title-start-btn {
+      background: linear-gradient(135deg, #ff5fa2, #c84bc8);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 48px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      cursor: default;
+      box-shadow: 0 4px 20px rgba(255,95,162,.35);
+    }
+    .title-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px 10px;
+      border-top: 1px solid rgba(255,255,255,.04);
+    }
+    .title-footer-label { font-size: 9px; color: #4a5070; }
+    .bgm-btn {
+      font-size: 9px;
+      color: #6a7090;
+      padding: 3px 8px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 4px;
+      cursor: default;
+    }
+
+    /* ============================================================
+       SCREEN 2 — CHAT
+    ============================================================ */
+    .chat-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 600px) {
+      .chat-layout { grid-template-columns: 1fr; }
+    }
+    .chat-window {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .chat-header {
+      height: 52px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 10px;
+    }
+    .chat-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(6,199,85,.1);
+      border: 1px solid rgba(6,199,85,.3);
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      flex: none;
+    }
+    .chat-header-info { flex: 1; }
+    .chat-header-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .chat-header-status { font-size: 10px; color: var(--midori); }
+    .chat-messages {
+      height: 260px;
+      overflow-y: auto;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .chat-bubble-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .chat-bubble-row.self { flex-direction: row-reverse; }
+    .bubble-ava {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      flex: none;
+    }
+    .bubble {
+      max-width: 75%;
+      padding: 8px 11px;
+      border-radius: 14px;
+      font-size: 11.5px;
+      line-height: 1.6;
+    }
+    .bubble.client {
+      background: var(--chat-other);
+      border: 1px solid rgba(6,199,85,.15);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+    .bubble.self {
+      background: var(--chat-self);
+      border: 1px solid rgba(124,106,247,.18);
+      color: var(--text);
+      border-bottom-right-radius: 4px;
+      text-align: right;
+    }
+    .bubble.flashback {
+      background: rgba(0,0,0,.4);
+      border: 1px solid rgba(167,139,250,.2);
+      color: #a0a0c0;
+      font-style: italic;
+      font-size: 10.5px;
+    }
+    .chat-choices {
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(0,0,0,.15);
+    }
+    .choice-btn {
+      padding: 8px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      font-size: 11.5px;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: background .2s, border-color .2s;
+    }
+    .choice-btn:hover {
+      background: rgba(124,106,247,.12);
+      border-color: rgba(124,106,247,.4);
+    }
+    .choice-btn.selected {
+      background: rgba(6,199,85,.1);
+      border-color: rgba(6,199,85,.35);
+    }
+
+    /* フラッシュバック演出 */
+    .flashback-bar {
+      background: #000;
+      border-top: 1px solid rgba(167,139,250,.2);
+      border-bottom: 1px solid rgba(167,139,250,.2);
+      padding: 8px 12px;
+      font-size: 10px;
+      color: #7060a0;
+      letter-spacing: .08em;
+    }
+
+    /* ============================================================
+       SCREEN 3 — QUIZ
+    ============================================================ */
+    .quiz-mock {
+      max-width: 560px;
+    }
+    .quiz-step {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 18px;
+    }
+    .quiz-step-dot {
+      height: 4px;
+      border-radius: 2px;
+      flex: 1;
+      background: var(--border2);
+    }
+    .quiz-step-dot.done { background: var(--midori); }
+    .quiz-step-dot.active { background: var(--blue); }
+    .quiz-question-box {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+    .quiz-q-label {
+      font-size: 10px;
+      color: var(--text-mid);
+      letter-spacing: .08em;
+      margin-bottom: 8px;
+    }
+    .quiz-q-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .quiz-opt {
+      padding: 11px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 7px;
+      font-size: 12.5px;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background .15s, border-color .15s;
+    }
+    .quiz-opt:hover { background: rgba(56,189,248,.08); border-color: rgba(56,189,248,.3); }
+    .quiz-opt.correct { background: rgba(52,211,153,.1); border-color: rgba(52,211,153,.4); }
+    .quiz-opt.wrong   { background: rgba(248,113,113,.08); border-color: rgba(248,113,113,.3); }
+    .quiz-opt-letter {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--border2);
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      font-weight: 700;
+      flex: none;
+    }
+    .quiz-opt.correct .quiz-opt-letter { background: var(--green); color: #000; }
+    .quiz-opt.wrong   .quiz-opt-letter { background: var(--red); color: #fff; }
+    .quiz-feedback {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      line-height: 1.7;
+    }
+    .quiz-feedback.correct-fb {
+      background: rgba(52,211,153,.08);
+      border: 1px solid rgba(52,211,153,.25);
+      color: var(--green);
+    }
+    .quiz-feedback.wrong-fb {
+      background: rgba(248,113,113,.08);
+      border: 1px solid rgba(248,113,113,.25);
+      color: var(--red);
+    }
+
+    /* ============================================================
+       SCREEN 4 — MATERIALS
+    ============================================================ */
+    .material-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+    }
+    .mat-card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+      position: relative;
+    }
+    .mat-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(167,139,250,.4);
+      box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    }
+    .mat-card-thumb {
+      height: 90px;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .mat-card-type {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(0,0,0,.5);
+      color: var(--text-mid);
+      border: 1px solid var(--border2);
+    }
+    .mat-card-body {
+      padding: 10px 10px 8px;
+    }
+    .mat-card-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .mat-card-desc {
+      font-size: 10px;
+      color: var(--text-mid);
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .mat-card-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .mat-mystery-badge {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(167,139,250,.15);
+      color: var(--purple);
+      border: 1px solid rgba(167,139,250,.3);
+    }
+    .mat-card-flip-hint {
+      font-size: 9px;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 4px 0 6px;
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+    }
+    .mat-card:hover .mat-card-flip-hint { color: var(--purple); }
+
+    /* ============================================================
+       SCREEN 5 — POST BUILDER
+    ============================================================ */
+    .builder-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 640px) {
+      .builder-layout { grid-template-columns: 1fr; }
+    }
+    .builder-panel {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .builder-panel-title {
+      font-size: 10px;
+      letter-spacing: .08em;
+      color: var(--text-mid);
+      margin-bottom: 10px;
+    }
+    .style-btn-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .style-btn {
+      padding: 9px 12px;
+      border-radius: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text-mid);
+      font-size: 11.5px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .style-btn:hover { background: rgba(255,255,255,.05); }
+    .style-btn.active {
+      background: rgba(167,139,250,.1);
+      border-color: rgba(167,139,250,.4);
+      color: var(--purple);
+    }
+    .style-btn-label { font-size: 9px; color: var(--text-dim); }
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-box {
+      width: 14px; height: 14px;
+      border-radius: 3px;
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      flex: none;
+      margin-top: 2px;
+      display: grid;
+      place-items: center;
+      font-size: 8px;
+    }
+    .check-box.checked {
+      background: var(--purple);
+      border-color: var(--purple);
+      color: #fff;
+    }
+    .check-info { flex: 1; }
+    .check-title { font-size: 11.5px; color: var(--text); }
+    .check-desc  { font-size: 10px; color: var(--text-mid); margin-top: 1px; }
+    .hash-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .hash-tag-btn {
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .hash-tag-btn:hover { background: rgba(56,189,248,.1); border-color: rgba(56,189,248,.3); color: var(--blue); }
+    .hash-tag-btn.selected { background: rgba(56,189,248,.1); border-color: rgba(56,189,248,.4); color: var(--blue); }
+
+    /* styleUnlock / hashUnlock によるロックアウト状態 */
+    .style-btn.locked, .hash-tag-btn.locked {
+      opacity: .35;
+      cursor: not-allowed;
+      pointer-events: none;
+      position: relative;
+    }
+    .style-btn.locked::after, .hash-tag-btn.locked::after {
+      content: '🔒';
+      font-size: 10px;
+      margin-left: 6px;
+    }
+    .preview-box {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 12px;
+    }
+    .preview-label {
+      font-size: 9px;
+      color: var(--text-dim);
+      letter-spacing: .08em;
+      margin-bottom: 8px;
+    }
+    .preview-text {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+    .preview-image {
+      width: 100%;
+      height: 70px;
+      background: var(--border2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+    .preview-hash {
+      font-size: 11px;
+      color: var(--blue);
+    }
+
+    /* ============================================================
+       SCREEN 6 — RESPONSE PHASE
+    ============================================================ */
+    .response-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 20px;
+    }
+    @media (max-width: 640px) {
+      .response-layout { grid-template-columns: 1fr; }
+    }
+    .posted-card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .posted-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .posted-ava {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(6,199,85,.1);
+      border: 1px solid rgba(6,199,85,.2);
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+    }
+    .posted-name { font-size: 12px; font-weight: 600; color: var(--text); }
+    .posted-handle { font-size: 10px; color: var(--text-mid); }
+    .posted-body { padding: 12px 14px; }
+    .posted-body-text { font-size: 12px; color: var(--text); line-height: 1.7; margin-bottom: 8px; }
+    .posted-img-area {
+      width: 100%; height: 100px;
+      background: var(--surface2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+    .posted-hash { font-size: 11px; color: var(--blue); margin-bottom: 8px; }
+    .posted-actions {
+      display: flex;
+      gap: 14px;
+      padding: 8px 14px;
+      border-top: 1px solid var(--border);
+    }
+    .post-action {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .post-action.liked { color: #f91880; }
+
+    /* スコアエリア */
+    .score-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .score-box {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .score-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .score-label {
+      font-size: 11px;
+      color: var(--text-mid);
+      min-width: 60px;
+    }
+    .score-bar-wrap {
+      flex: 1;
+      height: 6px;
+      background: var(--border2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .score-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width .8s ease;
+    }
+    .score-bar.self  { background: var(--midori); }
+    .score-bar.buzz  { background: var(--blue); }
+    .score-value {
+      font-size: 11px;
+      color: var(--text);
+      min-width: 36px;
+      text-align: right;
+    }
+    .score-num-display {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: monospace;
+      margin-top: 4px;
+    }
+    .score-num-display.self-color { color: var(--midori); }
+    .score-num-display.buzz-color { color: var(--blue); }
+
+    /* コメントフィード */
+    .comment-feed {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .comment-feed-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-mid);
+      letter-spacing: .06em;
+    }
+    .comment-list {
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .comment-item {
+      display: flex;
+      gap: 8px;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .comment-item:last-child { border-bottom: none; }
+    .comment-ava {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--surface2);
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      flex: none;
+    }
+    .comment-body { flex: 1; }
+    .comment-name { font-size: 10px; font-weight: 600; color: var(--text); }
+    .comment-text { font-size: 11px; color: var(--text-mid); margin-top: 1px; line-height: 1.5; }
+
+    /* ============================================================
+       SCREEN 7 — ENDING
+    ============================================================ */
+    .ending-mock {
+      background: linear-gradient(180deg, #0a0a14 0%, #1a0a2e 100%);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ending-bg-glow {
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(6,199,85,.08) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .ending-chapter {
+      font-size: 10px;
+      letter-spacing: .25em;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+    .ending-title {
+      font-size: clamp(28px, 6vw, 48px);
+      font-weight: 700;
+      letter-spacing: .06em;
+      color: var(--midori);
+      text-shadow: 0 0 30px rgba(6,199,85,.4);
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+    .ending-catch {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.8;
+      max-width: 360px;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+    .ending-score-row {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 28px;
+      position: relative;
+      z-index: 1;
+    }
+    .ending-score-item { text-align: center; }
+    .ending-score-label { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+    .ending-score-val {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: monospace;
+    }
+    .ending-score-val.self { color: var(--midori); }
+    .ending-score-val.buzz { color: var(--blue); }
+    .ending-fade-bar {
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--midori), transparent);
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+    .ending-btns {
+      display: flex;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ============================================================
+       UTILITY / ANNOTATIONS
+    ============================================================ */
+    .wf-note {
+      background: rgba(251,191,36,.04);
+      border: 1px solid rgba(251,191,36,.15);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-top: 14px;
+      font-size: 11px;
+      color: #aa9040;
+      line-height: 1.7;
+    }
+    .wf-note strong { color: var(--yellow); }
+    .spec-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .spec-item {
+      font-size: 11px;
+      color: var(--text-mid);
+      padding-left: 12px;
+      position: relative;
+      line-height: 1.6;
+    }
+    .spec-item::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--text-dim);
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 560px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     PAGE HEADER
+============================================================ -->
+<header class="page-header">
+  <div class="page-header-inner">
+    <div class="doc-badge">WIREFRAME</div>
+    <h1 class="page-title">ばずったー — UIワイヤーフレーム</h1>
+    <p class="page-desc">
+      全ゲーム画面のモックアップ。実際のカラーパレット・フォントを使用したインタラクティブ確認用ドキュメント。<br>
+      タブで画面を切り替え、ボタンや選択肢はデモ操作が可能。
+    </p>
+    <div class="page-chips">
+      <div class="chip blue">7画面 / 8エンディング</div>
+      <div class="chip green">Vanilla HTML/CSS/JS</div>
+      <div class="chip purple">ダークテーマ</div>
+      <div class="chip">ターゲット: 20〜35歳</div>
+      <div class="chip red">v1.0</div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     TAB NAV
+============================================================ -->
+<nav class="tab-nav">
+  <div class="tab-nav-inner">
+    <button class="tab-btn active" onclick="switchTab(0)">① タイトル</button>
+    <button class="tab-btn" onclick="switchTab(1)">② チャット</button>
+    <button class="tab-btn" onclick="switchTab(2)">③ クイズ</button>
+    <button class="tab-btn" onclick="switchTab(3)">④ 素材確認</button>
+    <button class="tab-btn" onclick="switchTab(4)">⑤ 投稿ビルダー</button>
+    <button class="tab-btn" onclick="switchTab(5)">⑥ 反響フェーズ</button>
+    <button class="tab-btn" onclick="switchTab(6)">⑦ エンディング</button>
+  </div>
+</nav>
+
+<!-- ============================================================
+     MAIN
+============================================================ -->
+<main class="main-content">
+
+  <!-- ====================================================
+       PANEL 0: タイトル画面
+  ==================================================== -->
+  <div class="screen-panel active" id="panel-0">
+    <div class="screen-header">
+      <div class="screen-num">SCREEN 01 / 07</div>
+      <div class="screen-name">タイトル画面</div>
+      <div class="screen-desc">
+        ゲーム起動時に表示される最初の画面。背景には浮遊するSNS投稿カードが流れ、ゲームの世界観を演出する。
+      </div>
+    </div>
+
+    <!-- Mock -->
+    <div class="title-mock">
+      <!-- 浮遊カード -->
+      <div class="title-floating-cards">
+        <div class="tfc tfc1">
+          <div class="tfc-name">田中みどり</div>
+          <div class="tfc-handle">@midori_everyday</div>
+          今日もゼラニウム咲いた。なんか元気もらえる
+          <div class="tfc-stat">♥ 142 &nbsp; 💬 8</div>
+        </div>
+        <div class="tfc tfc2">
+          <div class="tfc-name">倉田 朔</div>
+          <div class="tfc-handle">@saku_craft</div>
+          今日で237時間。まだ屋根が合わない
+          <div class="tfc-stat">♥ 38 &nbsp; 💬 14</div>
+        </div>
+        <div class="tfc tfc3">
+          <div class="tfc-name">篠宮 花蓮</div>
+          <div class="tfc-handle">@karen_ikebana</div>
+          「姉に見せたくて活けた」
+          <div class="tfc-stat">♥ 29 &nbsp; 💬 4</div>
+        </div>
+        <div class="tfc tfc4">
+          <div class="tfc-name">匿名希望</div>
+          <div class="tfc-handle">@anon_2026</div>
+          バズってるけどなんか投稿は…ちがう
+          <div class="tfc-stat" style="color:#ff5fa2">♥ 1.2k &nbsp; 🔥 HOT</div>
+        </div>
+        <div class="tfc tfc5">
+          <div class="tfc-name">依頼主A</div>
+          <div class="tfc-handle">@client_a</div>
+          次の投稿、もう少し「私らしく」できますか？
+          <div class="tfc-stat">DM</div>
+        </div>
+      </div>
+
+      <!-- Window -->
+      <div class="title-stage">
+        <div class="title-window">
+          <div class="title-titlebar">
+            <div class="mock-dot red"></div>
+            <div class="mock-dot yellow"></div>
+            <div class="mock-dot green"></div>
+            <span style="margin-left:8px;font-size:11px;color:#5a607a">ばずったー.exe</span>
+          </div>
+          <div class="title-body">
+            <div class="title-eyebrow">S N S  C O N S U L T A N T</div>
+            <div class="title-logo">ばずったー</div>
+            <div class="title-sub">
+              言葉を届けることと、バズらせることの<br>
+              あいだにある仕事の話。
+            </div>
+            <div class="title-typer" id="tsTyperDemo">依頼主のことばを解読中…</div>
+            <div class="title-btns">
+              <div class="title-start-btn" onclick="demoStart()">ゲームをはじめる</div>
+            </div>
+          </div>
+          <div class="title-footer">
+            <span class="title-footer-label">BGM</span>
+            <div class="bgm-btn" onclick="demoBgm(this)">♪ ON</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Annotations -->
+    <div class="wf-note">
+      <strong>浮遊カード（背景）</strong>：JS による動的生成。タイムラインを模した10種のカードがランダム座標・速度で下から上に流れる。
+      アニメーション: <code>tsTlFloat</code> (linear infinite)。ゲーム開始時は停止。
+    </div>
+    <div class="annot-block">
+      <strong>ロゴ：</strong>DotGothic16（フォールバック: monospace）。フォントサイズ clamp(52px, 9vw, 86px)（設計書2-2の規定値）。グラデーション fill #fff → #ffd4e6 → #ff5fa2。<br>
+      <strong>スタートボタン：</strong>クリックで bootOverlay（3秒）→ チャット画面に遷移。<br>
+      <strong>BGM ボタン：</strong>localStorage に音量保存。初回クリックまで自動再生不可（ブラウザポリシー）。<br>
+      <strong>タイパー：</strong>_TS_TYPER_LINES の文字列を一文字ずつ表示 → 消去を繰り返す（44ms/文字）。
+    </div>
+    <div class="spec-list">
+      <div class="spec-item">画面サイズ: fixed, inset:0, z-index:200</div>
+      <div class="spec-item">ウィンドウ幅: min(660px, 92vw)</div>
+      <div class="spec-item">背景グラデーション: radial-gradient, 中心 #1a2454 → 外縁 #0a1230</div>
+      <div class="spec-item">デザイン切り替え: data-design="new/old"（localStorage: titleDesign）</div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       PANEL 1: チャット画面
+  ==================================================== -->
+  <div class="screen-panel" id="panel-1">
+    <div class="screen-header">
+      <div class="screen-num">SCREEN 02 / 07</div>
+      <div class="screen-name">チャット画面</div>
+      <div class="screen-desc">
+        クライアントとのメッセージやり取りを行う中心画面。選択肢で主人公の応答を選ぶ。フラッシュバック演出もここに差し込まれる。
+      </div>
+    </div>
+
+    <div class="chat-layout">
+      <!-- Left: Chat window mock -->
+      <div>
+        <div class="annot">チャットウィンドウ（chatWindow）</div>
+        <div class="chat-window">
+          <div class="chat-header">
+            <div class="chat-avatar">🌿</div>
+            <div class="chat-header-info">
+              <div class="chat-header-name">田中 みどり</div>
+              <div class="chat-header-status">● オンライン</div>
+            </div>
+            <div style="font-size:11px;color:var(--text-dim)">—</div>
+          </div>
+
+          <div class="chat-messages" id="chatDemo">
+            <div class="chat-bubble-row">
+              <div class="bubble-ava" style="background:rgba(6,199,85,.1);border:1px solid rgba(6,199,85,.2)">🌿</div>
+              <div class="bubble client">はじめまして！SNS代行の件でご連絡しました🌿<br>よろしくお願いします…！</div>
+            </div>
+            <div class="chat-bubble-row self">
+              <div class="bubble-ava" style="background:rgba(124,106,247,.08);border:1px solid rgba(124,106,247,.15)">🎭</div>
+              <div class="bubble self">こちらこそ！どんなSNSをやりたいですか？</div>
+            </div>
+            <div class="chat-bubble-row">
+              <div class="bubble-ava" style="background:rgba(6,199,85,.1);border:1px solid rgba(6,199,85,.2)">🌿</div>
+              <div class="bubble client">Instagramをやってみたくて。<br>植物と料理の写真を撮るんですけど…<br>センスがなくて投稿できないんです😢</div>
+            </div>
+          </div>
+
+          <!-- フラッシュバック演出サンプル -->
+          <div class="flashback-bar">— FLASHBACK ————————————</div>
+          <div class="chat-messages" style="height:60px;padding:8px 10px">
+            <div class="chat-bubble-row">
+              <div class="bubble-ava" style="background:rgba(167,139,250,.06)">🎭</div>
+              <div class="bubble flashback">——残す。あの記事も、残っている。<br>消えたのはアカウントだけで……</div>
+            </div>
+          </div>
+          <div class="flashback-bar">— BACK TO PRESENT ——————</div>
+
+          <div class="chat-choices">
+            <div class="annot" style="margin-bottom:6px">選択肢エリア（chatChoices）</div>
+            <div class="choice-btn" onclick="selectChoice(this,'choice-a')">写真を見てみたいです！送ってもらえますか？</div>
+            <div class="choice-btn" onclick="selectChoice(this,'choice-b')">センスじゃなくて「らしさ」を出せばいいんですよ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Annotations -->
+      <div>
+        <div class="annot">画面構成・仕様</div>
+        <div class="annot-block">
+          <strong>ヘッダー：</strong>クライアントのアバター（絵文字）・名前・オンライン状態。<br>
+          クライアントは依頼者4人（みどり🌿 / 朔🌙 / 誠司☕ / 花蓮🌸）。<br><br>
+          <strong>バブルスタイル：</strong><br>
+          クライアント: 背景 var(--chat-other) = #1e2a1e, 左揃え<br>
+          プレイヤー: 背景 var(--chat-self) = #2a1f4a, 右揃え<br>
+          フラッシュバック: background rgba(12,8,24,.96)・斜体<br><br>
+          <strong>フラッシュバック：</strong>朔ルート Stage 1〜3 でトリガー。モノローグ的な過去シーン。上下に区切り線（FLASHBACK / BACK TO PRESENT）。<br><br>
+          <strong>選択肢：</strong>2〜3個のボタン。選択後に対応するスコア変化（selfScore/buzzScore/egoScore）が発生。
+        </div>
+
+        <div class="annot" style="margin-top:14px">フレンドリスト（chatTalksList）</div>
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-top:6px;">
+          <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text-mid)">トーク</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);background:rgba(6,199,85,.04)">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(6,199,85,.1);border:1px solid rgba(6,199,85,.25);display:grid;place-items:center;font-size:18px;flex:none">🌿</div>
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600;color:var(--text)">田中 みどり</div>
+              <div style="font-size:10px;color:var(--text-mid)">素材、今から送りますね！</div>
+            </div>
+            <div style="font-size:10px;color:var(--text-dim)">12:31</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(192,132,252,.08);border:1px solid rgba(192,132,252,.2);display:grid;place-items:center;font-size:18px;flex:none">🌙</div>
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600;color:var(--text)">水無月 朔</div>
+              <div style="font-size:10px;color:var(--text-mid)">模型、作ってます</div>
+            </div>
+            <div style="width:16px;height:16px;border-radius:50%;background:var(--accent);display:grid;place-items:center;font-size:9px;color:#fff;font-weight:700">2</div>
+          </div>
+        </div>
+
+        <div class="wf-note" style="margin-top:12px">
+          <strong>実装ポイント：</strong>chatWindow は独立した浮遊ウィンドウ（ドラッグ移動・最小化可）。チャトル (chatApp) から開くことも可能。未読バッジは chatNavBadge で管理。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       PANEL 2: クイズ画面
+  ==================================================== -->
+  <div class="screen-panel" id="panel-2">
+    <div class="screen-header">
+      <div class="screen-num">SCREEN 03 / 07</div>
+      <div class="screen-name">クイズ画面</div>
+      <div class="screen-desc">
+        チャット後に挿入されるSNSリテラシー/マーケティングのミニクイズ。全ルート共通。3択で正解/不正解のフィードバックを表示する。
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="annot">クイズ本体</div>
+        <div class="quiz-mock" style="margin-top:6px">
+          <div class="quiz-step">
+            <div class="quiz-step-dot done"></div>
+            <div class="quiz-step-dot done"></div>
+            <div class="quiz-step-dot active"></div>
+            <div class="quiz-step-dot"></div>
+            <div class="quiz-step-dot"></div>
+          </div>
+
+          <div class="quiz-question-box">
+            <div class="quiz-q-label">Q. SNS リテラシー</div>
+            <div class="quiz-q-text">
+              フォロワー数よりも重要視されるSNS指標として正しいものはどれですか？
+            </div>
+          </div>
+
+          <div class="quiz-options">
+            <div class="quiz-opt" onclick="selectQuizOpt(this, false)">
+              <div class="quiz-opt-letter">A</div>
+              フォロワー数の絶対値
+            </div>
+            <div class="quiz-opt correct" onclick="selectQuizOpt(this, true)">
+              <div class="quiz-opt-letter" style="background:var(--green);color:#000">B</div>
+              エンゲージメント率（いいね・コメント数 / リーチ数）
+            </div>
+            <div class="quiz-opt" onclick="selectQuizOpt(this, false)">
+              <div class="quiz-opt-letter">C</div>
+              投稿の文字数
+            </div>
+          </div>
+
+          <div class="quiz-feedback correct-fb" id="quizFeedback" style="display:none">
+            正解です！エンゲージメント率は「届いた人の何割が反応したか」を示します。バズっていても反応率が低い投稿は、実はターゲットに刺さっていない可能性があります。
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="annot">仕様・注釈</div>
+        <div class="annot-block" style="margin-top:6px">
+          <strong>出題タイミング：</strong>各ルートのチャット終了後、素材確認画面の前に挿入。<br><br>
+          <strong>問題数：</strong>ルートごとに異なる（みどり：2問、朔/誠司：3問、花蓮：4問）。<br><br>
+          <strong>スコア影響：</strong>正解でメッセージ表示のみ。ゲームスコアへの直接影響なし（学習性演出）。<br><br>
+          <strong>プログレスバー：</strong>上部の5ドットが現在位置を示す（done: midori / active: blue）。<br><br>
+          <strong>フィードバック：</strong>選択後に下部に展開。解説テキスト + 「次へ」ボタン。
+        </div>
+
+        <div class="wf-note" style="margin-top:12px">
+          <strong>インタラクション：</strong>クリックで即座にフィードバックが表示される（アニメーション: slideDown 200ms）。正解は緑、不正解は赤でハイライト。次の問題へ自動スクロール。
+        </div>
+
+        <div class="spec-list" style="margin-top:12px">
+          <div class="spec-item">選択肢数: 3択（固定）</div>
+          <div class="spec-item">問題テキスト: 最大 120文字</div>
+          <div class="spec-item">解説テキスト: 最大 200文字</div>
+          <div class="spec-item">画面: appWindow 内の quiz エリア</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       PANEL 3: 素材確認画面
+  ==================================================== -->
+  <div class="screen-panel" id="panel-3">
+    <div class="screen-header">
+      <div class="screen-num">SCREEN 04 / 07</div>
+      <div class="screen-name">素材確認画面</div>
+      <div class="screen-desc">
+        クライアントから届いた素材（写真・メモ・スクショ）を確認するカードグリッド画面。めくり演出（ホバー）・mysteryFlag 表示が特徴。
+      </div>
+    </div>
+
+    <div class="annot">素材カードグリッド（materialGrid）</div>
+    <div class="material-grid" style="margin-top:8px">
+      <!-- Card 1 -->
+      <div class="mat-card">
+        <div class="mat-card-thumb" style="background:rgba(6,199,85,.05)">
+          💬
+          <span class="mat-card-type">スクショ</span>
+        </div>
+        <div class="mat-card-body">
+          <div class="mat-card-title">お母さんへのLINE</div>
+          <div class="mat-card-desc">「今日もゼラニウム咲いたよ。去年より元気な気がする。」既読あり・返信あり。</div>
+          <div class="mat-card-tags">
+            <span class="mock-tag">日常的</span>
+            <span class="mock-tag">家族へ</span>
+            <span class="mock-tag">植物愛</span>
+          </div>
+        </div>
+        <div class="mat-card-flip-hint">ホバーでめくり演出 ›</div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="mat-card">
+        <div class="mat-card-thumb" style="background:rgba(251,191,36,.04)">
+          📓
+          <span class="mat-card-type">メモ帳</span>
+        </div>
+        <div class="mat-card-body">
+          <div class="mat-card-title">走り書きメモ</div>
+          <div class="mat-card-desc">「料理の失敗ばかりだけど作るのは好き」「完璧じゃなくていいのかな」</div>
+          <div class="mat-card-tags">
+            <span class="mock-tag">自己開示</span>
+            <span class="mock-tag">等身大</span>
+          </div>
+        </div>
+        <div class="mat-card-flip-hint">ホバーでめくり演出 ›</div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="mat-card">
+        <div class="mat-card-thumb" style="background:rgba(56,189,248,.04)">
+          📷
+          <span class="mat-card-type">写真</span>
+        </div>
+        <div class="mat-card-body">
+          <div class="mat-card-title">窓際の植物写真</div>
+          <div class="mat-card-desc">少しぼけた朝の光。ゼラニウムが窓際に並ぶ。「うまく撮れてないけど好きな景色」</div>
+          <div class="mat-card-tags">
+            <span class="mock-tag">温かみ</span>
+            <span class="mock-tag">日常美</span>
+          </div>
+        </div>
+        <div class="mat-card-flip-hint">ホバーでめくり演出 ›</div>
+      </div>
+
+      <!-- Card 4: mystery -->
+      <div class="mat-card" style="border-color:rgba(167,139,250,.3)">
+        <div class="mat-card-thumb" style="background:rgba(167,139,250,.06)">
+          📷
+          <span class="mat-mystery-badge">🔍 MYSTERY</span>
+          <span class="mat-card-type">写真</span>
+        </div>
+        <div class="mat-card-body">
+          <div class="mat-card-title" style="color:var(--purple)">作業台の全景</div>
+          <div class="mat-card-desc">工具・模型パーツが整然と並ぶ。付箋に「カレンが好きそうだと思って」と手書き。</div>
+          <div class="mat-card-tags">
+            <span class="mock-tag">日常的</span>
+            <span class="mock-tag" style="color:var(--purple);border-color:rgba(167,139,250,.3)">🔍 mysteryClue</span>
+          </div>
+        </div>
+        <div class="mat-card-flip-hint" style="color:var(--purple)">謎のヒントが含まれています</div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="mat-card">
+        <div class="mat-card-thumb" style="background:rgba(251,146,60,.04)">
+          🍳
+          <span class="mat-card-type">写真</span>
+        </div>
+        <div class="mat-card-body">
+          <div class="mat-card-title">手料理の写真</div>
+          <div class="mat-card-desc">少し歪んだオムレツ。付箋「失敗作だけど美味しかった」が貼ってある。</div>
+          <div class="mat-card-tags">
+            <span class="mock-tag">失敗OK</span>
+            <span class="mock-tag">ユーモア</span>
+          </div>
+        </div>
+        <div class="mat-card-flip-hint">ホバーでめくり演出 ›</div>
+      </div>
+    </div>
+
+    <div class="annot-block" style="margin-top:16px">
+      <strong>mysteryFlag：</strong>特定の素材カードには <code>mysteryClues</code> 配列へのフラグが設定されており、2件以上でエンディング分岐（謎収束）に影響。パープル枠で視覚的に区別。<br>
+      <strong>めくり演出：</strong>ホバー時に <code>transform: rotateY(10deg)</code> + ボックスシャドウ強調。クリックで素材詳細モーダル展開（未実装画面のため省略）。<br>
+      <strong>グリッド：</strong><code>grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))</code>。最大5枚。
+    </div>
+  </div>
+
+  <!-- ====================================================
+       PANEL 4: 投稿ビルダー画面
+  ==================================================== -->
+  <div class="screen-panel" id="panel-4">
+    <div class="screen-header">
+      <div class="screen-num">SCREEN 05 / 07</div>
+      <div class="screen-name">投稿ビルダー画面</div>
+      <div class="screen-desc">
+        文体・素材・ハッシュタグを組み合わせて投稿を作成する。右側のプレビューエリアでリアルタイムに確認できる。
+      </div>
+    </div>
+
+    <div class="builder-layout">
+      <!-- 左: 文体 + 素材 -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <!-- 文体選択 -->
+        <div class="builder-panel">
+          <div class="builder-panel-title">STEP 1 — 文体を選ぶ</div>
+          <div class="style-btn-grid">
+            <div class="style-btn active" onclick="selectStyle(this)">
+              <span>短くシンプルに</span>
+              <span class="style-btn-label">buzz:30 / self:80</span>
+            </div>
+            <div class="style-btn" onclick="selectStyle(this)">
+              <span>丁寧に感情を込めて</span>
+              <span class="style-btn-label">buzz:50 / self:70</span>
+            </div>
+            <div class="style-btn locked" title="この素材では選択できません（styleUnlock 制約）">
+              <span>バズを狙って大胆に 🔥</span>
+              <span class="style-btn-label">buzz:85 / self:15</span>
+            </div>
+            <div class="style-btn" onclick="selectStyle(this)">
+              <span>失敗も含めてリアルに</span>
+              <span class="style-btn-label">buzz:45 / self:90</span>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:6px">🔒 ロック状態 = 選択中の素材カードの <code>styleUnlock</code> に含まれない選択肢。<code>disabled</code> 相当の表示。</div>
+        </div>
+
+        <!-- 素材選択 -->
+        <div class="builder-panel">
+          <div class="builder-panel-title">STEP 2 — 素材を選ぶ（複数可）</div>
+          <div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box checked">✓</div>
+              <div class="check-info">
+                <div class="check-title">💬 お母さんへのLINE</div>
+                <div class="check-desc">日常的 / 家族へ / 植物愛</div>
+              </div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <div class="check-info">
+                <div class="check-title">📓 走り書きメモ</div>
+                <div class="check-desc">自己開示 / 等身大 / ゆるい</div>
+              </div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box checked">✓</div>
+              <div class="check-info">
+                <div class="check-title">📷 窓際の植物写真</div>
+                <div class="check-desc">温かみ / 日常美 / 完璧じゃない</div>
+              </div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <div class="check-info">
+                <div class="check-title">🍳 手料理の写真</div>
+                <div class="check-desc">失敗OK / ユーモア / 正直</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ハッシュタグ -->
+        <div class="builder-panel">
+          <div class="builder-panel-title">STEP 3 — ハッシュタグを選ぶ</div>
+          <div class="hash-grid">
+            <div class="hash-tag-btn selected" onclick="toggleHash(this)">#植物のある暮らし</div>
+            <div class="hash-tag-btn" onclick="toggleHash(this)">#今日の一枚</div>
+            <div class="hash-tag-btn" onclick="toggleHash(this)">#バズれ #フォロワー増やしたい</div>
+            <div class="hash-tag-btn" onclick="toggleHash(this)">#ゆるく記録する</div>
+            <div class="hash-tag-btn" onclick="toggleHash(this)">タグなし</div>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:6px">※ ハッシュタグはルートにより変化（朔: #ジオラマ #模型制作、誠司: #喫茶店 #純喫茶、花蓮: #生け花 #いけばな）</div>
+        </div>
+
+        <!-- 時間帯選択 -->
+        <div class="builder-panel">
+          <div class="builder-panel-title">STEP 4 — 投稿時間帯を選ぶ</div>
+          <div class="style-btn-grid">
+            <div class="style-btn" onclick="selectTime(this)" data-time="morning">
+              <span>🌅 朝（morning）</span>
+              <span class="style-btn-label">buzz +15 / self +10</span>
+            </div>
+            <div class="style-btn active" onclick="selectTime(this)" data-time="noon">
+              <span>☀️ 昼（noon）</span>
+              <span class="style-btn-label">buzz +20 / self +5</span>
+            </div>
+            <div class="style-btn" onclick="selectTime(this)" data-time="evening">
+              <span>🌙 夜（evening）</span>
+              <span class="style-btn-label">buzz +10 / self +20</span>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:6px">※ selectedTime は投稿ボタンの活性化条件（selectedStyle != null &amp;&amp; selectedHash != null &amp;&amp; selectedTime != null）に含まれる</div>
+        </div>
+      </div>
+
+      <!-- 右: プレビュー -->
+      <div>
+        <div class="annot">投稿プレビュー（リアルタイム更新）</div>
+        <div class="preview-box" style="margin-top:6px">
+          <div class="preview-label">PREVIEW</div>
+          <div class="preview-text" id="previewText">
+            今日もゼラニウム咲きました🌿<br>
+            お母さんに写真送ったら「きれい」って返ってきた。<br>
+            うまく撮れてないけど、好きな景色。<br>
+            完璧じゃなくていいんだよって、自分に言い聞かせながら。
+          </div>
+          <div class="preview-image">📷 窓際の植物写真</div>
+          <div class="preview-hash">#今日の一枚 &nbsp; #日常の記録</div>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="annot" style="margin-bottom:6px">スコア予測</div>
+          <div style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:12px 14px">
+            <div class="score-row">
+              <div class="score-label" style="color:var(--midori)">self</div>
+              <div class="score-bar-wrap"><div class="score-bar self" style="width:72%"></div></div>
+              <div class="score-value">72</div>
+            </div>
+            <div class="score-row" style="margin-bottom:0">
+              <div class="score-label" style="color:var(--blue)">buzz</div>
+              <div class="score-bar-wrap"><div class="score-bar buzz" style="width:48%"></div></div>
+              <div class="score-value">48</div>
+            </div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:8px">※ 組み合わせによってスコアが変化します</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;justify-content:center">
+          <div class="mock-btn primary" style="padding:12px 40px;font-size:14px" onclick="demoPost()">
+            投稿する
+          </div>
+        </div>
+
+        <div class="wf-note" style="margin-top:12px">
+          <strong>投稿するボタン：</strong>クリックで反響フェーズ画面に遷移。postOptions.js のスコア計算ロジックが走る。文体 × 素材 × ハッシュタグ × 時間帯の組み合わせで selfScore / buzzScore が決定。<br>
+          <strong>活性化条件：</strong><code>selectedStyle != null &amp;&amp; selectedHash != null &amp;&amp; selectedTime != null</code> がすべて満たされた場合にのみ投稿ボタンが有効化される。<br>
+          <strong>ロックアウト：</strong>選択した素材カードの <code>styleUnlock</code> / <code>hashUnlock</code> 配列に含まれない選択肢は <code>disabled</code> 状態で表示（🔒 アイコン + 半透明化）。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       PANEL 5: 反響フェーズ画面
+  ==================================================== -->
+  <div class="screen-panel" id="panel-5">
+    <div class="screen-header">
+      <div class="screen-num">SCREEN 06 / 07</div>
+      <div class="screen-name">反響フェーズ画面</div>
+      <div class="screen-desc">
+        投稿を送信後に表示される結果画面。スコアがカウントアップアニメーションで表示され、SNSコメントフィードが流れる。
+      </div>
+    </div>
+
+    <div class="response-layout">
+      <!-- 左: 投稿固定表示 -->
+      <div>
+        <div class="annot" style="margin-bottom:6px">投稿プレビュー（固定）</div>
+        <div class="posted-card">
+          <div class="posted-header">
+            <div class="posted-ava">🌿</div>
+            <div>
+              <div class="posted-name">田中 みどり</div>
+              <div class="posted-handle">@midori_plant</div>
+            </div>
+          </div>
+          <div class="posted-body">
+            <div class="posted-body-text">
+              今日もゼラニウム咲きました🌿<br>
+              お母さんに写真送ったら「きれい」って返ってきた。<br>
+              完璧じゃなくていいんだよって、<br>
+              自分に言い聞かせながら。
+            </div>
+            <div class="posted-img-area">📷 窓際の植物写真</div>
+            <div class="posted-hash">#今日の一枚 &nbsp; #日常の記録</div>
+          </div>
+          <div class="posted-actions">
+            <span class="post-action liked">♥ 142</span>
+            <span class="post-action">🔁 12</span>
+            <span class="post-action">💬 8</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右: スコア + フィード -->
+      <div class="score-panel">
+        <div class="annot">スコアアニメーション</div>
+        <div class="score-box">
+          <div style="display:flex;gap:24px;margin-bottom:12px">
+            <div style="text-align:center">
+              <div class="score-label" style="margin-bottom:4px;color:var(--midori)">self score</div>
+              <div class="score-num-display self-color" id="selfScoreDisplay">72</div>
+            </div>
+            <div style="text-align:center">
+              <div class="score-label" style="margin-bottom:4px;color:var(--blue)">buzz score</div>
+              <div class="score-num-display buzz-color" id="buzzScoreDisplay">48</div>
+            </div>
+          </div>
+          <div class="score-row">
+            <div class="score-label" style="color:var(--midori)">self</div>
+            <div class="score-bar-wrap"><div class="score-bar self" style="width:72%" id="selfBar"></div></div>
+            <div class="score-value">72</div>
+          </div>
+          <div class="score-row">
+            <div class="score-label" style="color:var(--blue)">buzz</div>
+            <div class="score-bar-wrap"><div class="score-bar buzz" style="width:48%" id="buzzBar"></div></div>
+            <div class="score-value">48</div>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:4px">
+            エンド条件: self ≥ 65 → 自立エンド &nbsp;|&nbsp; buzz ≥ 65 + self &lt; 50 → ズレエンド
+          </div>
+        </div>
+
+        <!-- コメントフィード -->
+        <div class="annot">SNSコメントフィード</div>
+        <div class="comment-feed">
+          <div class="comment-feed-header">コメント · 8件</div>
+          <div class="comment-list" id="commentList">
+            <div class="comment-item">
+              <div class="comment-ava" style="background:rgba(6,199,85,.08)">🌸</div>
+              <div class="comment-body">
+                <div class="comment-name">はなこ</div>
+                <div class="comment-text">この言葉、すごく刺さりました。完璧じゃなくていい、私も忘れてた気がする。</div>
+              </div>
+            </div>
+            <div class="comment-item">
+              <div class="comment-ava" style="background:rgba(56,189,248,.06)">🐧</div>
+              <div class="comment-body">
+                <div class="comment-name">ペンギン好き</div>
+                <div class="comment-text">写真めちゃくちゃ好きです。ゆるい感じがいい</div>
+              </div>
+            </div>
+            <div class="comment-item">
+              <div class="comment-ava" style="background:rgba(251,191,36,.06)">⭐</div>
+              <div class="comment-body">
+                <div class="comment-name">みっちゃん</div>
+                <div class="comment-text">お母さんへの想い、伝わります。うちも施設に入っていて…</div>
+              </div>
+            </div>
+            <div class="comment-item">
+              <div class="comment-ava" style="background:rgba(248,113,113,.06)">😮</div>
+              <div class="comment-body">
+                <div class="comment-name">バズハンター99</div>
+                <div class="comment-text">これ拡散したら伸びそう！フォローしました！！</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mock-btn secondary" style="width:100%;justify-content:center" onclick="demoNextScene()">
+          次へ進む
+        </div>
+      </div>
+    </div>
+
+    <div class="annot-block" style="margin-top:16px">
+      <strong>スコアアニメーション：</strong>数値が 0 からカウントアップ（duration: 1.2s, ease-out）。スコアが 65 を超えるとバーが輝く。<br>
+      <strong>コメント生成：</strong>endings.js / scenario.js の定義に基づき、スコアやフラグに応じたコメントが生成される。selfScore が高いと共感系、buzzScore が高いとスパム系コメントが増える演出。<br>
+      <strong>いいね：</strong>toggleLike() でリアルタイムにハート浮上アニメーション（spawnHeart）。
+    </div>
+  </div>
+
+  <!-- ====================================================
+       PANEL 6: エンディング画面
+  ==================================================== -->
+  <div class="screen-panel" id="panel-6">
+    <div class="screen-header">
+      <div class="screen-num">SCREEN 07 / 07</div>
+      <div class="screen-name">エンディング画面</div>
+      <div class="screen-desc">
+        全ルートのスコアが集計されエンディングが決定する。8種類のエンディングがあり、それぞれ固有の演出・キャッチコピーを持つ。
+      </div>
+    </div>
+
+    <!-- エンディング種別タブ（全8種） -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+      <div class="hash-tag-btn selected" onclick="switchEnding(this,'midori')">🌿 自立エンド</div>
+      <div class="hash-tag-btn" onclick="switchEnding(this,'jizoku')">🌱 継続エンド</div>
+      <div class="hash-tag-btn" onclick="switchEnding(this,'saku')">🌙 到達エンド</div>
+      <div class="hash-tag-btn" onclick="switchEnding(this,'seiji')">☕ 再訪エンド</div>
+      <div class="hash-tag-btn" onclick="switchEnding(this,'karen')">🌸 既読エンド</div>
+      <div class="hash-tag-btn" onclick="switchEnding(this,'zure')">🔥 ズレエンド</div>
+      <div class="hash-tag-btn" onclick="switchEnding(this,'zange')">🎭 贖罪エンド</div>
+      <div class="hash-tag-btn" onclick="switchEnding(this,'chinmoku')">🖤 沈黙エンド</div>
+    </div>
+
+    <!-- Ending mock -->
+    <div class="ending-mock" id="endingMock">
+      <div class="ending-bg-glow" id="endingGlow"></div>
+      <div class="ending-chapter" id="endingChapter">ENDING — MIDORI ROUTE</div>
+      <div class="ending-title" id="endingTitle">自立エンド</div>
+      <div class="ending-catch" id="endingCatch">
+        「届いた」。<br>
+        みどりさんからのメッセージに、お母さんからの返信があった。<br>
+        バズじゃない。でも、これでよかった。
+      </div>
+      <div class="ending-score-row">
+        <div class="ending-score-item">
+          <div class="ending-score-label">self score</div>
+          <div class="ending-score-val self" id="endSelf">72</div>
+        </div>
+        <div class="ending-score-item">
+          <div class="ending-score-label">buzz score</div>
+          <div class="ending-score-val buzz" id="endBuzz">48</div>
+        </div>
+        <div class="ending-score-item">
+          <div class="ending-score-label">ego score</div>
+          <div class="ending-score-val" style="color:var(--purple)" id="endEgo">+2</div>
+        </div>
+      </div>
+      <div class="ending-fade-bar" id="endingBar"></div>
+      <div class="ending-btns">
+        <div class="mock-btn secondary">もう一度プレイ</div>
+        <div class="mock-btn primary" onclick="demoEndroll()">エンドロールへ</div>
+      </div>
+    </div>
+
+    <div class="annot-block" style="margin-top:16px">
+      <strong>エンディング分岐条件（全8種）：</strong><br>
+      🌿 自立エンド: selfScore ≥ 65（みどりルート）<br>
+      🌱 継続エンド: selfScore &lt; 65 かつ buzzScore &lt; 65（みどりルート デフォルト）<br>
+      🌙 到達エンド: selfScore ≥ 60 かつ kShinonoya=true（朔ルート）<br>
+      ☕ 再訪エンド: buzzScore &lt; 65 かつ selfScore &lt; 65（誠司ルート デフォルト）<br>
+      🌸 既読エンド: selfScore ≥ 65 かつ flashbackPhase ≥ 3（花蓮ルート）<br>
+      🔥 ズレエンド: buzzScore ≥ 65 かつ selfScore &lt; 50（全ルート）<br>
+      🎭 贖罪エンド: kidoku 経由 / egoScore &gt; 0（花蓮ルート後）<br>
+      🖤 沈黙エンド: kidoku 経由 / egoScore ≤ 0（花蓮ルート後）<br>
+      ※ zange / chinmoku は kidoku の lastChoice を経由して到達。直接到達するパスなし。<br>
+      ※ ルートによって条件が異なる（詳細は機能設計書 §6 参照）。<br><br>
+      <strong>フェードアウト演出：</strong>エンディング表示後、タイトルへ戻るかエンドロールに進むかの選択。エンドロールは showEndroll() で screen-endroll を active 化。
+    </div>
+
+    <div style="margin-top:20px">
+      <div class="annot" style="margin-bottom:8px">エンドロール画面（参考）</div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:20px;text-align:center">
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;letter-spacing:.12em">ENDROLL</div>
+        <div style="font-size:13px;color:var(--text-mid);line-height:2.4">
+          <div>制作 ／ ばずったー制作チーム</div>
+          <div style="color:var(--text-dim)">シナリオ</div>
+          <div style="color:var(--text-dim)">BGM</div>
+          <div style="color:var(--text-dim)">プログラム</div>
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:16px">クリックでスキップ</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ============================================================
+     JAVASCRIPT (Demo interactions)
+============================================================ -->
+<script>
+  /* ===== タブ切り替え ===== */
+  function switchTab(index) {
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i === index);
+    });
+    document.querySelectorAll('.screen-panel').forEach((panel, i) => {
+      panel.classList.toggle('active', i === index);
+    });
+  }
+
+  /* ===== タイトル画面デモ ===== */
+  function demoStart() {
+    alert('【デモ】スタートボタン押下 → bootOverlay (3秒) → チャット画面へ遷移');
+  }
+  function demoBgm(el) {
+    el.textContent = el.textContent.includes('ON') ? '♪ OFF' : '♪ ON';
+  }
+
+  /* ===== チャット画面デモ ===== */
+  function selectChoice(el, id) {
+    document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected'));
+    el.classList.add('selected');
+    const chatMsgs = document.getElementById('chatDemo');
+    if (!chatMsgs) return;
+    const selfRow = document.createElement('div');
+    selfRow.className = 'chat-bubble-row self';
+    selfRow.innerHTML = `
+      <div class="bubble-ava" style="background:rgba(124,106,247,.08);border:1px solid rgba(124,106,247,.15)">🎭</div>
+      <div class="bubble self">${el.textContent.trim()}</div>`;
+    chatMsgs.appendChild(selfRow);
+    chatMsgs.scrollTop = chatMsgs.scrollHeight;
+    el.style.opacity = '.5';
+    el.style.pointerEvents = 'none';
+  }
+
+  /* ===== クイズ画面デモ ===== */
+  function selectQuizOpt(el, isCorrect) {
+    document.querySelectorAll('.quiz-opt').forEach(opt => {
+      opt.classList.remove('correct', 'wrong');
+      opt.querySelector('.quiz-opt-letter').style.background = '';
+      opt.querySelector('.quiz-opt-letter').style.color = '';
+    });
+    const feedback = document.getElementById('quizFeedback');
+    if (isCorrect) {
+      el.classList.add('correct');
+      el.querySelector('.quiz-opt-letter').style.background = 'var(--green)';
+      el.querySelector('.quiz-opt-letter').style.color = '#000';
+      if (feedback) {
+        feedback.className = 'quiz-feedback correct-fb';
+        feedback.style.display = 'block';
+        feedback.textContent = '正解です！エンゲージメント率は「届いた人の何割が反応したか」を示します。バズっていても反応率が低い投稿は、実はターゲットに刺さっていない可能性があります。';
+      }
+    } else {
+      el.classList.add('wrong');
+      el.querySelector('.quiz-opt-letter').style.background = 'var(--red)';
+      el.querySelector('.quiz-opt-letter').style.color = '#fff';
+      if (feedback) {
+        feedback.className = 'quiz-feedback wrong-fb';
+        feedback.style.display = 'block';
+        feedback.textContent = '不正解。正解は「エンゲージメント率」です。フォロワー数よりも、投稿に対して実際にアクションした割合の方が重要です。';
+      }
+    }
+  }
+
+  /* ===== 投稿ビルダーデモ ===== */
+  function selectStyle(el) {
+    document.querySelectorAll('.style-btn:not(.locked)').forEach(btn => btn.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function selectTime(el) {
+    document.querySelectorAll('[data-time]').forEach(btn => btn.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function toggleCheck(el) {
+    const box = el.querySelector('.check-box');
+    if (box.classList.contains('checked')) {
+      box.classList.remove('checked');
+      box.textContent = '';
+    } else {
+      box.classList.add('checked');
+      box.textContent = '✓';
+    }
+  }
+  function toggleHash(el) {
+    el.classList.toggle('selected');
+  }
+  function demoPost() {
+    alert('【デモ】投稿ボタン押下 → スコア計算 → 反響フェーズ画面へ遷移');
+    switchTab(5);
+  }
+
+  /* ===== 反響フェーズデモ ===== */
+  function demoNextScene() {
+    switchTab(6);
+  }
+
+  /* ===== エンディングデモ ===== */
+  const ENDINGS = {
+    midori:   {
+      chapter: 'ENDING — MIDORI ROUTE',
+      title: '自立エンド',
+      catch: '「届いた」。\nみどりさんからのメッセージに、お母さんからの返信があった。\nバズじゃない。でも、これでよかった。',
+      glow: 'rgba(6,199,85,.08)',
+      barColor: 'var(--midori)',
+      titleColor: 'var(--midori)',
+      self: 72, buzz: 48, ego: '+2'
+    },
+    jizoku:   {
+      chapter: 'ENDING — MIDORI ROUTE (DEFAULT)',
+      title: '継続エンド',
+      catch: '大きくなくていい、と\n誰かが言っていた。\n毎朝、植物に水をやる。それと同じことを、今日もSNSでやっている。\n届いている。たぶん、それで十分だ。',
+      glow: 'rgba(6,199,85,.05)',
+      barColor: 'var(--midori)',
+      titleColor: 'var(--midori)',
+      self: 48, buzz: 35, ego: '0'
+    },
+    saku:   {
+      chapter: 'ENDING — SAKU ROUTE',
+      title: '到達エンド',
+      catch: '朔さんの模型に、知らない誰かからDMが届いた。\nそのアカウント名を、湊は知っていた。\n——知らないふりをした理由を、今日初めて考えた。',
+      glow: 'rgba(192,132,252,.08)',
+      barColor: 'var(--saku)',
+      titleColor: 'var(--saku)',
+      self: 65, buzz: 55, ego: '+1'
+    },
+    seiji:   {
+      chapter: 'ENDING — SEIJI ROUTE',
+      title: '再訪エンド',
+      catch: '誠司さんの喫茶店に、若い客が来るようになった。\n「映えてないから逆にいい」と誰かが言っていたらしい。\n湊は何も言わなかった。何も言えなかった。',
+      glow: 'rgba(251,146,60,.07)',
+      barColor: 'var(--seiji)',
+      titleColor: 'var(--seiji)',
+      self: 60, buzz: 58, ego: '0'
+    },
+    karen:   {
+      chapter: 'ENDING — KAREN ROUTE',
+      title: '既読エンド',
+      catch: '花蓮さんのDMに、既読がついた。\n返信はなかった。\nでも既読がついた。それだけで今日はいい。',
+      glow: 'rgba(249,168,212,.07)',
+      barColor: 'var(--karen)',
+      titleColor: 'var(--karen)',
+      self: 70, buzz: 44, ego: '+3'
+    },
+    zure:   {
+      chapter: 'ENDING — ZURE',
+      title: 'ズレエンド',
+      catch: '投稿はバズった。数字は正直だった。\nでも依頼主から「ありがとうございます」の返信はなかった。\n……これが答えだったのか、まだわからない。',
+      glow: 'rgba(248,113,113,.07)',
+      barColor: 'var(--red)',
+      titleColor: 'var(--red)',
+      self: 42, buzz: 78, ego: '-1'
+    },
+    zange:   {
+      chapter: 'ENDING — TRUE ROUTE',
+      title: '贖罪エンド',
+      catch: '全ての依頼を終えて、湊は画面に向き合った。\n3年前の記事は今もキャッシュに残っている。\n消えない。でも、今日の仕事も残っている。',
+      glow: 'rgba(167,139,250,.08)',
+      barColor: 'var(--purple)',
+      titleColor: 'var(--purple)',
+      self: 68, buzz: 52, ego: '+4'
+    },
+    chinmoku: {
+      chapter: 'ENDING — BAD',
+      title: '沈黙エンド',
+      catch: '湊は何も言わなかった。\n選択肢を選ばなかった。\n言葉を持たないSNSコンサルタントは、何を届けたのだろう。',
+      glow: 'rgba(60,60,80,.1)',
+      barColor: '#3a3a5a',
+      titleColor: '#8888a0',
+      self: 35, buzz: 35, ego: '-3'
+    }
+  };
+
+  function switchEnding(el, key) {
+    // エンディングパネル内のタブのみ対象（投稿ビルダーのハッシュタグ選択に影響しないよう親要素で絞る）
+    const endingPanel = document.getElementById('panel-6');
+    if (endingPanel) {
+      endingPanel.querySelectorAll('.hash-tag-btn').forEach(btn => btn.classList.remove('selected'));
+    }
+    el.classList.add('selected');
+
+    const e = ENDINGS[key];
+    if (!e) return;
+
+    document.getElementById('endingChapter').textContent = e.chapter;
+    document.getElementById('endingTitle').textContent = e.title;
+    document.getElementById('endingTitle').style.color = e.titleColor;
+    document.getElementById('endingTitle').style.textShadow = `0 0 30px ${e.glow.replace('.07','').replace('.08','')}`;
+    document.getElementById('endingCatch').textContent = e.catch;
+    document.getElementById('endingGlow').style.background = `radial-gradient(ellipse, ${e.glow} 0%, transparent 70%)`;
+    document.getElementById('endingBar').style.background = `linear-gradient(90deg, transparent, ${e.barColor}, transparent)`;
+    document.getElementById('endSelf').textContent = e.self;
+    document.getElementById('endBuzz').textContent = e.buzz;
+    document.getElementById('endEgo').textContent = e.ego;
+  }
+
+  function demoEndroll() {
+    alert('【デモ】エンドロール画面へ遷移 → スクロールアニメーション再生 → タイトルに戻る');
+  }
+
+  /* ===== タイパーデモ ===== */
+  const TYPER_LINES = [
+    '依頼主のことばを解読中…',
+    '下書きを保存しました',
+    'ハッシュタグを選択中…',
+    '#今日のメモ  投稿予約しました',
+    'この人らしさ、まだ掴めない',
+    '142件の通知があります',
+  ];
+  let typerIdx = 0, typerRunning = true;
+  async function runTyper() {
+    const el = document.getElementById('tsTyperDemo');
+    if (!el) return;
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    while (typerRunning) {
+      const line = TYPER_LINES[typerIdx % TYPER_LINES.length];
+      for (let i = 0; i <= line.length; i++) {
+        if (!typerRunning) return;
+        el.textContent = line.slice(0, i);
+        await sleep(55 + Math.random() * 35);
+      }
+      await sleep(2000);
+      for (let i = line.length; i >= 0; i--) {
+        if (!typerRunning) return;
+        el.textContent = line.slice(0, i);
+        await sleep(22);
+      }
+      await sleep(300);
+      typerIdx++;
+    }
+  }
+  runTyper();
+</script>
+
+</body>
+</html>
