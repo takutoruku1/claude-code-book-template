@@ -66,8 +66,13 @@ const CHAT_FLOWS = {
       id: 'midori_sns_reply',
       from: 'choices', opts: [
         { text: '投稿したいものは何かありますか？', next: 'midori_photo_talk' },
-        { text: '今まで試したことはありますか？',   next: 'midori_photo_talk' }
+        { text: '今まで試したことはありますか？',   next: 'midori_tried_bridge' }
       ]
+    },
+    {
+      id: 'midori_tried_bridge',
+      from: 'client',
+      text: 'あ…まだ一回もできてなくて。でも投稿したいものはあって。'
     },
 
     // --- 写真の話 ---
@@ -79,9 +84,14 @@ const CHAT_FLOWS = {
     {
       id: 'midori_photo_reply',
       from: 'choices', opts: [
-        { text: 'どんな植物ですか？',            next: 'midori_plant_detail' },
-        { text: '料理も。どんな料理ですか。',            next: 'midori_plant_detail' }
+        { text: 'どんな植物ですか？',       next: 'midori_plant_detail' },
+        { text: '料理も。どんな料理ですか。', next: 'midori_food_bridge' }
       ]
+    },
+    {
+      id: 'midori_food_bridge',
+      from: 'client',
+      text: '料理は…失敗ばかりで笑\nゼラニウムの方がよく撮るんです。そっちを見てもらっていいですか。'
     },
 
     // --- 植物の話 ---
@@ -110,8 +120,13 @@ const CHAT_FLOWS = {
       id: 'midori_cant_post_reply',
       from: 'choices', opts: [
         { text: '「センスない」って、どういう意味で使ってますか？', next: 'midori_sense_talk' },
-        { text: '撮った写真、手元にありますか？',                 next: 'midori_sense_talk' }
+        { text: '撮った写真、手元にありますか？',                 next: 'midori_photo_exists' }
       ]
+    },
+    {
+      id: 'midori_photo_exists',
+      from: 'client',
+      text: 'あ、あります…でも見せるのが恥ずかしくて。\n全然インスタっぽくなくて。'
     },
 
     // --- センスの話 ---
@@ -225,7 +240,7 @@ const CHAT_FLOWS = {
       id: 'saku_hello_reply',
       from: 'choices', opts: [
         { text: '「残したい」って、どんなものですか？', next: 'saku_model' },
-        { text: '素材を送ってもらえますか',            next: 'saku_model' }
+        { text: 'もう少し詳しく教えてもらえますか',    next: 'saku_model' }
       ]
     },
     {
@@ -269,17 +284,23 @@ const CHAT_FLOWS = {
     {
       id: 'saku_dilemma1_reply',
       from: 'choices', opts: [
-        { text: '捨てなくていい。これが朔さんの視点です',          next: 'saku_dilemma1_end', selfBonus: 10 },
-        { text: 'もう少し明るく撮り直すと、もっと多くの人に届きますよ', next: 'saku_dilemma1_end', buzzBonus: 5 }
+        { text: '捨てなくていい。これが朔さんの視点です',              next: 'saku_dilemma1_end_self', selfBonus: 10 },
+        { text: 'もう少し明るく撮り直すと、もっと多くの人に届きますよ', next: 'saku_dilemma1_end_buzz', buzzBonus: 5 }
       ]
     },
     {
-      id: 'saku_dilemma1_end',
+      id: 'saku_dilemma1_end_self',
       from: 'client',
       text: '…そうですね。じゃあ、出してみます。'
     },
     // 投稿フェーズへ移行。投稿後の反響フェーズ完了後に saku_dilemma2 から会話を再開する
     { id: 'saku_post_trigger', from: 'trigger', action: 'showPost', resumeAt: 'saku_dilemma2' },
+    {
+      id: 'saku_dilemma1_end_buzz',
+      from: 'client',
+      text: '…そうですか。じゃあ、撮り直してみます。'
+    },
+    { id: 'saku_post_trigger_buzz', from: 'trigger', action: 'showPost', resumeAt: 'saku_dilemma2' },
 
     // ---- 葛藤シーン2（投稿後・反響フェーズ完了後） ----
     {
@@ -324,9 +345,14 @@ const CHAT_FLOWS = {
     {
       id: 'seiji_hello_reply',
       from: 'choices', opts: [
-        { text: 'どんなお店ですか？',        next: 'seiji_shop' },
-        { text: 'インスタ映えを意識してみますか', next: 'seiji_shop' }
+        { text: 'どんなお店ですか？',            next: 'seiji_shop' },
+        { text: 'インスタ映えを意識してみますか', next: 'seiji_insta_bridge' }
       ]
+    },
+    {
+      id: 'seiji_insta_bridge',
+      from: 'client',
+      text: 'インスタ映え…難しいかなあ笑'
     },
     {
       id: 'seiji_shop',
@@ -337,8 +363,8 @@ const CHAT_FLOWS = {
     {
       id: 'seiji_shop_reply',
       from: 'choices', opts: [
-        { text: 'その「古さ」が強みかもしれません', next: 'seiji_send', selfBonus: 5 },
-        { text: 'インスタ映えを意識してみますか', next: 'seiji_send', buzzBonus: 5 }
+        { text: 'その「古さ」が強みかもしれません', next: 'seiji_send',      selfBonus: 5 },
+        { text: 'インスタ映えを意識してみますか',   next: 'seiji_send_buzz', buzzBonus: 5 }
       ]
     },
     {
@@ -348,7 +374,16 @@ const CHAT_FLOWS = {
       clippable: true, keyword: '映える店じゃない'
     },
     { id: 'seiji_system',  from: 'system',  text: '→ 素材が届きました' },
-    { id: 'seiji_trigger', from: 'trigger', action: 'showMaterial' }
+    { id: 'seiji_trigger', from: 'trigger', action: 'showMaterial', resumeAt: 'seiji_post_reaction' },
+    {
+      id: 'seiji_send_buzz',
+      from: 'client',
+      text: 'インスタ映え…難しいかな笑\nでも、やれることはやってみます。写真送りますね。'
+    },
+    { id: 'seiji_system_buzz',  from: 'system',  text: '→ 素材が届きました' },
+    { id: 'seiji_trigger_buzz', from: 'trigger', action: 'showMaterial', resumeAt: 'seiji_post_reaction' },
+    { id: 'seiji_post_reaction', from: 'player',  text: 'では、投稿を作ってみましょう。' },
+    { id: 'seiji_post_trigger',  from: 'trigger', action: 'showPost' }
   ],
 
   // =====================================================================
@@ -381,10 +416,22 @@ const CHAT_FLOWS = {
     {
       id: 'karen_question_reply',
       from: 'choices', opts: [
-        { text: '…はい。でも、もう書いていません。', next: 'karen_system', egoPlus: true },
-        { text: 'なぜそう思うんですか？',            next: 'karen_system' },
+        { text: '…はい。でも、もう書いていません。', next: 'karen_riter_response', egoPlus: true },
+        { text: 'なぜそう思うんですか？',            next: 'karen_question_why' },
         { text: '（黙って素材の確認を続ける）',       next: 'karen_system' }
       ]
+    },
+    {
+      id: 'karen_riter_response',
+      from: 'client',
+      text: '…そうですか。'
+    },
+    { id: 'karen_system_a',   from: 'system',  text: '→ 素材が届きました' },
+    { id: 'karen_trigger_a',  from: 'trigger', action: 'showMaterial', resumeAt: 'karen_post_trigger' },
+    {
+      id: 'karen_question_why',
+      from: 'client',
+      text: '…朔さんから、少し聞いていて。\nそれだけです。'
     },
     { id: 'karen_system',  from: 'system',  text: '→ 素材が届きました' },
     // 素材確認完了後、投稿フェーズへ。投稿後の反響完了後に karen_mystery_choice から再開する
