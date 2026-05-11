@@ -502,7 +502,6 @@ function resolveKarenEnding() {
 ============================================================ */
 function showEnding(endKey) {
   const E = ENDINGS[endKey] || ENDINGS['saihan'];
-<<<<<<< HEAD
   const screen = document.getElementById('screen-ending');
 
   // --- 画面をアクティブにする ---
@@ -741,8 +740,7 @@ function showEnding(endKey) {
       }, afterMonoDelay);
     }
   }
-=======
-  const karenEnds = ['zange', 'kidoku', 'chinmoku'];
+
 
   // 1. #screen-ending のクラスをリセットし .active + .ending-${endKey} を追加
   var screenEnding = document.getElementById('screen-ending');
@@ -891,148 +889,4 @@ function showEnding(endKey) {
     }, totalRetryDelay);
 
   }, blackoutMs);
-}
-
-/* ============================================================
-   ZANGE 専用演出: typingText + karenResponse
-============================================================ */
-function _showZangeTyping(E, screenEnding) {
-  // .zange-area を作成（まだない場合）
-  var zangeArea = screenEnding.querySelector('.zange-area');
-  if (!zangeArea) {
-    zangeArea = document.createElement('div');
-    zangeArea.className = 'zange-area';
-    screenEnding.appendChild(zangeArea);
-  }
-
-  // .zange-typing-wrap を作成
-  var wrap = document.createElement('div');
-  wrap.className = 'zange-typing-wrap';
-  var display = document.createElement('div');
-  display.className = 'zange-typing-display';
-  display.textContent = '';
-  var cursor = document.createElement('span');
-  cursor.className = 'zange-typing-cursor';
-  wrap.appendChild(display);
-  wrap.appendChild(cursor);
-  zangeArea.appendChild(wrap);
-
-  var typingText = E.typingText || '';
-  var charMs = 60;
-
-  function typeChars(text, cb) {
-    var i = 0;
-    function next() {
-      if (i >= text.length) { if (cb) cb(); return; }
-      display.textContent += text[i];
-      i++;
-      setTimeout(next, charMs);
-    }
-    next();
-  }
-
-  function deleteChars(cb) {
-    function del() {
-      if (display.textContent.length === 0) { if (cb) cb(); return; }
-      display.textContent = display.textContent.slice(0, -1);
-      setTimeout(del, 200 / Math.max(typingText.length, 1));
-    }
-    del();
-  }
-
-  function doTyping(cb) {
-    if (E.typingRetry) {
-      // 1回目入力
-      typeChars(typingText, function() {
-        setTimeout(function() {
-          // 全削除（200ms かけて）
-          deleteChars(function() {
-            setTimeout(function() {
-              // 2回目入力
-              typeChars(typingText, cb);
-            }, 500);
-          });
-        }, 800);
-      });
-    } else {
-      typeChars(typingText, cb);
-    }
-  }
-
-  doTyping(function() {
-    // カーソル非表示
-    cursor.style.display = 'none';
-
-    // karenTypingLoops 回インジケーター表示
-    var loops = E.karenTypingLoops || 0;
-    var loopDelay = 0;
-    for (var i = 0; i < loops; i++) {
-      (function(d) {
-        setTimeout(function() {
-          var ind = document.createElement('div');
-          ind.className = 'zange-typing-display';
-          ind.style.cssText = 'opacity:0.5;letter-spacing:0.3em;';
-          ind.textContent = '…';
-          zangeArea.appendChild(ind);
-          setTimeout(function() {
-            if (ind.parentNode) ind.parentNode.removeChild(ind);
-          }, 1600);
-        }, d);
-      })(loopDelay);
-      loopDelay += 1600;
-    }
-
-    // karenResponse を順次表示
-    setTimeout(function() {
-      var responses = E.karenResponse || [];
-      var rDelay = 0;
-      responses.forEach(function(r) {
-        (function(d, resp) {
-          setTimeout(function() {
-            var line = document.createElement('div');
-            line.className = 'karen-reply-line';
-            line.textContent = resp.text;
-            zangeArea.appendChild(line);
-          }, d);
-        })(rDelay, r);
-        rDelay += (r.pauseAfter || 0);
-      });
-
-      // silence 1000ms（何もしない）
-    }, loopDelay + 1000);
-  });
-}
-
-/* ============================================================
-   CHINMOKU 専用演出: appIconFade + mysteryMessage
-============================================================ */
-function _showChinmokuEffect(E, screenEnding) {
-  // appIconFade
-  if (E.appIconFade) {
-    var icon = document.querySelector('.desktop-icon[data-app]') ||
-               document.querySelector('.app-icon') ||
-               document.querySelector('.dock-icon');
-    if (icon) {
-      icon.style.transition = 'opacity 3s ease';
-      icon.style.opacity = '0';
-    } else {
-      console.warn('[showEnding/chinmoku] appIconFade: アイコン要素が見つかりません');
-    }
-  }
-
-  // silenceDuration ms 待機
-  var silence = E.silenceDuration != null ? E.silenceDuration : 10000;
-
-  setTimeout(function() {
-    // mysteryMessage 表示
-    if (E.mysteryMessage) {
-      var msg = document.createElement('div');
-      msg.className = 'ending-mystery-msg';
-      msg.innerHTML =
-        '<div class="mystery-sender">' + (E.mysteryMessage.sender || '──────') + '</div>' +
-        '<div class="mystery-text">' + E.mysteryMessage.text + '</div>';
-      screenEnding.appendChild(msg);
-    }
-  }, silence);
->>>>>>> origin/claude/define-scenario-agent-roles-xocEu
 }
