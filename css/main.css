@@ -4765,3 +4765,23 @@ body.mobile-mode .note-window.active {
     transition: none;
   }
 }
+
+/* ================================================
+   Yアプリ: 新着投稿ハイライト
+   ================================================ */
+.y-post-new {
+  animation: y-post-new-flash 2.5s ease-out forwards;
+}
+
+@keyframes y-post-new-flash {
+  0%   { background: rgba(29, 155, 240, 0.15); border-left: 2px solid rgba(29, 155, 240, 0.6); }
+  60%  { background: rgba(29, 155, 240, 0.06); border-left: 2px solid rgba(29, 155, 240, 0.2); }
+  100% { background: transparent; border-left: 2px solid transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .y-post-new {
+    animation: none;
+    background: rgba(29, 155, 240, 0.10);
+  }
+}

@@ -306,6 +306,11 @@ function buildReactionFeed() {
   if (!window._allPostedContents) window._allPostedContents = [];
   window._allPostedContents.push(_postedItem);
   if (typeof setDesktopNotif === 'function') setDesktopNotif('notifY', true);
+  // Y ウィンドウが開いていれば即時リフレッシュ（リアルタイム感）
+  const yWin = document.getElementById('yWindow');
+  if (yWin && yWin.classList.contains('active') && typeof renderYTimeline === 'function') {
+    renderYTimeline('recommend');
+  }
 
   const postCard = document.createElement('div');
   postCard.className = 'feed-card';
