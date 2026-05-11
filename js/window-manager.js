@@ -7,6 +7,7 @@ let _lastFocusedWinId = null;
 let _winFocusCooldown = null;
 
 function bringToFront(el) {
+  if (document.body.classList.contains('mobile-mode')) return;
   el.style.zIndex = ++_zTop;
   moveProtagWidgetToWindow(el);
 
@@ -215,6 +216,7 @@ function makeDraggable(windowEl) {
   let ox = 0, oy = 0;
 
   titlebar.addEventListener('mousedown', (e) => {
+    if (document.body.classList.contains('mobile-mode')) return;
     if (e.target.closest('.titlebar-winbtn')) return;
     if (windowEl.classList.contains('maximized')) return;
 
@@ -298,6 +300,7 @@ function makeDraggable(windowEl) {
   if (!bar) return;
   let dragging = false, ox = 0, oy = 0;
   bar.addEventListener('mousedown', (e) => {
+    if (document.body.classList.contains('mobile-mode')) return;
     if (e.target.closest('button')) return;
     const r = win.getBoundingClientRect();
     win.style.position = 'fixed';

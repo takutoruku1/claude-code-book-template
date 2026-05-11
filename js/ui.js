@@ -44,6 +44,7 @@ function openApp(isDebugMode) {
     bringToFront(appWin);
     updateTaskbarIndicators();
     refreshDesktopNotifs();
+    if (typeof _mobileActivateTab === 'function') _mobileActivateTab('appWindow');
     return;
   }
 
@@ -84,6 +85,7 @@ function startRoute(route) {
   appWin.classList.add('active');
   bringToFront(appWin);
   window.appMinimized = false;
+  if (typeof _mobileActivateTab === 'function') _mobileActivateTab('appWindow');
   resetGame(route);
 }
 
