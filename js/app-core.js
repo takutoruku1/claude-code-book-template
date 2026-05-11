@@ -3,8 +3,8 @@
 ============================================================ */
 const CHARACTERS = {
   midori: { name: '田中 みどり', avatar: '🌿', tag: 'チュートリアル' },
-  saku:   { name: '倉田 朔',     avatar: '🔧', tag: '' },
-  seiji:  { name: '松本 誠司',   avatar: '☕', tag: '' },
+  saku:   { name: '水無月 朔',   avatar: '🔧', tag: '' },
+  seiji:  { name: '天羽 誠司',   avatar: '☕', tag: '' },
   karen:  { name: '篠宮 花蓮',   avatar: '🌸', tag: 'キーパーソン' },
 };
 

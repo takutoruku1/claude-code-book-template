@@ -59,11 +59,25 @@ function handleCardClick(wrapper, i, m) {
       if (typeof applyMysteryPhase === 'function') applyMysteryPhase(GS.mysteryClues.length); // Phase B: mystery フェーズ連動
     }
     if (m.flashback3Trigger) {
-      // 固定タイマーではなく karenRevealDirections の演出キュー完了後に発火
-      // (固定 2500ms だと 12700ms+ の演出キューと二重発火するため)
-      const revealDirs = typeof karenRevealDirections !== 'undefined' ? karenRevealDirections : [];
-      if (revealDirs.length > 0 && typeof processDirections === 'function') {
-        processDirections(revealDirs, () => triggerFlashback(3, null));
+      const karenRevealDirections = [
+        { cmd: 'bgm_change',   track: 'silence',      fadeMs: 2000 },
+        { cmd: 'wait',         ms: 1800 },
+        { cmd: 'sfx',          sound: 'heartbeat',    volume: 0.6 },
+        { cmd: 'flash',        color: '#1a0020',      durationMs: 800, opacity: 0.7 },
+        { cmd: 'mono',         text: '——篠宮。', style: 'flashback', durationMs: 1800, force: true },
+        { cmd: 'wait',         ms: 1200 },
+        { cmd: 'mono',         text: 'カレンが好きそう、という名前。ゆきわりそう。既読のつかないメッセージ。', style: 'flashback', durationMs: 3400, force: true },
+        { cmd: 'wait',         ms: 1600 },
+        { cmd: 'mono',         text: '頭の中で、点と点が線になっていく。', style: 'flashback', durationMs: 2600, force: true },
+        { cmd: 'wait',         ms: 1000 },
+        { cmd: 'glitch',       target: 'appWindow',   durationMs: 700, intensity: 'medium' },
+        { cmd: 'sfx',          sound: 'glitch_buzz',  volume: 0.5 },
+        { cmd: 'overlay_text', text: '線になった瞬間——吐き気がした。', style: 'memory', durationMs: 3200, fadeInMs: 600, fadeOutMs: 800 },
+        { cmd: 'wait',         ms: 600 },
+        { cmd: 'mystery_update' }
+      ];
+      if (typeof processDirections === 'function') {
+        processDirections(karenRevealDirections, () => triggerFlashback(3, null));
       } else {
         setTimeout(() => triggerFlashback(3, null), 2500);
       }
@@ -455,7 +469,7 @@ function resolveEnding() {
   if (GS.route === 'saku') {
     if (GS.buzz >= 65 && GS.self < 50)           return 'zure';
     if (GS.self >= 60 && GS.flags.kShinonoya)    return 'toutatu';
-    return 'zure';
+    return 'saihan';
   }
   if (GS.route === 'seiji') {
     if (GS.buzz >= 65 && GS.self < 50)     return 'zure';
