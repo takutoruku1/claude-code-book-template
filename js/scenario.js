@@ -214,6 +214,7 @@ const CHAT_FLOWS = {
       text: '…ありがとうございます🌿'
     },
     { id: 'midori_system',  from: 'system',  text: '→ 素材が届きました' },
+    { id: 'midori_material_note', from: 'client', text: 'えっと…うまく撮れてないのもあって😢\nでも全部、今日の朝に撮ったやつです🌿' },
     { id: 'midori_trigger', from: 'trigger', action: 'showMaterial', resumeAt: 'midori_post_reaction' },
 
     // ---- タイミングゲーム削除 → 直接投稿ステップへ ----
@@ -323,7 +324,7 @@ const CHAT_FLOWS = {
     {
       id: 'saku_dilemma2_reply',
       from: 'choices', opts: [
-        { text: 'そのまま素直に、ありがとうと伝えてみてください', next: 'saku_dm_end' },
+        { text: 'そのまま素直に、ありがとうと伝えてみてください', next: 'saku_dm_thanks', selfBonus: 5 },
         { text: '…そのアカウント名、教えてもらえますか',         next: 'saku_dm_notice',  egoPlus: true, setFlag: 'kShinonoya' },
         { text: '（何も言わず、次の投稿の話をする）',            next: 'saku_dm_end' }
       ]
@@ -357,6 +358,15 @@ const CHAT_FLOWS = {
       text: '……いえ。\n他人です。\n気にしないでください。'
     },
 
+    {
+      id: 'saku_dm_thanks',
+      from: 'client',
+      text: '返しました。\n「ありがとうございます。これからも作り続けます」って。\n……なんか、恥ずかしいな笑',
+      direction: [
+        { cmd: 'wait', ms: 500 },
+        { cmd: 'mono', text: '——本人の言葉で、本人が返した。\nこういう瞬間のために、この仕事をしているのかもしれない。', style: 'normal', durationMs: 3400, force: false }
+      ]
+    },
     { id: 'saku_dm_end', from: 'system', text: '' } // 終端マーカー
   ],
 
@@ -443,6 +453,35 @@ const CHAT_FLOWS = {
         { cmd: 'wait', ms: 700 },
         { cmd: 'mono', text: '居場所を作る、か。\n私が3年前に奪ったのも、それだったかもしれない。\n——止めろ。仕事に集中しろ。', style: 'normal', durationMs: 4200, force: false }
       ],
+      next: 'seiji_busted_risk'
+    },
+    {
+      id: 'seiji_busted_risk',
+      from: 'client',
+      text: 'あ、そういえば。常連の田辺さんが「最近の投稿、誰が書いてんの？」って笑\nなんて返せばいいですかね。',
+      pause: 600
+    },
+    {
+      id: 'seiji_busted_risk_reply',
+      from: 'choices', opts: [
+        { text: '「自分でやってます」と伝えてください',             next: 'seiji_busted_a' },
+        { text: 'お店のことをよく知ってる人が手伝っています、と', next: 'seiji_busted_b', selfBonus: 5 }
+      ]
+    },
+    {
+      id: 'seiji_busted_a',
+      from: 'client',
+      text: '……そうですよね。まあ、そう言っておきます笑',
+      direction: [
+        { cmd: 'wait', ms: 500 },
+        { cmd: 'mono', text: '嘘になる。\nでもそれが、この仕事の前提だ。', style: 'normal', durationMs: 2600, force: false }
+      ],
+      next: 'seiji_system'
+    },
+    {
+      id: 'seiji_busted_b',
+      from: 'client',
+      text: '手伝い……笑\nなんかそっちのほうが自然ですね。\nそう言います。',
       next: 'seiji_system'
     },
     { id: 'seiji_system',  from: 'system',  text: '→ 素材が届きました' },
@@ -550,6 +589,7 @@ const CHAT_FLOWS = {
       text: '…そうですか。'
     },
     { id: 'karen_system_a',   from: 'system',  text: '→ 素材が届きました' },
+    { id: 'karen_material_note_a', from: 'client', text: '……確認、お願いします。\n気に入らないものは、外してもらっていいです。' },
     { id: 'karen_trigger_a',  from: 'trigger', action: 'showMaterial', resumeAt: 'karen_post_trigger' },
     {
       id: 'karen_question_why',
@@ -557,6 +597,7 @@ const CHAT_FLOWS = {
       text: '…朔さんから、少し聞いていて。\nそれだけです。'
     },
     { id: 'karen_system',  from: 'system',  text: '→ 素材が届きました' },
+    { id: 'karen_material_note', from: 'client', text: '……確認、お願いします。\n気に入らないものは、外してもらっていいです。' },
     // 素材確認完了後、投稿フェーズへ。投稿後の反響完了後に karen_mystery_choice から再開する
     { id: 'karen_trigger',      from: 'trigger', action: 'showMaterial', resumeAt: 'karen_post_trigger' },
     { id: 'karen_post_trigger', from: 'trigger', action: 'showPost',     resumeAt: 'karen_pre_mystery' },
@@ -576,11 +617,11 @@ const CHAT_FLOWS = {
       ]
     },
 
-    // ---- 謎収束選択肢（mysteryClues に 2件以上たまった場合のみ表示）----
+    // ---- 謎収束選択肢（mysteryClues に 1件以上たまった場合のみ表示）----
     {
       id: 'karen_mystery_choice',
       from: 'choices',
-      condition: 'mysteryClues.length >= 2',
+      condition: 'mysteryClues.length >= 1',
       opts: [
         { text: 'あなたのお姉さんに…記事を書いたのは私です', next: 'karen_zange_response', egoPlus: true, setFlag: 'zange' },
         { text: '（何も言わない）',                          next: 'karen_end' }
