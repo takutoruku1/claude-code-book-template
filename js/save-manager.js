@@ -396,11 +396,13 @@ function _refreshTitleContinueBtn() {
   btn.style.display = has ? '' : 'none';
   if (delWrap) delWrap.style.display = has ? '' : 'none';
 
-  // 新デザインのボタンを同期
-  const tsContinue = document.getElementById('tsBtnContinue');
-  const tsDelete   = document.getElementById('tsBtnDelete');
-  if (tsContinue) tsContinue.hidden = !has;
-  if (tsDelete)   tsDelete.hidden   = !has;
+  // 新デザイン / v3 デザインのボタンを同期
+  const tsContinue   = document.getElementById('tsBtnContinue');
+  const tsContinueV3 = document.getElementById('tsBtnContinueV3');
+  const tsDelete     = document.getElementById('tsBtnDelete');
+  if (tsContinue)   tsContinue.hidden   = !has;
+  if (tsContinueV3) tsContinueV3.hidden = !has;
+  if (tsDelete)     tsDelete.hidden     = !has;
 
   const sub = document.getElementById('btnContinueSub');
   let latest = null;
@@ -414,8 +416,10 @@ function _refreshTitleContinueBtn() {
     const date  = new Date(latest.savedAt);
     const stamp = `最終セーブ: ${latest.routeLabel}  ${date.toLocaleDateString('ja-JP')} ${date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}`;
     if (sub) sub.textContent = stamp;
-    const tsSub = document.getElementById('tsContinueSub');
-    if (tsSub) tsSub.textContent = stamp;
+    const tsSub   = document.getElementById('tsContinueSub');
+    const tsSubV3 = document.getElementById('tsContinueSubV3');
+    if (tsSub)   tsSub.textContent   = stamp;
+    if (tsSubV3) tsSubV3.textContent = stamp;
     const tsMeta = document.getElementById('tsMetaSave');
     if (tsMeta) tsMeta.textContent = `SAVE: ${date.toLocaleDateString('ja-JP')}`;
   } else {

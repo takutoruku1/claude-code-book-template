@@ -48,7 +48,8 @@ function toggleTsOptions() {
 function toggleTitleDesign() {
   const el = document.getElementById('screen-title');
   if (!el) return;
-  const next = (el.dataset.design === 'new') ? 'old' : 'new';
+  const cur = el.dataset.design;
+  const next = cur === 'new' ? 'old' : cur === 'old' ? 'v3' : 'new';
   el.dataset.design = next;
   localStorage.setItem('titleDesign', next);
   if (next === 'new') {

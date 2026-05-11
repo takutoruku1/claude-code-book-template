@@ -161,7 +161,61 @@
           </div>
         </div>
         <div class="title-settings-row" style="margin-top:6px">
+          <button class="ts-design-switch" onclick="toggleTitleDesign()">キャラクター版に切り替え</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ V3 DESIGN ══════════════════════════════════════════ -->
+    <div class="ts-wrapper ts-v3-wrapper">
+      <div class="ts-v3-bg">
+        <div class="ts-v3-logo">
+          <div class="ts-v3-eyebrow">SNS 運 用 代 行 ADV</div>
+          <h1 class="ts-v3-title">ばずったー</h1>
+          <div class="ts-v3-tagline">「この人らしさ」を<b>翻訳せよ</b></div>
+        </div>
+        <div class="ts-v3-chars" role="list" aria-label="登場キャラクター">
+          <div class="ts-v3-char" role="listitem" data-route="midori">
+            <div class="ts-v3-char-ava" aria-hidden="true">🌿</div>
+            <div class="ts-v3-char-name">田中 みどり</div>
+            <div class="ts-v3-char-tag">チュートリアル</div>
+          </div>
+          <div class="ts-v3-char" role="listitem" data-route="saku">
+            <div class="ts-v3-char-ava" aria-hidden="true">🔧</div>
+            <div class="ts-v3-char-name">水無月 朔</div>
+            <div class="ts-v3-char-tag"></div>
+          </div>
+          <div class="ts-v3-char" role="listitem" data-route="seiji">
+            <div class="ts-v3-char-ava" aria-hidden="true">☕</div>
+            <div class="ts-v3-char-name">天羽 誠司</div>
+            <div class="ts-v3-char-tag"></div>
+          </div>
+          <div class="ts-v3-char" role="listitem" data-route="karen">
+            <div class="ts-v3-char-ava" aria-hidden="true">🌸</div>
+            <div class="ts-v3-char-name">篠宮 花蓮</div>
+            <div class="ts-v3-char-tag">キーパーソン</div>
+          </div>
+        </div>
+        <div class="ts-v3-actions">
+          <button class="ts-action ts-primary" onclick="openApp(false)">
+            <span class="ts-ic">▶</span>
+            <span class="ts-action-body"><span class="ts-action-head">メインモード</span><span class="ts-action-sub">最初から始める</span></span>
+            <span class="ts-arrow">›</span>
+          </button>
+          <button class="ts-action ts-continue" id="tsBtnContinueV3" onclick="showLoadSlotPicker()" hidden>
+            <span class="ts-ic">↩</span>
+            <span class="ts-action-body"><span class="ts-action-head">続きから</span><span class="ts-action-sub" id="tsContinueSubV3">最終セーブ：—</span></span>
+            <span class="ts-arrow">›</span>
+          </button>
+          <button class="ts-action ts-subtle" onclick="openApp(true)">
+            <span class="ts-ic">🔧</span>
+            <span class="ts-action-body"><span class="ts-action-head">デバッグモード</span><span class="ts-action-sub">開発者用 / developer</span></span>
+            <span class="ts-arrow">›</span>
+          </button>
+        </div>
+        <div class="ts-v3-footer">
           <button class="ts-design-switch" onclick="toggleTitleDesign()">新デザインに切り替え</button>
+          <div class="ts-v3-meta">BUZZTER v1.0.0 · 4 STORIES</div>
         </div>
       </div>
     </div>
