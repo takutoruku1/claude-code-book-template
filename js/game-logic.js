@@ -480,7 +480,8 @@ function resolveEnding() {
 
 function resolveKarenEnding() {
   if (GS.buzz >= 65 && GS.self < 50) return 'zure';
-  return 'kidoku';
+  if (GS.flashbackPhase >= 3)         return 'kidoku';
+  return 'saihan';
 }
 
 /* ============================================================

@@ -4506,3 +4506,77 @@ body[data-flashback-phase="3"] .protag-bubble {
   pointer-events: none;
   transition: opacity 0.5s ease;
 }
+
+/* ================================================
+   prefers-reduced-motion 対応（Phase A/E 追加分）
+   既存カバー済み: .mystery-glitch 系（line 3755）
+                  .ending-chinmoku 系（line 4367）
+   ================================================ */
+@media (prefers-reduced-motion: reduce) {
+  /* karen-resolve フィルターアニメーション
+     hue-rotate + contrast + saturation の急変はめまい誘発リスクあり
+     → アニメーションなしで終端状態に即移行 */
+  .karen-resolve.ending-zange {
+    animation: none;
+    filter: brightness(1.0) saturate(1.0);
+  }
+  .karen-resolve.ending-kidoku {
+    animation: none;
+    filter: hue-rotate(0deg) contrast(1.0) saturate(0.7) brightness(0.88);
+  }
+  .karen-resolve.ending-chinmoku {
+    animation: none;
+    filter: hue-rotate(0deg) contrast(1.0) saturate(0.0) brightness(0.7);
+  }
+
+  /* フラッシュバックオーバーレイ
+     scale + fade の組み合わせは前庭感覚に影響するため停止 */
+  #flashback-overlay .fb-past-text {
+    animation: none;
+    opacity: 1;
+  }
+  #flashback-overlay .fb-card {
+    animation: none;
+    transform: translate(-50%, -50%) scale(1.0);
+    opacity: 1;
+  }
+
+  /* エンディングモノローグ行のフェードイン
+     translateY を除去し opacity のみに縮小 */
+  .ending-text {
+    animation: none;
+    opacity: 0.85;
+  }
+
+  /* SNS 異常演出系（ループアニメーション停止） */
+  .chatapp-talk-badge.abnormal,
+  .chatapp-nav-badge.abnormal {
+    animation: none;
+    transform: scale(1.15);
+  }
+  .desktop-notif.abnormal {
+    animation: none;
+    opacity: 1;
+  }
+  .stat-num.runaway {
+    animation: none;
+    opacity: 1;
+  }
+
+  /* ゆきわりそうグロー・トレンドハイライト（点滅停止） */
+  body[data-yukiwarisou="found"] .yukiwarisou-kw {
+    animation: none;
+    text-shadow: 0 0 6px rgba(200, 168, 120, 0.5);
+    background: rgba(200, 168, 120, 0.12);
+  }
+  .y-trend-item.karen-trend {
+    animation: none;
+    background: rgba(200, 120, 144, 0.16);
+  }
+
+  /* karen-hash-bleed（花蓮ハッシュ滲み）停止 */
+  .karen-hash-bleed {
+    animation: none;
+    opacity: 0.15;
+  }
+}
