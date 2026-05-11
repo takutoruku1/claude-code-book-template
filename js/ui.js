@@ -668,6 +668,8 @@ function resetGame(route) {
   if (!window._routeChats) window._routeChats = {};
 
   initGS(route);
+  document.body.dataset.route = route; // Phase B: mystery フェーズ連動
+  if (typeof applyMysteryPhase === 'function') applyMysteryPhase(0); // 前ルートの mystery クラスをリセット
   buildFlowMap(route);
   updateProtagWidget();
 

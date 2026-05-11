@@ -287,6 +287,12 @@ function loadFromSlot(slot) {
 
   if (typeof chatShowScreen === 'function') chatShowScreen('talk');
   updateTaskbarIndicators();
+
+  // Phase B: mystery フェーズ連動 — ロード後にデータセット属性を復元
+  document.body.dataset.route = GS.route;
+  document.body.dataset.flashbackPhase = GS.flashbackPhase || 0;
+  if (typeof applyMysteryPhase === 'function') applyMysteryPhase(GS.mysteryClues ? GS.mysteryClues.length : 0);
+
   window._loadingFromSave = false;
   refreshDesktopNotifs();
   return true;

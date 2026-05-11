@@ -247,6 +247,7 @@ function showKidokuLastChoice(choices) {
 ============================================================ */
 function triggerFlashback(phase, callback) {
   GS.flashbackPhase = Math.max(GS.flashbackPhase, phase);
+  document.body.dataset.flashbackPhase = GS.flashbackPhase; // Phase B: mystery フェーズ連動
 
   const lines = phase === 2
     ? ['…残す、か。', '証拠を残す。それが俺の仕事だった。']
@@ -352,7 +353,7 @@ function executeDirectionCmd(d, next) {
       break;
 
     case 'mystery_update':
-      if (typeof applyMysteryPhase === 'function') applyMysteryPhase();
+      if (typeof applyMysteryPhase === 'function') applyMysteryPhase(GS.mysteryClues ? GS.mysteryClues.length : 0);
       setTimeout(next, 50);
       break;
 
@@ -615,7 +616,8 @@ function directionSilenceInput(d) {
  */
 function applyMysteryPhase(phase) {
   const count = GS && GS.mysteryClues ? GS.mysteryClues.length : 0;
-  const resolvedPhase = phase !== undefined ? phase : (count >= 3 ? 3 : count);
+  const raw = phase !== undefined ? phase : count;
+  const resolvedPhase = Math.min(raw, 3); // 常に 0〜3 にクランプ
 
   // 既存の mystery-N クラスを全て除去してから新フェーズを適用
   document.body.classList.remove('mystery-0', 'mystery-1', 'mystery-2', 'mystery-3');

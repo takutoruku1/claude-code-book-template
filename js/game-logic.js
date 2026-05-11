@@ -56,6 +56,7 @@ function handleCardClick(wrapper, i, m) {
     GS.flippedCards.push(i);
     if (m.mysteryFlag && !GS.mysteryClues.includes(m.mysteryFlag)) {
       GS.mysteryClues.push(m.mysteryFlag);
+      if (typeof applyMysteryPhase === 'function') applyMysteryPhase(GS.mysteryClues.length); // Phase B: mystery フェーズ連動
     }
     if (m.flashback3Trigger) {
       setTimeout(() => triggerFlashback(3, null), 2500);
