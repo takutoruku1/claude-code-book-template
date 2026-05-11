@@ -12,6 +12,9 @@ function setupMaterials() {
     const wrapper = document.createElement('div');
     wrapper.className = 'card-flip-wrapper';
     wrapper.dataset.idx = i;
+    wrapper.setAttribute('role', 'button');
+    wrapper.setAttribute('tabindex', '0');
+    wrapper.setAttribute('aria-label', `素材カード: ${m.title}（クリックで内容を確認）`);
     wrapper.innerHTML = `
       <div class="card-check">✓</div>
       <div class="card-flip-inner">
@@ -29,6 +32,9 @@ function setupMaterials() {
         </div>
       </div>`;
     wrapper.onclick = () => handleCardClick(wrapper, i, m);
+    wrapper.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(wrapper, i, m); }
+    });
     grid.appendChild(wrapper);
   });
 
@@ -56,9 +62,31 @@ function handleCardClick(wrapper, i, m) {
     GS.flippedCards.push(i);
     if (m.mysteryFlag && !GS.mysteryClues.includes(m.mysteryFlag)) {
       GS.mysteryClues.push(m.mysteryFlag);
+      if (typeof applyMysteryPhase === 'function') applyMysteryPhase(GS.mysteryClues.length); // Phase B: mystery フェーズ連動
     }
     if (m.flashback3Trigger) {
-      setTimeout(() => triggerFlashback(3, null), 2500);
+      const karenRevealDirections = [
+        { cmd: 'bgm_change',   track: 'silence',      fadeMs: 2000 },
+        { cmd: 'wait',         ms: 1800 },
+        { cmd: 'sfx',          sound: 'heartbeat',    volume: 0.6 },
+        { cmd: 'flash',        color: '#1a0020',      durationMs: 800, opacity: 0.7 },
+        { cmd: 'mono',         text: '——篠宮。', style: 'flashback', durationMs: 1800, force: true },
+        { cmd: 'wait',         ms: 1200 },
+        { cmd: 'mono',         text: 'カレンが好きそう、という名前。ゆきわりそう。既読のつかないメッセージ。', style: 'flashback', durationMs: 3400, force: true },
+        { cmd: 'wait',         ms: 1600 },
+        { cmd: 'mono',         text: '頭の中で、点と点が線になっていく。', style: 'flashback', durationMs: 2600, force: true },
+        { cmd: 'wait',         ms: 1000 },
+        { cmd: 'glitch',       target: 'appWindow',   durationMs: 700, intensity: 'medium' },
+        { cmd: 'sfx',          sound: 'glitch_buzz',  volume: 0.5 },
+        { cmd: 'overlay_text', text: '線になった瞬間——吐き気がした。', style: 'memory', durationMs: 3200, fadeInMs: 600, fadeOutMs: 800 },
+        { cmd: 'wait',         ms: 600 },
+        { cmd: 'mystery_update' }
+      ];
+      if (typeof processDirections === 'function') {
+        processDirections(karenRevealDirections, () => triggerFlashback(3, null));
+      } else {
+        setTimeout(() => triggerFlashback(3, null), 2500);
+      }
     }
     setTimeout(() => {
       const tagsEl = document.getElementById('cardTags' + i);
@@ -105,8 +133,10 @@ function updateCardBadge() {
 function lockExcessCards() {
   document.querySelectorAll('.card-flip-wrapper').forEach(w => {
     const idx = parseInt(w.dataset.idx);
-    w.classList.toggle('locked',
-      GS.selectedCards.length >= 2 && !GS.selectedCards.includes(idx));
+    const shouldLock = GS.selectedCards.length >= 2 && !GS.selectedCards.includes(idx);
+    w.classList.toggle('locked', shouldLock);
+    w.setAttribute('aria-disabled', shouldLock ? 'true' : 'false');
+    w.setAttribute('tabindex', shouldLock ? '-1' : '0');
   });
 }
 
@@ -276,6 +306,11 @@ function buildReactionFeed() {
   if (!window._allPostedContents) window._allPostedContents = [];
   window._allPostedContents.push(_postedItem);
   if (typeof setDesktopNotif === 'function') setDesktopNotif('notifY', true);
+  // Y ウィンドウが開いていれば即時リフレッシュ（リアルタイム感）
+  const yWin = document.getElementById('yWindow');
+  if (yWin && yWin.classList.contains('active') && typeof renderYTimeline === 'function') {
+    renderYTimeline('recommend');
+  }
 
   const postCard = document.createElement('div');
   postCard.className = 'feed-card';
@@ -447,7 +482,7 @@ function resolveEnding() {
   if (GS.route === 'saku') {
     if (GS.buzz >= 65 && GS.self < 50)           return 'zure';
     if (GS.self >= 60 && GS.flags.kShinonoya)    return 'toutatu';
-    return 'zure';
+    return 'saihan';
   }
   if (GS.route === 'seiji') {
     if (GS.buzz >= 65 && GS.self < 50)     return 'zure';
@@ -458,7 +493,8 @@ function resolveEnding() {
 
 function resolveKarenEnding() {
   if (GS.buzz >= 65 && GS.self < 50) return 'zure';
-  return 'kidoku';
+  if (GS.flashbackPhase >= 3)         return 'kidoku';
+  return 'saihan';
 }
 
 /* ============================================================
@@ -466,6 +502,7 @@ function resolveKarenEnding() {
 ============================================================ */
 function showEnding(endKey) {
   const E = ENDINGS[endKey] || ENDINGS['saihan'];
+<<<<<<< HEAD
   const screen = document.getElementById('screen-ending');
 
   // --- 画面をアクティブにする ---
@@ -704,4 +741,298 @@ function showEnding(endKey) {
       }, afterMonoDelay);
     }
   }
+=======
+  const karenEnds = ['zange', 'kidoku', 'chinmoku'];
+
+  // 1. #screen-ending のクラスをリセットし .active + .ending-${endKey} を追加
+  var screenEnding = document.getElementById('screen-ending');
+  if (!screenEnding) { console.warn('[showEnding] #screen-ending が見つかりません'); return; }
+  screenEnding.className = '';
+  screenEnding.classList.add('active', 'ending-' + endKey);
+
+  // 2. karen endings の場合 body に .karen-resolve + .ending-${endKey} を追加
+  if (karenEnds.indexOf(endKey) !== -1) {
+    document.body.classList.remove('karen-resolve');
+    karenEnds.forEach(function(k) { document.body.classList.remove('ending-' + k); });
+    document.body.classList.add('karen-resolve', 'ending-' + endKey);
+  }
+
+  // 3. setStep(6)
+  setStep(6);
+
+  // 4. スコア・タイトル等を設定
+  var endEmoji = document.getElementById('endEmoji');
+  var endTitle = document.getElementById('endTitle');
+  var endBuzz  = document.getElementById('endBuzz');
+  var endSelf  = document.getElementById('endSelf');
+  var endSub   = document.getElementById('endSub');
+
+  if (endEmoji) endEmoji.textContent = E.emoji;
+  if (endTitle) endTitle.textContent = E.name;
+  if (endBuzz)  endBuzz.textContent  = GS.buzz + '%';
+  if (endSelf)  endSelf.textContent  = GS.self + '%';
+
+  // 5. endSub を空にしてモノローグ用エリアとして使う
+  if (endSub) endSub.innerHTML = '';
+
+  // 前回の動的要素をクリーンアップ
+  var oldZangeArea = screenEnding.querySelector('.zange-area');
+  if (oldZangeArea) oldZangeArea.parentNode.removeChild(oldZangeArea);
+  var oldMysteryMsg = screenEnding.querySelector('.ending-mystery-msg');
+  if (oldMysteryMsg) oldMysteryMsg.parentNode.removeChild(oldMysteryMsg);
+
+  // 6. .btn-retry を非表示に設定
+  var btnRetry = screenEnding.querySelector('.btn-retry');
+  if (btnRetry) btnRetry.style.display = 'none';
+
+  // 7. BGM変更（存在する場合のみ）
+  if (typeof directionBgmChange === 'function' && E.bgmTrack) {
+    var bgmDelay = E.bgmDelay || 0;
+    setTimeout(function() {
+      directionBgmChange({ track: E.bgmTrack, fadeMs: (E.fadeDuration || 0) * 1000, volume: 0.5 });
+    }, bgmDelay);
+  }
+
+  // 8. モノローグ表示処理（blackoutDuration 秒待機後に開始）
+  var blackoutMs = (E.blackoutDuration || 0) * 1000;
+
+  setTimeout(function() {
+    // モノローグを1行ずつ表示
+    var monologue = E.monologue || [];
+    var interval  = E.monologueInterval || 1500;
+
+    // chinmoku: 最後の非空行を特定
+    var lastNonEmptyIdx = -1;
+    if (endKey === 'chinmoku') {
+      for (var i = monologue.length - 1; i >= 0; i--) {
+        if (monologue[i] !== '') { lastNonEmptyIdx = i; break; }
+      }
+    }
+
+    var delay = 0;
+    monologue.forEach(function(line, idx) {
+      if (line === '') {
+        // spacer: 間隔を加算するだけ
+        delay += interval;
+        return;
+      }
+      (function(d, l, isLast) {
+        setTimeout(function() {
+          if (!endSub) return;
+          var div = document.createElement('div');
+          var cls = 'ending-text';
+          if (isLast) cls += ' ending-final-char';
+          div.className = cls;
+          div.textContent = l;
+          endSub.appendChild(div);
+          // 自動スクロール
+          endSub.scrollTop = endSub.scrollHeight;
+        }, d);
+      })(delay, line, idx === lastNonEmptyIdx);
+      delay += interval;
+    });
+
+    // モノローグ全行表示後の処理
+    var afterMonologue = delay;
+
+    // noReplyEffect: 入力欄をグレーアウト
+    if (E.noReplyEffect) {
+      setTimeout(function() {
+        // チャット入力エリアを探してグレーアウト
+        var targets = [
+          document.getElementById('chatChoices'),
+          document.querySelector('.chat-choices'),
+          document.querySelector('#chatFooter'),
+          document.querySelector('.chat-footer'),
+          document.querySelector('.chat-input-area')
+        ];
+        targets.forEach(function(el) {
+          if (el) {
+            el.style.opacity = '0.3';
+            el.style.pointerEvents = 'none';
+          }
+        });
+      }, afterMonologue);
+    }
+
+    // zange 専用演出
+    if (endKey === 'zange') {
+      setTimeout(function() {
+        _showZangeTyping(E, screenEnding);
+      }, afterMonologue);
+    }
+
+    // chinmoku 専用演出
+    if (endKey === 'chinmoku') {
+      setTimeout(function() {
+        _showChinmokuEffect(E, screenEnding);
+      }, afterMonologue);
+    }
+
+    // zange / chinmoku の演出所要時間を大まかに加算してリトライボタンを表示
+    var extraDelay = 0;
+    if (endKey === 'zange') {
+      // typingRetry + karenTypingLoops + karenResponse 全 pauseAfter の合計
+      var zangeTypingMs = (E.typingText || '').length * 60;
+      if (E.typingRetry) zangeTypingMs = zangeTypingMs * 2 + 1300 + 500;
+      var loopMs = (E.karenTypingLoops || 0) * 1600 + 1000;
+      var respMs = (E.karenResponse || []).reduce(function(s, r) { return s + (r.pauseAfter || 0); }, 0);
+      extraDelay = zangeTypingMs + loopMs + respMs;
+    }
+    if (endKey === 'chinmoku') {
+      extraDelay = E.silenceDuration != null ? E.silenceDuration : 10000;
+    }
+
+    var totalRetryDelay = afterMonologue + extraDelay + (E.retryButtonDelay || 5000);
+    setTimeout(function() {
+      var btn = document.getElementById('screen-ending') &&
+                document.getElementById('screen-ending').querySelector('.btn-retry');
+      if (btn) btn.style.display = '';
+    }, totalRetryDelay);
+
+  }, blackoutMs);
+}
+
+/* ============================================================
+   ZANGE 専用演出: typingText + karenResponse
+============================================================ */
+function _showZangeTyping(E, screenEnding) {
+  // .zange-area を作成（まだない場合）
+  var zangeArea = screenEnding.querySelector('.zange-area');
+  if (!zangeArea) {
+    zangeArea = document.createElement('div');
+    zangeArea.className = 'zange-area';
+    screenEnding.appendChild(zangeArea);
+  }
+
+  // .zange-typing-wrap を作成
+  var wrap = document.createElement('div');
+  wrap.className = 'zange-typing-wrap';
+  var display = document.createElement('div');
+  display.className = 'zange-typing-display';
+  display.textContent = '';
+  var cursor = document.createElement('span');
+  cursor.className = 'zange-typing-cursor';
+  wrap.appendChild(display);
+  wrap.appendChild(cursor);
+  zangeArea.appendChild(wrap);
+
+  var typingText = E.typingText || '';
+  var charMs = 60;
+
+  function typeChars(text, cb) {
+    var i = 0;
+    function next() {
+      if (i >= text.length) { if (cb) cb(); return; }
+      display.textContent += text[i];
+      i++;
+      setTimeout(next, charMs);
+    }
+    next();
+  }
+
+  function deleteChars(cb) {
+    function del() {
+      if (display.textContent.length === 0) { if (cb) cb(); return; }
+      display.textContent = display.textContent.slice(0, -1);
+      setTimeout(del, 200 / Math.max(typingText.length, 1));
+    }
+    del();
+  }
+
+  function doTyping(cb) {
+    if (E.typingRetry) {
+      // 1回目入力
+      typeChars(typingText, function() {
+        setTimeout(function() {
+          // 全削除（200ms かけて）
+          deleteChars(function() {
+            setTimeout(function() {
+              // 2回目入力
+              typeChars(typingText, cb);
+            }, 500);
+          });
+        }, 800);
+      });
+    } else {
+      typeChars(typingText, cb);
+    }
+  }
+
+  doTyping(function() {
+    // カーソル非表示
+    cursor.style.display = 'none';
+
+    // karenTypingLoops 回インジケーター表示
+    var loops = E.karenTypingLoops || 0;
+    var loopDelay = 0;
+    for (var i = 0; i < loops; i++) {
+      (function(d) {
+        setTimeout(function() {
+          var ind = document.createElement('div');
+          ind.className = 'zange-typing-display';
+          ind.style.cssText = 'opacity:0.5;letter-spacing:0.3em;';
+          ind.textContent = '…';
+          zangeArea.appendChild(ind);
+          setTimeout(function() {
+            if (ind.parentNode) ind.parentNode.removeChild(ind);
+          }, 1600);
+        }, d);
+      })(loopDelay);
+      loopDelay += 1600;
+    }
+
+    // karenResponse を順次表示
+    setTimeout(function() {
+      var responses = E.karenResponse || [];
+      var rDelay = 0;
+      responses.forEach(function(r) {
+        (function(d, resp) {
+          setTimeout(function() {
+            var line = document.createElement('div');
+            line.className = 'karen-reply-line';
+            line.textContent = resp.text;
+            zangeArea.appendChild(line);
+          }, d);
+        })(rDelay, r);
+        rDelay += (r.pauseAfter || 0);
+      });
+
+      // silence 1000ms（何もしない）
+    }, loopDelay + 1000);
+  });
+}
+
+/* ============================================================
+   CHINMOKU 専用演出: appIconFade + mysteryMessage
+============================================================ */
+function _showChinmokuEffect(E, screenEnding) {
+  // appIconFade
+  if (E.appIconFade) {
+    var icon = document.querySelector('.desktop-icon[data-app]') ||
+               document.querySelector('.app-icon') ||
+               document.querySelector('.dock-icon');
+    if (icon) {
+      icon.style.transition = 'opacity 3s ease';
+      icon.style.opacity = '0';
+    } else {
+      console.warn('[showEnding/chinmoku] appIconFade: アイコン要素が見つかりません');
+    }
+  }
+
+  // silenceDuration ms 待機
+  var silence = E.silenceDuration != null ? E.silenceDuration : 10000;
+
+  setTimeout(function() {
+    // mysteryMessage 表示
+    if (E.mysteryMessage) {
+      var msg = document.createElement('div');
+      msg.className = 'ending-mystery-msg';
+      msg.innerHTML =
+        '<div class="mystery-sender">' + (E.mysteryMessage.sender || '──────') + '</div>' +
+        '<div class="mystery-text">' + E.mysteryMessage.text + '</div>';
+      screenEnding.appendChild(msg);
+    }
+  }, silence);
+>>>>>>> origin/claude/define-scenario-agent-roles-xocEu
 }
