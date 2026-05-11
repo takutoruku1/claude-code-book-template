@@ -4412,3 +4412,88 @@ body[data-flashback-phase="3"] .protag-bubble {
 }
 
 /* ===== End of Phase A: シュタゲ演出追加 ===== */
+
+/* ================================================
+   Phase E: エンディング演出追加CSS
+   ================================================ */
+
+/* モノローグ行の個別フェードイン */
+.ending-text {
+  opacity: 0;
+  animation: ending-line-fadein 0.8s ease forwards;
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.8;
+  max-width: 380px;
+  text-align: center;
+  margin: 4px auto;
+}
+
+@keyframes ending-line-fadein {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 0.85; }
+}
+
+/* endSub をスクロール可能な縦並びに変更 */
+#screen-ending .ending-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 40vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+#screen-ending .ending-sub::-webkit-scrollbar { display: none; }
+
+/* zange: タイピングエリア */
+.zange-area {
+  margin-top: 16px;
+  width: min(360px, 90vw);
+}
+.zange-typing-display {
+  background: var(--surface2, #1e1e2a);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text, #e0e0f0);
+  min-height: 38px;
+  text-align: left;
+  letter-spacing: 0.02em;
+}
+.karen-reply-line {
+  margin-top: 12px;
+  padding: 10px 16px;
+  background: var(--surface, #1e1e2a);
+  border-left: 2px solid var(--route-accent, #c87890);
+  border-radius: 0 8px 8px 0;
+  font-size: 13px;
+  color: var(--text, #e0e0f0);
+  animation: ending-line-fadein 0.8s ease forwards;
+  opacity: 0;
+  text-align: left;
+}
+
+/* chinmoku: ミステリーメッセージ */
+.ending-mystery-msg {
+  margin-top: 24px;
+  padding: 16px 24px;
+  border: 1px solid rgba(200, 180, 220, 0.2);
+  border-radius: 12px;
+  background: rgba(200, 180, 220, 0.05);
+  animation: ending-line-fadein 1.5s ease forwards;
+  opacity: 0;
+  text-align: center;
+}
+.mystery-sender {
+  font-size: 11px;
+  color: rgba(200, 180, 220, 0.4);
+  letter-spacing: 0.2em;
+  margin-bottom: 8px;
+}
+.mystery-text {
+  font-size: 13px;
+  color: rgba(200, 180, 220, 0.6);
+  letter-spacing: 0.1em;
+  font-style: italic;
+}

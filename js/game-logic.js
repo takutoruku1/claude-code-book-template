@@ -474,13 +474,266 @@ function resolveKarenEnding() {
 ============================================================ */
 function showEnding(endKey) {
   const E = ENDINGS[endKey] || ENDINGS['saihan'];
-  document.getElementById('screen-ending').classList.add('active');
+  const karenEnds = ['zange', 'kidoku', 'chinmoku'];
+
+  // 1. #screen-ending のクラスをリセットし .active + .ending-${endKey} を追加
+  const screenEnding = document.getElementById('screen-ending');
+  screenEnding.className = '';
+  screenEnding.classList.add('active', 'ending-' + endKey);
+
+  // 2. karen endings の場合 body に .karen-resolve + .ending-${endKey} を追加
+  if (karenEnds.indexOf(endKey) !== -1) {
+    document.body.classList.remove('karen-resolve');
+    karenEnds.forEach(function(k) { document.body.classList.remove('ending-' + k); });
+    document.body.classList.add('karen-resolve', 'ending-' + endKey);
+  }
+
+  // 3. setStep(6)
   setStep(6);
 
-  document.getElementById('endBuzz').textContent = GS.buzz + '%';
-  document.getElementById('endSelf').textContent = GS.self + '%';
-  document.getElementById('endEmoji').textContent = E.emoji;
-  document.getElementById('endTitle').textContent = E.name;
-  document.getElementById('endSub').textContent   =
-    E.monologue ? E.monologue.filter(l => l).join('\n') : '';
+  // 4. スコア・タイトル等を設定
+  var endEmoji = document.getElementById('endEmoji');
+  var endTitle = document.getElementById('endTitle');
+  var endBuzz  = document.getElementById('endBuzz');
+  var endSelf  = document.getElementById('endSelf');
+  var endSub   = document.getElementById('endSub');
+
+  if (endEmoji) endEmoji.textContent = E.emoji;
+  if (endTitle) endTitle.textContent = E.name;
+  if (endBuzz)  endBuzz.textContent  = GS.buzz + '%';
+  if (endSelf)  endSelf.textContent  = GS.self + '%';
+
+  // 5. endSub を空にしてモノローグ用エリアとして使う
+  if (endSub) endSub.innerHTML = '';
+
+  // 6. .btn-retry を非表示に設定
+  var btnRetry = screenEnding.querySelector('.btn-retry');
+  if (btnRetry) btnRetry.style.display = 'none';
+
+  // 7. BGM変更（存在する場合のみ）
+  if (typeof directionBgmChange === 'function' && E.bgmTrack) {
+    var bgmDelay = E.bgmDelay || 0;
+    setTimeout(function() {
+      directionBgmChange(E.bgmTrack, E.fadeDuration || 0);
+    }, bgmDelay);
+  }
+
+  // 8. モノローグ表示処理（blackoutDuration 秒待機後に開始）
+  var blackoutMs = (E.blackoutDuration || 0) * 1000;
+
+  setTimeout(function() {
+    // モノローグを1行ずつ表示
+    var monologue = E.monologue || [];
+    var interval  = E.monologueInterval || 1500;
+
+    // chinmoku: 最後の非空行を特定
+    var lastNonEmptyIdx = -1;
+    if (endKey === 'chinmoku') {
+      for (var i = monologue.length - 1; i >= 0; i--) {
+        if (monologue[i] !== '') { lastNonEmptyIdx = i; break; }
+      }
+    }
+
+    var delay = 0;
+    monologue.forEach(function(line, idx) {
+      if (line === '') {
+        // spacer: 間隔を加算するだけ
+        delay += interval;
+        return;
+      }
+      (function(d, l, isLast) {
+        setTimeout(function() {
+          if (!endSub) return;
+          var div = document.createElement('div');
+          var cls = 'ending-text';
+          if (isLast) cls += ' ending-final-char';
+          div.className = cls;
+          div.textContent = l;
+          endSub.appendChild(div);
+          // 自動スクロール
+          endSub.scrollTop = endSub.scrollHeight;
+        }, d);
+      })(delay, line, idx === lastNonEmptyIdx);
+      delay += interval;
+    });
+
+    // モノローグ全行表示後の処理
+    var afterMonologue = delay;
+
+    // noReplyEffect: 入力欄をグレーアウト
+    if (E.noReplyEffect) {
+      setTimeout(function() {
+        var chatInput = document.getElementById('chatInput') ||
+                        document.querySelector('.chat-input');
+        if (chatInput) {
+          chatInput.classList.add('disabled');
+        }
+      }, afterMonologue);
+    }
+
+    // zange 専用演出
+    if (endKey === 'zange') {
+      setTimeout(function() {
+        _showZangeTyping(E, screenEnding);
+      }, afterMonologue);
+    }
+
+    // chinmoku 専用演出
+    if (endKey === 'chinmoku') {
+      setTimeout(function() {
+        _showChinmokuEffect(E, screenEnding);
+      }, afterMonologue);
+    }
+
+  }, blackoutMs);
+
+  // retryButtonDelay 後に .btn-retry を表示
+  var retryDelay = E.retryButtonDelay || 5000;
+  setTimeout(function() {
+    var btn = screenEnding.querySelector('.btn-retry');
+    if (btn) btn.style.display = '';
+  }, retryDelay);
+}
+
+/* ============================================================
+   ZANGE 専用演出: typingText + karenResponse
+============================================================ */
+function _showZangeTyping(E, screenEnding) {
+  // .zange-area を作成（まだない場合）
+  var zangeArea = screenEnding.querySelector('.zange-area');
+  if (!zangeArea) {
+    zangeArea = document.createElement('div');
+    zangeArea.className = 'zange-area';
+    screenEnding.appendChild(zangeArea);
+  }
+
+  // .zange-typing-wrap を作成
+  var wrap = document.createElement('div');
+  wrap.className = 'zange-typing-wrap';
+  var display = document.createElement('div');
+  display.className = 'zange-typing-display';
+  display.textContent = '';
+  var cursor = document.createElement('span');
+  cursor.className = 'zange-typing-cursor';
+  wrap.appendChild(display);
+  wrap.appendChild(cursor);
+  zangeArea.appendChild(wrap);
+
+  var typingText = E.typingText || '';
+  var charMs = 60;
+
+  function typeChars(text, cb) {
+    var i = 0;
+    function next() {
+      if (i >= text.length) { if (cb) cb(); return; }
+      display.textContent += text[i];
+      i++;
+      setTimeout(next, charMs);
+    }
+    next();
+  }
+
+  function deleteChars(cb) {
+    function del() {
+      if (display.textContent.length === 0) { if (cb) cb(); return; }
+      display.textContent = display.textContent.slice(0, -1);
+      setTimeout(del, 200 / Math.max(typingText.length, 1));
+    }
+    del();
+  }
+
+  function doTyping(cb) {
+    if (E.typingRetry) {
+      // 1回目入力
+      typeChars(typingText, function() {
+        setTimeout(function() {
+          // 全削除（200ms かけて）
+          deleteChars(function() {
+            setTimeout(function() {
+              // 2回目入力
+              typeChars(typingText, cb);
+            }, 500);
+          });
+        }, 800);
+      });
+    } else {
+      typeChars(typingText, cb);
+    }
+  }
+
+  doTyping(function() {
+    // カーソル非表示
+    cursor.style.display = 'none';
+
+    // karenTypingLoops 回インジケーター表示
+    var loops = E.karenTypingLoops || 0;
+    var loopDelay = 0;
+    for (var i = 0; i < loops; i++) {
+      (function(d) {
+        setTimeout(function() {
+          var ind = document.createElement('div');
+          ind.className = 'zange-typing-display';
+          ind.style.cssText = 'opacity:0.5;letter-spacing:0.3em;';
+          ind.textContent = '…';
+          zangeArea.appendChild(ind);
+          setTimeout(function() {
+            if (ind.parentNode) ind.parentNode.removeChild(ind);
+          }, 1600);
+        }, d);
+      })(loopDelay);
+      loopDelay += 1600;
+    }
+
+    // karenResponse を順次表示
+    setTimeout(function() {
+      var responses = E.karenResponse || [];
+      var rDelay = 0;
+      responses.forEach(function(r) {
+        (function(d, resp) {
+          setTimeout(function() {
+            var line = document.createElement('div');
+            line.className = 'karen-reply-line';
+            line.textContent = resp.text;
+            zangeArea.appendChild(line);
+          }, d);
+        })(rDelay, r);
+        rDelay += (r.pauseAfter || 0);
+      });
+
+      // silence 1000ms（何もしない）
+    }, loopDelay + 1000);
+  });
+}
+
+/* ============================================================
+   CHINMOKU 専用演出: appIconFade + mysteryMessage
+============================================================ */
+function _showChinmokuEffect(E, screenEnding) {
+  // appIconFade
+  if (E.appIconFade) {
+    var icon = document.querySelector('.desktop-icon[data-app]') ||
+               document.querySelector('.app-icon') ||
+               document.querySelector('.dock-icon');
+    if (icon) {
+      icon.style.transition = 'opacity 3s ease';
+      icon.style.opacity = '0';
+    } else {
+      console.warn('[showEnding/chinmoku] appIconFade: アイコン要素が見つかりません');
+    }
+  }
+
+  // silenceDuration ms 待機
+  var silence = E.silenceDuration != null ? E.silenceDuration : 10000;
+
+  setTimeout(function() {
+    // mysteryMessage 表示
+    if (E.mysteryMessage) {
+      var msg = document.createElement('div');
+      msg.className = 'ending-mystery-msg';
+      msg.innerHTML =
+        '<div class="mystery-sender">' + (E.mysteryMessage.sender || '──────') + '</div>' +
+        '<div class="mystery-text">' + E.mysteryMessage.text + '</div>';
+      screenEnding.appendChild(msg);
+    }
+  }, silence);
 }
