@@ -474,12 +474,55 @@ const CHAT_FLOWS = {
     {
       id: 'karen_hello',
       from: 'client',
-      text: 'はじめまして。篠宮 花蓮といいます。\nお二人から紹介していただいて。'
+      text: 'はじめまして。篠宮花蓮です。'
+    },
+    {
+      id: 'karen_hello2',
+      from: 'client',
+      text: '花道教室の助手をしています。アカウントを作ってみたくて。'
+    },
+    {
+      id: 'karen_hello3',
+      from: 'client',
+      text: '生け花の写真を、残したいんです。誰かに届けたい、というより——\n記録として。形として。残したい。',
+      clippable: true, keyword: '記録として残したい'
     },
     {
       id: 'karen_hello_reply',
+      from: 'choices', opts: [
+        { text: 'どなたかに紹介していただいたんですか', next: 'karen_intro_path' },
+        { text: '生け花の魅力を、ぜひ教えてください',   next: 'karen_flower_path' }
+      ]
+    },
+    {
+      id: 'karen_intro_path',
+      from: 'client',
+      text: '朔さんと、誠司さんから。\nお二人とも、いい仕事をしてもらったって。'
+    },
+    {
+      id: 'karen_intro_mono',
       from: 'player',
-      text: 'こちらこそ。どんな発信を考えていますか。'
+      text: '',
+      direction: [
+        { cmd: 'wait', ms: 600 },
+        { cmd: 'mono', text: '——朔さんと誠司さん。二人から、同時に。\n不思議な話だ。面識があるんだろうか。\nでも、そういうことはある。', style: 'normal', durationMs: 4200, force: false }
+      ],
+      next: 'karen_flower'
+    },
+    {
+      id: 'karen_flower_path',
+      from: 'client',
+      text: '…そうですね。\n姉に習いました。姉の方が、ずっと上手で。\n…今は、私が続けています。'
+    },
+    {
+      id: 'karen_flower_path_mono',
+      from: 'player',
+      text: '',
+      direction: [
+        { cmd: 'wait', ms: 500 },
+        { cmd: 'mono', text: '——姉。\n少しだけ、間があった。それだけ。', style: 'normal', durationMs: 2400, force: false }
+      ],
+      next: 'karen_flower'
     },
     {
       id: 'karen_flower',
@@ -516,8 +559,22 @@ const CHAT_FLOWS = {
     { id: 'karen_system',  from: 'system',  text: '→ 素材が届きました' },
     // 素材確認完了後、投稿フェーズへ。投稿後の反響完了後に karen_mystery_choice から再開する
     { id: 'karen_trigger',      from: 'trigger', action: 'showMaterial', resumeAt: 'karen_post_trigger' },
-    { id: 'karen_post_trigger', from: 'trigger', action: 'showPost',     resumeAt: 'karen_mystery_choice' },
+    { id: 'karen_post_trigger', from: 'trigger', action: 'showPost',     resumeAt: 'karen_pre_mystery' },
     // flashback3 は cards.js 内で k_memo カードをめくった時にトリガー
+
+    // ---- 「ひとつだけ」シーン（showPost 完了後、謎収束選択肢の直前）----
+    {
+      id: 'karen_pre_mystery',
+      from: 'client',
+      text: 'ひとつだけ、聞いてもいいですか。\n仕事の話じゃなくて。'
+    },
+    {
+      id: 'karen_pre_mystery_reply',
+      from: 'choices', opts: [
+        { text: '……はい',          next: 'karen_mystery_choice', egoPlus: true },
+        { text: '投稿の件で何か?',  next: 'karen_mystery_choice' }
+      ]
+    },
 
     // ---- 謎収束選択肢（mysteryClues に 2件以上たまった場合のみ表示）----
     {
@@ -538,12 +595,46 @@ const CHAT_FLOWS = {
       id: 'karen_zange_response',
       from: 'client',
       text: '知っていました。',
-      pause: 8000
+      pause: 8000,
+      direction: [
+        { cmd: 'bgm_change', src: null, fadeOutMs: 2000 },
+        { cmd: 'wait', ms: 2000 }
+      ]
+    },
+    {
+      id: 'karen_zange_response2',
+      from: 'client',
+      text: '最初からずっと。'
+    },
+    {
+      id: 'karen_zange_response3',
+      from: 'client',
+      text: '3年前、SNSで誰かに書かれた記事で、姉が消えました。\nアカウントを全部消して、しばらく連絡が取れなくて。'
+    },
+    {
+      id: 'karen_zange_response4',
+      from: 'client',
+      text: '今は、少しずつ戻ってきているんですけど。\nそれでも、ネットがまだ怖いって。'
+    },
+    {
+      id: 'karen_zange_response5',
+      from: 'client',
+      text: '湊さんが誰なのか、私は最初から知っていました。\nだから、頼んだんです。'
+    },
+    {
+      id: 'karen_zange_response5_mono',
+      from: 'player',
+      text: '',
+      direction: [
+        { cmd: 'wait', ms: 1200 },
+        { cmd: 'mono', text: '「知っていました」は——赦しでも、断罪でもない。\n「承知の上で依頼した」という、事実の確認だった。', style: 'hollow', durationMs: 4800, force: true }
+      ],
+      next: 'karen_zange_end'
     },
     {
       id: 'karen_zange_end',
       from: 'client',
-      text: 'だから、頼みました。'
+      text: '言葉が怖いのは、本当のことだから。\n……でも、あなたの翻訳は、ちゃんと届きました。'
     }
   ]
 };

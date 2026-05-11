@@ -59,7 +59,14 @@ function handleCardClick(wrapper, i, m) {
       if (typeof applyMysteryPhase === 'function') applyMysteryPhase(GS.mysteryClues.length); // Phase B: mystery フェーズ連動
     }
     if (m.flashback3Trigger) {
-      setTimeout(() => triggerFlashback(3, null), 2500);
+      // 固定タイマーではなく karenRevealDirections の演出キュー完了後に発火
+      // (固定 2500ms だと 12700ms+ の演出キューと二重発火するため)
+      const revealDirs = typeof karenRevealDirections !== 'undefined' ? karenRevealDirections : [];
+      if (revealDirs.length > 0 && typeof processDirections === 'function') {
+        processDirections(revealDirs, () => triggerFlashback(3, null));
+      } else {
+        setTimeout(() => triggerFlashback(3, null), 2500);
+      }
     }
     setTimeout(() => {
       const tagsEl = document.getElementById('cardTags' + i);
