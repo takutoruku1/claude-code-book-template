@@ -161,61 +161,7 @@
           </div>
         </div>
         <div class="title-settings-row" style="margin-top:6px">
-          <button class="ts-design-switch" onclick="toggleTitleDesign()">キャラクター版に切り替え</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ V3 DESIGN ══════════════════════════════════════════ -->
-    <div class="ts-wrapper ts-v3-wrapper">
-      <div class="ts-v3-bg">
-        <div class="ts-v3-logo">
-          <div class="ts-v3-eyebrow">SNS 運 用 代 行 ADV</div>
-          <h1 class="ts-v3-title">ばずったー</h1>
-          <div class="ts-v3-tagline">「この人らしさ」を<b>翻訳せよ</b></div>
-        </div>
-        <div class="ts-v3-chars" role="list" aria-label="登場キャラクター">
-          <div class="ts-v3-char" role="listitem" data-route="midori">
-            <div class="ts-v3-char-ava" aria-hidden="true">🌿</div>
-            <div class="ts-v3-char-name">田中 みどり</div>
-            <div class="ts-v3-char-tag">チュートリアル</div>
-          </div>
-          <div class="ts-v3-char" role="listitem" data-route="saku">
-            <div class="ts-v3-char-ava" aria-hidden="true">🔧</div>
-            <div class="ts-v3-char-name">水無月 朔</div>
-            <div class="ts-v3-char-tag"></div>
-          </div>
-          <div class="ts-v3-char" role="listitem" data-route="seiji">
-            <div class="ts-v3-char-ava" aria-hidden="true">☕</div>
-            <div class="ts-v3-char-name">天羽 誠司</div>
-            <div class="ts-v3-char-tag"></div>
-          </div>
-          <div class="ts-v3-char" role="listitem" data-route="karen">
-            <div class="ts-v3-char-ava" aria-hidden="true">🌸</div>
-            <div class="ts-v3-char-name">篠宮 花蓮</div>
-            <div class="ts-v3-char-tag">キーパーソン</div>
-          </div>
-        </div>
-        <div class="ts-v3-actions">
-          <button class="ts-action ts-primary" onclick="openApp(false)">
-            <span class="ts-ic">▶</span>
-            <span class="ts-action-body"><span class="ts-action-head">メインモード</span><span class="ts-action-sub">最初から始める</span></span>
-            <span class="ts-arrow">›</span>
-          </button>
-          <button class="ts-action ts-continue" id="tsBtnContinueV3" onclick="showLoadSlotPicker()" hidden>
-            <span class="ts-ic">↩</span>
-            <span class="ts-action-body"><span class="ts-action-head">続きから</span><span class="ts-action-sub" id="tsContinueSubV3">最終セーブ：—</span></span>
-            <span class="ts-arrow">›</span>
-          </button>
-          <button class="ts-action ts-subtle" onclick="openApp(true)">
-            <span class="ts-ic">🔧</span>
-            <span class="ts-action-body"><span class="ts-action-head">デバッグモード</span><span class="ts-action-sub">開発者用 / developer</span></span>
-            <span class="ts-arrow">›</span>
-          </button>
-        </div>
-        <div class="ts-v3-footer">
           <button class="ts-design-switch" onclick="toggleTitleDesign()">新デザインに切り替え</button>
-          <div class="ts-v3-meta">BUZZTER v1.0.0 · 4 STORIES</div>
         </div>
       </div>
     </div>
@@ -419,7 +365,7 @@
           <div class="chat-status" id="chatStatus">オンライン</div>
         </div>
       </div>
-      <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-relevant="additions text" aria-label="チャットメッセージ"></div>
+      <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-choices" id="chatChoices"></div>
       <div class="chat-messages" id="chatPastMessages" style="display:none"></div>
     </div>
@@ -455,7 +401,7 @@
 </div>
 
 <!-- トースト通知コンテナ -->
-<div id="toastContainer" aria-live="polite" aria-atomic="false"></div>
+<div id="toastContainer"></div>
 
 <div class="cal-popup" id="calPopup">
   <div class="cal-header">
@@ -1014,8 +960,8 @@
       <div class="endroll-section">
         <div class="endroll-label">依 頼 人</div>
         <div class="endroll-name">田中 みどり</div>
-        <div class="endroll-name">水無月 朔</div>
-        <div class="endroll-name">天羽 誠司</div>
+        <div class="endroll-name">倉田 朔</div>
+        <div class="endroll-name">松本 誠司</div>
         <div class="endroll-name">篠宮 花蓮</div>
       </div>
       <div class="endroll-section">
@@ -1073,11 +1019,5 @@ function closeChatImageViewer() {
 <script src="js/invaders.js"></script>
 <script src="js/minesweeper.js"></script>
 <script src="js/save-manager.js"></script>
-
-<!-- フラッシュバック3: 2枚並列演出レイヤー（visual_spec.md §7-1） -->
-<div id="flashback-overlay">
-  <div class="fb-past-text" id="fb-past-text"></div>
-  <div class="fb-card" id="fb-card-content" style="display:none;"></div>
-</div>
 </body>
 </html>

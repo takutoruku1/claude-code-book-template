@@ -287,12 +287,6 @@ function loadFromSlot(slot) {
 
   if (typeof chatShowScreen === 'function') chatShowScreen('talk');
   updateTaskbarIndicators();
-
-  // Phase B: mystery フェーズ連動 — ロード後にデータセット属性を復元
-  document.body.dataset.route = GS.route;
-  document.body.dataset.flashbackPhase = GS.flashbackPhase || 0;
-  if (typeof applyMysteryPhase === 'function') applyMysteryPhase(GS.mysteryClues ? GS.mysteryClues.length : 0);
-
   window._loadingFromSave = false;
   refreshDesktopNotifs();
   return true;
@@ -396,13 +390,11 @@ function _refreshTitleContinueBtn() {
   btn.style.display = has ? '' : 'none';
   if (delWrap) delWrap.style.display = has ? '' : 'none';
 
-  // 新デザイン / v3 デザインのボタンを同期
-  const tsContinue   = document.getElementById('tsBtnContinue');
-  const tsContinueV3 = document.getElementById('tsBtnContinueV3');
-  const tsDelete     = document.getElementById('tsBtnDelete');
-  if (tsContinue)   tsContinue.hidden   = !has;
-  if (tsContinueV3) tsContinueV3.hidden = !has;
-  if (tsDelete)     tsDelete.hidden     = !has;
+  // 新デザインのボタンを同期
+  const tsContinue = document.getElementById('tsBtnContinue');
+  const tsDelete   = document.getElementById('tsBtnDelete');
+  if (tsContinue) tsContinue.hidden = !has;
+  if (tsDelete)   tsDelete.hidden   = !has;
 
   const sub = document.getElementById('btnContinueSub');
   let latest = null;
@@ -416,10 +408,8 @@ function _refreshTitleContinueBtn() {
     const date  = new Date(latest.savedAt);
     const stamp = `最終セーブ: ${latest.routeLabel}  ${date.toLocaleDateString('ja-JP')} ${date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}`;
     if (sub) sub.textContent = stamp;
-    const tsSub   = document.getElementById('tsContinueSub');
-    const tsSubV3 = document.getElementById('tsContinueSubV3');
-    if (tsSub)   tsSub.textContent   = stamp;
-    if (tsSubV3) tsSubV3.textContent = stamp;
+    const tsSub = document.getElementById('tsContinueSub');
+    if (tsSub) tsSub.textContent = stamp;
     const tsMeta = document.getElementById('tsMetaSave');
     if (tsMeta) tsMeta.textContent = `SAVE: ${date.toLocaleDateString('ja-JP')}`;
   } else {

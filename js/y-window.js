@@ -278,12 +278,8 @@ function renderYTimeline(tab) {
   feed.innerHTML = '';
 
   if (tab === 'recommend' && window._allPostedContents?.length) {
-    window._allPostedContents.slice().reverse().forEach((p, idx) => {
-      try {
-        const el = _buildOwnPostEl(p);
-        if (idx === 0) el.classList.add('y-post-new'); // 最新投稿にハイライト
-        feed.appendChild(el);
-      } catch(e) { console.error('own post error', e, p); }
+    window._allPostedContents.slice().reverse().forEach(p => {
+      try { feed.appendChild(_buildOwnPostEl(p)); } catch(e) { console.error('own post error', e, p); }
     });
   }
 

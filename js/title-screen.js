@@ -48,8 +48,7 @@ function toggleTsOptions() {
 function toggleTitleDesign() {
   const el = document.getElementById('screen-title');
   if (!el) return;
-  const cur = el.dataset.design;
-  const next = cur === 'new' ? 'old' : cur === 'old' ? 'v3' : 'new';
+  const next = (el.dataset.design === 'new') ? 'old' : 'new';
   el.dataset.design = next;
   localStorage.setItem('titleDesign', next);
   if (next === 'new') {
@@ -63,7 +62,7 @@ function toggleTitleDesign() {
 ============================================================ */
 const _TS_POSTS = [
   { name: '田中みどり',    handle: '@midori_everyday', text: '今日もゼラニウム咲いた\nなんか元気もらえる',          stats: ['♥ 142', '💬 8'] },
-  { name: '水無月 朔',    handle: '@saku_craft',       text: '今日で237時間。まだ屋根が合わない',                  stats: ['♥ 38',  '💬 14'] },
+  { name: '倉田 朔',      handle: '@saku_craft',       text: '今日で237時間。まだ屋根が合わない',                  stats: ['♥ 38',  '💬 14'] },
   { name: '喫茶ゆきわりそう', handle: '@yukiwarisou',   text: '今日のおすすめ：気分次第',                          stats: ['♥ 61',  '🔁 9'] },
   { name: '篠宮 花蓮',    handle: '@karen_ikebana',    text: '「姉に見せたくて活けた」',                           stats: ['♥ 29',  '💬 4'] },
   { name: 'バズハンター',  handle: '@buzz_hunter',      text: '100日チャレンジ応援！フォローしました！',             stats: ['♥ 5',   '🔁 2'] },

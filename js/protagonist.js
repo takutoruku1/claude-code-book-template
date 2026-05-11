@@ -144,7 +144,6 @@ function showProtagChoices(opts, onSelect) {
     const btn = document.createElement('button');
     btn.className = 'protag-choice-btn';
     btn.style.animationDelay = `${idx * 80}ms`;
-    btn.tabIndex = -1; // タイピング完了まで Tab フォーカス対象外
 
     const textSpan   = document.createElement('span');
     const cursor     = document.createElement('span');
@@ -165,8 +164,6 @@ function showProtagChoices(opts, onSelect) {
           clearInterval(iv);
           cursor.remove();
           btn.classList.add('ready');
-          btn.tabIndex = 0; // タイピング完了後に Tab フォーカス対象に
-          btn.setAttribute('aria-label', opt.text);
           btn.onclick = () => {
             clearProtagChoices();
             onSelect(opt);

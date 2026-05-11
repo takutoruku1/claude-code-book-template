@@ -214,18 +214,13 @@ const CHAT_FLOWS = {
       text: '…ありがとうございます🌿'
     },
     { id: 'midori_system',  from: 'system',  text: '→ 素材が届きました' },
-    { id: 'midori_material_note', from: 'client', text: 'えっと…うまく撮れてないのもあって😢\nでも全部、今日の朝に撮ったやつです🌿' },
     { id: 'midori_trigger', from: 'trigger', action: 'showMaterial', resumeAt: 'midori_post_reaction' },
 
     // ---- タイミングゲーム削除 → 直接投稿ステップへ ----
     {
       id: 'midori_post_reaction',
       from: 'player',
-      text: 'では、投稿を作ってみましょう。',
-      direction: [
-        { cmd: 'wait', ms: 600 },
-        { cmd: 'mono', text: '翻訳が上手くいった、と思う。\nこの仕事を始めた理由を、今夜は考えないようにした。', style: 'normal', durationMs: 3600, force: false }
-      ]
+      text: 'では、投稿を作ってみましょう。'
     },
     { id: 'midori_post_trigger', from: 'trigger', action: 'showPost' }
   ],
@@ -284,11 +279,7 @@ const CHAT_FLOWS = {
     {
       id: 'saku_dilemma1',
       from: 'client',
-      text: 'これ…使えないですよね。\nぼけてるし、何が撮りたいかもわかんないし。\nでも捨てられなくて。送ってみました。',
-      direction: [
-        { cmd: 'wait', ms: 400 },
-        { cmd: 'mono', text: '——カレン。\n付箋に書かれた名前が、目に入った瞬間、手が止まった。よくある名前だ。そう思おうとした。', style: 'flashback', durationMs: 3200, force: false }
-      ]
+      text: 'これ…使えないですよね。\nぼけてるし、何が撮りたいかもわかんないし。\nでも捨てられなくて。送ってみました。'
     },
     {
       id: 'saku_dilemma1_reply',
@@ -300,11 +291,7 @@ const CHAT_FLOWS = {
     {
       id: 'saku_dilemma1_end_self',
       from: 'client',
-      text: '…そうですね。じゃあ、出してみます。',
-      direction: [
-        { cmd: 'wait', ms: 800 },
-        { cmd: 'mono', text: '届く、という言葉を、私はいつも慎重に使う。\n届くのが良いことだとは限らない、と——一度だけ思い知ったから。\nでも今この瞬間は、届いてほしいと思った。朔さんの、この視点が。', style: 'normal', durationMs: 5000, force: false }
-      ]
+      text: '…そうですね。じゃあ、出してみます。'
     },
     // 投稿フェーズへ移行。投稿後の反響フェーズ完了後に saku_dilemma2 から会話を再開する
     { id: 'saku_post_trigger', from: 'trigger', action: 'showPost', resumeAt: 'saku_dilemma2' },
@@ -324,33 +311,17 @@ const CHAT_FLOWS = {
     {
       id: 'saku_dilemma2_reply',
       from: 'choices', opts: [
-        { text: 'そのまま素直に、ありがとうと伝えてみてください', next: 'saku_dm_thanks', selfBonus: 5 },
-        { text: '…そのアカウント名、教えてもらえますか',         next: 'saku_dm_notice',  egoPlus: true, setFlag: 'kShinonoya' },
+        { text: 'そのまま素直に、ありがとうと伝えてみてください', next: 'saku_dm_end' },
+        { text: '…そのアカウント名、教えてもらえますか',         next: 'saku_dm_name',    egoPlus: true, setFlag: 'kShinonoya' },
         { text: '（何も言わず、次の投稿の話をする）',            next: 'saku_dm_end' }
       ]
     },
 
     // kShinonoya フラグを立てた選択肢からのみ到達するため condition は不要
     {
-      id: 'saku_dm_notice',
-      from: 'client',
-      text: '……（少し間があって）\n開けてもいい？'
-    },
-    {
-      id: 'saku_dm_notice_reply',
-      from: 'choices', opts: [
-        { text: '…どうぞ',           next: 'saku_dm_name' },
-        { text: '（何も言わず、見ている）', next: 'saku_dm_name' }
-      ]
-    },
-    {
       id: 'saku_dm_name',
       from: 'client',
-      text: 'え…k_shinonoya、って。\n知り合いですか？',
-      direction: [
-        { cmd: 'wait', ms: 1200 },
-        { cmd: 'mono', text: 'k_shinonoya——\n3年前に削除されたはずのアカウント名と、最初の4文字が同じだった。\n偶然だ、と言い聞かせた。', style: 'flashback', durationMs: 4200, force: true }
-      ]
+      text: 'え…k_shinonoya、って。\n知り合いですか？'
     },
     {
       id: 'saku_dm_name_reply',
@@ -358,15 +329,6 @@ const CHAT_FLOWS = {
       text: '……いえ。\n他人です。\n気にしないでください。'
     },
 
-    {
-      id: 'saku_dm_thanks',
-      from: 'client',
-      text: '返しました。\n「ありがとうございます。これからも作り続けます」って。\n……なんか、恥ずかしいな笑',
-      direction: [
-        { cmd: 'wait', ms: 500 },
-        { cmd: 'mono', text: '——本人の言葉で、本人が返した。\nこういう瞬間のために、この仕事をしているのかもしれない。', style: 'normal', durationMs: 3400, force: false }
-      ]
-    },
     { id: 'saku_dm_end', from: 'system', text: '' } // 終端マーカー
   ],
 
@@ -383,37 +345,9 @@ const CHAT_FLOWS = {
     {
       id: 'seiji_hello_reply',
       from: 'choices', opts: [
-        { text: 'どんなお店ですか？',            next: 'seiji_regulars' },
+        { text: 'どんなお店ですか？',            next: 'seiji_shop' },
         { text: '映えを意識してみますか', next: 'seiji_insta_bridge' }
       ]
-    },
-    {
-      id: 'seiji_regulars',
-      from: 'client',
-      text: '以前、よく来てた女の子がいてね。若いのに落ち着いた子で。\n急にぱったり来なくなって。まあ、よくあることだけど。\nなんかね、思い出すことがあって。'
-    },
-    {
-      id: 'seiji_regulars_reply',
-      from: 'choices', opts: [
-        { text: 'どんな方でしたか',     next: 'seiji_regulars_detail' },
-        { text: '……そうですか',        next: 'seiji_regulars_mono' }
-      ]
-    },
-    {
-      id: 'seiji_regulars_detail',
-      from: 'client',
-      text: '名前は聞いてなかった。でも花が好きで、よく話してくれた。生け花をやってるって。',
-      next: 'seiji_regulars_mono'
-    },
-    {
-      id: 'seiji_regulars_mono',
-      from: 'player',
-      text: '',
-      direction: [
-        { cmd: 'wait', ms: 600 },
-        { cmd: 'mono', text: '——生け花。\n反応しそうになって、止めた。\n名前も顔も知らない。急に来なくなった若い女性。\nそれだけの情報で、何かを決めるのは、早計だ。', style: 'normal', durationMs: 4800, force: false }
-      ],
-      next: 'seiji_shop'
     },
     {
       id: 'seiji_insta_bridge',
@@ -437,52 +371,7 @@ const CHAT_FLOWS = {
       id: 'seiji_send',
       from: 'client',
       text: 'あ、そっちの方がいいかも。映える店じゃないし。写真送りますね。',
-      clippable: true, keyword: '映える店じゃない',
-      next: 'seiji_tired'
-    },
-    {
-      id: 'seiji_tired',
-      from: 'client',
-      text: 'うちに来てくれる子はね、全員、何かに疲れた顔してるんだよ。\n若い子もそう。一人でコーヒー飲んで、2時間いる。何も頼まなくてもいい、って言ってある。\nそういう場所、SNSで呼べるのかな。'
-    },
-    {
-      id: 'seiji_tired_mono',
-      from: 'player',
-      text: '',
-      direction: [
-        { cmd: 'wait', ms: 700 },
-        { cmd: 'mono', text: '居場所を作る、か。\n私が3年前に奪ったのも、それだったかもしれない。\n——止めろ。仕事に集中しろ。', style: 'normal', durationMs: 4200, force: false }
-      ],
-      next: 'seiji_busted_risk'
-    },
-    {
-      id: 'seiji_busted_risk',
-      from: 'client',
-      text: 'あ、そういえば。常連の田辺さんが「最近の投稿、誰が書いてんの？」って笑\nなんて返せばいいですかね。',
-      pause: 600
-    },
-    {
-      id: 'seiji_busted_risk_reply',
-      from: 'choices', opts: [
-        { text: '「自分でやってます」と伝えてください',             next: 'seiji_busted_a' },
-        { text: 'お店のことをよく知ってる人が手伝っています、と', next: 'seiji_busted_b', selfBonus: 5 }
-      ]
-    },
-    {
-      id: 'seiji_busted_a',
-      from: 'client',
-      text: '……そうですよね。まあ、そう言っておきます笑',
-      direction: [
-        { cmd: 'wait', ms: 500 },
-        { cmd: 'mono', text: '嘘になる。\nでもそれが、この仕事の前提だ。', style: 'normal', durationMs: 2600, force: false }
-      ],
-      next: 'seiji_system'
-    },
-    {
-      id: 'seiji_busted_b',
-      from: 'client',
-      text: '手伝い……笑\nなんかそっちのほうが自然ですね。\nそう言います。',
-      next: 'seiji_system'
+      clippable: true, keyword: '映える店じゃない'
     },
     { id: 'seiji_system',  from: 'system',  text: '→ 素材が届きました' },
     { id: 'seiji_trigger', from: 'trigger', action: 'showMaterial', resumeAt: 'seiji_post_reaction' },
@@ -493,15 +382,7 @@ const CHAT_FLOWS = {
     },
     { id: 'seiji_system_buzz',  from: 'system',  text: '→ 素材が届きました' },
     { id: 'seiji_trigger_buzz', from: 'trigger', action: 'showMaterial', resumeAt: 'seiji_post_reaction' },
-    {
-      id: 'seiji_post_reaction',
-      from: 'player',
-      text: 'では、投稿を作ってみましょう。',
-      direction: [
-        { cmd: 'wait', ms: 500 },
-        { cmd: 'mono', text: '——どこかで見た、と思った。\n喫茶 ゆきわりそう。古い書体のネオン管。\n記憶の引っかかり方が、ただの既視感ではないような気がした。\nでも思い出せない。考えないようにした。', style: 'normal', durationMs: 5200, force: false }
-      ]
-    },
+    { id: 'seiji_post_reaction', from: 'player',  text: 'では、投稿を作ってみましょう。' },
     { id: 'seiji_post_trigger',  from: 'trigger', action: 'showPost' }
   ],
 
@@ -513,55 +394,12 @@ const CHAT_FLOWS = {
     {
       id: 'karen_hello',
       from: 'client',
-      text: 'はじめまして。篠宮花蓮です。'
-    },
-    {
-      id: 'karen_hello2',
-      from: 'client',
-      text: '花道教室の助手をしています。アカウントを作ってみたくて。'
-    },
-    {
-      id: 'karen_hello3',
-      from: 'client',
-      text: '生け花の写真を、残したいんです。誰かに届けたい、というより——\n記録として。形として。残したい。',
-      clippable: true, keyword: '記録として残したい'
+      text: 'はじめまして。篠宮 花蓮といいます。\nお二人から紹介していただいて。'
     },
     {
       id: 'karen_hello_reply',
-      from: 'choices', opts: [
-        { text: 'どなたかに紹介していただいたんですか', next: 'karen_intro_path' },
-        { text: '生け花の魅力を、ぜひ教えてください',   next: 'karen_flower_path' }
-      ]
-    },
-    {
-      id: 'karen_intro_path',
-      from: 'client',
-      text: '朔さんと、誠司さんから。\nお二人とも、いい仕事をしてもらったって。'
-    },
-    {
-      id: 'karen_intro_mono',
       from: 'player',
-      text: '',
-      direction: [
-        { cmd: 'wait', ms: 600 },
-        { cmd: 'mono', text: '——朔さんと誠司さん。二人から、同時に。\n不思議な話だ。面識があるんだろうか。\nでも、そういうことはある。', style: 'normal', durationMs: 4200, force: false }
-      ],
-      next: 'karen_flower'
-    },
-    {
-      id: 'karen_flower_path',
-      from: 'client',
-      text: '…そうですね。\n姉に習いました。姉の方が、ずっと上手で。\n…今は、私が続けています。'
-    },
-    {
-      id: 'karen_flower_path_mono',
-      from: 'player',
-      text: '',
-      direction: [
-        { cmd: 'wait', ms: 500 },
-        { cmd: 'mono', text: '——姉。\n少しだけ、間があった。それだけ。', style: 'normal', durationMs: 2400, force: false }
-      ],
-      next: 'karen_flower'
+      text: 'こちらこそ。どんな発信を考えていますか。'
     },
     {
       id: 'karen_flower',
@@ -589,7 +427,6 @@ const CHAT_FLOWS = {
       text: '…そうですか。'
     },
     { id: 'karen_system_a',   from: 'system',  text: '→ 素材が届きました' },
-    { id: 'karen_material_note_a', from: 'client', text: '……確認、お願いします。\n気に入らないものは、外してもらっていいです。' },
     { id: 'karen_trigger_a',  from: 'trigger', action: 'showMaterial', resumeAt: 'karen_post_trigger' },
     {
       id: 'karen_question_why',
@@ -597,31 +434,16 @@ const CHAT_FLOWS = {
       text: '…朔さんから、少し聞いていて。\nそれだけです。'
     },
     { id: 'karen_system',  from: 'system',  text: '→ 素材が届きました' },
-    { id: 'karen_material_note', from: 'client', text: '……確認、お願いします。\n気に入らないものは、外してもらっていいです。' },
     // 素材確認完了後、投稿フェーズへ。投稿後の反響完了後に karen_mystery_choice から再開する
     { id: 'karen_trigger',      from: 'trigger', action: 'showMaterial', resumeAt: 'karen_post_trigger' },
-    { id: 'karen_post_trigger', from: 'trigger', action: 'showPost',     resumeAt: 'karen_pre_mystery' },
+    { id: 'karen_post_trigger', from: 'trigger', action: 'showPost',     resumeAt: 'karen_mystery_choice' },
     // flashback3 は cards.js 内で k_memo カードをめくった時にトリガー
 
-    // ---- 「ひとつだけ」シーン（showPost 完了後、謎収束選択肢の直前）----
-    {
-      id: 'karen_pre_mystery',
-      from: 'client',
-      text: 'ひとつだけ、聞いてもいいですか。\n仕事の話じゃなくて。'
-    },
-    {
-      id: 'karen_pre_mystery_reply',
-      from: 'choices', opts: [
-        { text: '……はい',          next: 'karen_mystery_choice', egoPlus: true },
-        { text: '投稿の件で何か?',  next: 'karen_mystery_choice' }
-      ]
-    },
-
-    // ---- 謎収束選択肢（mysteryClues に 1件以上たまった場合のみ表示）----
+    // ---- 謎収束選択肢（mysteryClues に 2件以上たまった場合のみ表示）----
     {
       id: 'karen_mystery_choice',
       from: 'choices',
-      condition: 'mysteryClues.length >= 1',
+      condition: 'mysteryClues.length >= 2',
       opts: [
         { text: 'あなたのお姉さんに…記事を書いたのは私です', next: 'karen_zange_response', egoPlus: true, setFlag: 'zange' },
         { text: '（何も言わない）',                          next: 'karen_end' }
@@ -636,46 +458,12 @@ const CHAT_FLOWS = {
       id: 'karen_zange_response',
       from: 'client',
       text: '知っていました。',
-      pause: 8000,
-      direction: [
-        { cmd: 'bgm_change', src: null, fadeOutMs: 2000 },
-        { cmd: 'wait', ms: 2000 }
-      ]
-    },
-    {
-      id: 'karen_zange_response2',
-      from: 'client',
-      text: '最初からずっと。'
-    },
-    {
-      id: 'karen_zange_response3',
-      from: 'client',
-      text: '3年前、SNSで誰かに書かれた記事で、姉が消えました。\nアカウントを全部消して、しばらく連絡が取れなくて。'
-    },
-    {
-      id: 'karen_zange_response4',
-      from: 'client',
-      text: '今は、少しずつ戻ってきているんですけど。\nそれでも、ネットがまだ怖いって。'
-    },
-    {
-      id: 'karen_zange_response5',
-      from: 'client',
-      text: '湊さんが誰なのか、私は最初から知っていました。\nだから、頼んだんです。'
-    },
-    {
-      id: 'karen_zange_response5_mono',
-      from: 'player',
-      text: '',
-      direction: [
-        { cmd: 'wait', ms: 1200 },
-        { cmd: 'mono', text: '「知っていました」は——赦しでも、断罪でもない。\n「承知の上で依頼した」という、事実の確認だった。', style: 'hollow', durationMs: 4800, force: true }
-      ],
-      next: 'karen_zange_end'
+      pause: 8000
     },
     {
       id: 'karen_zange_end',
       from: 'client',
-      text: '言葉が怖いのは、本当のことだから。\n……でも、あなたの翻訳は、ちゃんと届きました。'
+      text: 'だから、頼みました。'
     }
   ]
 };
@@ -830,7 +618,6 @@ const REACTIONS = {
         { ava: '☕', name: 'cafe_hopper',    text: 'こういうお店、大好きです。今度行ってみます' },
         { ava: '🏘️', name: 'shotengai_fan', text: '商店街の喫茶店、なんか落ち着く。また来たくなる投稿' },
         { ava: '📖', name: 'slow_morning',   text: '「気分次第」のメニュー、いいですね。それが一番正直' },
-        { ava: '🌸', name: 'hanaren_log',    text: 'ここ、知ってます。大切な場所です。', likes: 0, rts: 0 },
       ],
       karen: [
         { ava: '🌸', name: 'ikebana_note',  text: 'この生け花、白と淡紅のバランスが美しい…' },
