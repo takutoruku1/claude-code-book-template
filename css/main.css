@@ -4580,3 +4580,153 @@ body[data-flashback-phase="3"] .protag-bubble {
     opacity: 0.15;
   }
 }
+
+/* ================================================
+   モバイルレイアウト対応 (max-width: 767px)
+   body.mobile-mode が JS で付与される
+   ================================================ */
+
+/* 1. body.mobile-mode 時の基本設定 */
+body.mobile-mode {
+  overflow: hidden;
+}
+
+/* 2. ウィンドウをフルスクリーン化 */
+body.mobile-mode .app-window.active,
+body.mobile-mode .chat-window.active {
+  position: fixed !important;
+  inset: 0 0 var(--taskbar-height, 48px) 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: calc(100vh - var(--taskbar-height, 48px)) !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+  left: 0 !important;
+  top: 0 !important;
+  animation: none !important; /* モバイルでは windowOpen アニメ不要 */
+}
+
+/* 3. タイトルバーのドラッグ・ボタン無効化 */
+body.mobile-mode .titlebar {
+  cursor: default;
+  touch-action: pan-x; /* ← スワイプで誤ドラッグ防止 */
+}
+
+/* モバイルでは最大化・スナップ・ドラッグは不要 */
+body.mobile-mode .snap-btn-wrap,
+body.mobile-mode .titlebar-winbtn.max,
+body.mobile-mode .snap-layouts {
+  display: none !important;
+}
+
+/* リサイズハンドル非表示 */
+body.mobile-mode .resize-handle {
+  display: none !important;
+}
+
+/* 4. タスクバーをモバイルタブバーとして再利用 */
+
+/* モバイルでは不要なアイコンを非表示 */
+body.mobile-mode #taskbarStart,
+body.mobile-mode #taskbarIconGames,
+body.mobile-mode #taskbarIconInvaders,
+body.mobile-mode #taskbarIconSolitaire,
+body.mobile-mode #taskbarIconMinesweeper,
+body.mobile-mode #taskbarIconY,
+body.mobile-mode .taskbar-tray {
+  display: none !important;
+}
+
+/* タスクバーを下部固定タブバーとして見せる */
+body.mobile-mode .taskbar {
+  height: 56px;
+  padding: 0;
+  justify-content: center;
+  gap: 0;
+}
+
+body.mobile-mode .taskbar-center {
+  width: 100%;
+  justify-content: space-around;
+}
+
+/* モバイルタブアイコンを大きく */
+body.mobile-mode .taskbar-icon {
+  width: 64px;
+  height: 56px;
+  font-size: 22px;
+  border-radius: 0;
+}
+
+/* アクティブタブの下線インジケーター */
+body.mobile-mode .taskbar-icon.active-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: var(--accent2, #7c6af7);
+  border-radius: 2px;
+}
+body.mobile-mode .taskbar-icon {
+  position: relative;
+}
+
+/* 5. スクロール操作の touch-action 設定 */
+
+/* チャットメッセージ: 縦スクロールのみ許可 */
+body.mobile-mode #chatMessages,
+body.mobile-mode .chatapp-messages {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 素材グリッド: 縦スクロール許可 */
+body.mobile-mode .material-grid {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 投稿オプション行: 横スクロール許可（選択肢が多い場合） */
+body.mobile-mode .post-options,
+body.mobile-mode .time-options {
+  touch-action: pan-x pan-y;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+
+/* game-panel 全体: 縦スクロール */
+body.mobile-mode .game-panel {
+  touch-action: pan-y;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 6. 主人公ウィジェットをモバイルで固定位置に */
+body.mobile-mode #protagonistWidget {
+  bottom: calc(var(--taskbar-height, 56px) + 16px) !important;
+  right: 12px !important;
+  left: auto !important;
+}
+
+/* 7. その他 UX 調整 */
+
+/* ポップアップ系はモバイルでは全画面 */
+body.mobile-mode .start-menu {
+  width: 100vw;
+  left: 0 !important;
+  border-radius: 16px 16px 0 0;
+  bottom: 56px;
+}
+
+/* ノートウィンドウもフルスクリーン化 */
+body.mobile-mode .note-window.active {
+  position: fixed !important;
+  inset: 0 0 56px 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: calc(100vh - 56px) !important;
+  border-radius: 0 !important;
+}

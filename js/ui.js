@@ -835,6 +835,7 @@ function taskbarToggleChat() {
   }
   updateTaskbarIndicators();
   refreshDesktopNotifs();
+  _mobileActivateTab('chatWindow');
 }
 
 function openChatApp() {
@@ -881,6 +882,7 @@ function taskbarToggleApp() {
   }
   updateTaskbarIndicators();
   refreshDesktopNotifs();
+  _mobileActivateTab('appWindow');
 }
 
 function taskbarToggleMemo() {
@@ -898,6 +900,7 @@ function taskbarToggleMemo() {
   } else {
     openMemoApp();
   }
+  _mobileActivateTab('memoAppWindow');
 }
 
 /* ===== TASKBAR CLOCK ===== */
@@ -1031,3 +1034,42 @@ document.addEventListener('click', function() {
   document.getElementById('notifCenter').classList.remove('active');
   closeStartMenu();
 });
+
+/* ============================================================
+   モバイルレイアウト管理
+============================================================ */
+function _updateMobileMode() {
+  if (window.innerWidth <= 767) {
+    document.body.classList.add('mobile-mode');
+  } else {
+    document.body.classList.remove('mobile-mode');
+  }
+}
+window.addEventListener('resize', _updateMobileMode);
+document.addEventListener('DOMContentLoaded', _updateMobileMode);
+
+function _mobileActivateTab(activeId) {
+  if (!document.body.classList.contains('mobile-mode')) return;
+  // 他のウィンドウを閉じる（アクティブクラス除去）
+  ['appWindow', 'chatWindow', 'memoAppWindow'].forEach(function(id) {
+    if (id !== activeId) {
+      var win = document.getElementById(id);
+      if (win) win.classList.remove('active');
+    }
+  });
+  // タブバーのアクティブ表示更新
+  var tabMap = {
+    appWindow:  'taskbarIconApp',
+    chatWindow: 'taskbarIconChat',
+    memoAppWindow: 'taskbarIconMemo'
+  };
+  Object.values(tabMap).forEach(function(iconId) {
+    var icon = document.getElementById(iconId);
+    if (icon) icon.classList.remove('active-tab');
+  });
+  var activeIconId = tabMap[activeId];
+  if (activeIconId) {
+    var activeIcon = document.getElementById(activeIconId);
+    if (activeIcon) activeIcon.classList.add('active-tab');
+  }
+}
