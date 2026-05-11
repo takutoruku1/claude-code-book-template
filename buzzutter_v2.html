@@ -922,6 +922,22 @@
   <div class="ending-emoji" id="endEmoji">🌿</div>
   <div class="ending-title" id="endTitle"></div>
   <div class="ending-sub" id="endSub"></div>
+
+  <!-- モノローグエリア（逐次表示） -->
+  <div id="endMono" class="ending-mono"></div>
+
+  <!-- zange用：タイピング入力エリア -->
+  <div id="endTypingArea" class="ending-typing-area" style="display:none">
+    <div class="ending-typing-input" id="endTypingInput"></div>
+    <div id="endKarenBubbles" class="ending-karen-bubbles"></div>
+  </div>
+
+  <!-- chinmoku用：ミステリーメッセージ -->
+  <div id="endMysteryMsg" class="ending-mystery" style="display:none">
+    <span class="mystery-sender" id="mysterySender">──────</span>
+    <span class="mystery-text"></span>
+  </div>
+
   <div class="ending-scores">
     <div class="ending-score">
       <span class="ending-score-num" id="endBuzz" style="color:var(--accent)">0</span>

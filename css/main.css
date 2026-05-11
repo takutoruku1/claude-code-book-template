@@ -1908,6 +1908,121 @@ body:has(#screen-title.active) .taskbar { display: none; }
 }
 .btn-retry:hover { border-color: var(--accent2); color: var(--text); }
 
+/* ===== ENDING — NO BLACKOUT (ズレエンド) ===== */
+#screen-ending.no-blackout {
+  background: transparent;
+  pointer-events: none;
+}
+#screen-ending.no-blackout * { pointer-events: auto; }
+
+/* ===== ENDING — MONOLOGUE (逐次表示) ===== */
+.ending-mono {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  max-width: 380px;
+  width: 100%;
+}
+.ending-mono-line {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 2;
+  animation: fadeIn .6s ease both;
+}
+
+/* ===== ENDING — TYPING AREA (zange) ===== */
+.ending-typing-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 380px;
+}
+.ending-typing-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  min-height: 44px;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.ending-karen-bubbles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.ending-karen-bubble {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px 10px 10px 2px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text);
+  animation: fadeIn .4s ease both;
+  max-width: 85%;
+}
+.ending-karen-typing {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px 10px 10px 2px;
+  align-self: flex-start;
+  animation: fadeIn .3s ease both;
+}
+.ending-karen-typing span {
+  width: 6px; height: 6px;
+  background: var(--text-dim);
+  border-radius: 50%;
+  animation: blink 1.2s ease infinite;
+}
+.ending-karen-typing span:nth-child(2) { animation-delay: .2s; }
+.ending-karen-typing span:nth-child(3) { animation-delay: .4s; }
+
+/* ===== ENDING — MYSTERY MESSAGE (chinmoku) ===== */
+.ending-mystery {
+  cursor: pointer;
+  border: 1px dashed rgba(255,255,255,.2);
+  padding: 12px 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: 340px;
+  width: 100%;
+  transition: border-color .3s;
+  animation: fadeIn .6s ease both;
+}
+.ending-mystery:hover { border-color: rgba(255,255,255,.4); }
+.mystery-sender {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: .2em;
+  transition: all .6s ease;
+}
+.mystery-sender.revealed {
+  color: var(--accent2);
+  letter-spacing: .1em;
+}
+.mystery-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.8;
+}
+
 /* ===== MISC ===== */
 .heart-float {
   position: fixed; pointer-events: none;

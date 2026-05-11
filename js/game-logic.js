@@ -466,13 +466,242 @@ function resolveKarenEnding() {
 ============================================================ */
 function showEnding(endKey) {
   const E = ENDINGS[endKey] || ENDINGS['saihan'];
-  document.getElementById('screen-ending').classList.add('active');
+  const screen = document.getElementById('screen-ending');
+
+  // --- 画面をアクティブにする ---
+  screen.classList.remove('no-blackout');
+  screen.classList.add('active');
   setStep(6);
 
-  document.getElementById('endBuzz').textContent = GS.buzz + '%';
-  document.getElementById('endSelf').textContent = GS.self + '%';
+  // --- 基本情報セット ---
+  document.getElementById('endBuzz').textContent  = GS.buzz + '%';
+  document.getElementById('endSelf').textContent  = GS.self + '%';
   document.getElementById('endEmoji').textContent = E.emoji;
   document.getElementById('endTitle').textContent = E.name;
-  document.getElementById('endSub').textContent   =
-    E.monologue ? E.monologue.filter(l => l).join('\n') : '';
+  document.getElementById('endSub').textContent   = '';
+
+  // モノローグエリアをリセット
+  const monoEl = document.getElementById('endMono');
+  if (monoEl) monoEl.innerHTML = '';
+
+  // タイピングエリアをリセット
+  const typingArea = document.getElementById('endTypingArea');
+  const typingInput = document.getElementById('endTypingInput');
+  const karenBubbles = document.getElementById('endKarenBubbles');
+  if (typingArea) { typingArea.style.display = 'none'; }
+  if (typingInput) typingInput.textContent = '';
+  if (karenBubbles) karenBubbles.innerHTML = '';
+
+  // ミステリーメッセージをリセット
+  const mysteryEl = document.getElementById('endMysteryMsg');
+  if (mysteryEl) { mysteryEl.style.display = 'none'; }
+
+  // --- chinmoku: btn-retry を最初は非表示 ---
+  const retryBtn = document.querySelector('.btn-retry');
+  if (endKey === 'chinmoku' && retryBtn) {
+    retryBtn.style.display = 'none';
+  } else if (retryBtn) {
+    retryBtn.style.display = '';
+  }
+
+  // --- noBlackout (zure): 背景透明 ---
+  if (E.noBlackout) {
+    screen.classList.add('no-blackout');
+  }
+
+  // --- noReplyEffect: チャット入力エリアをグレーアウト ---
+  if (E.noReplyEffect) {
+    const choices = document.querySelector('.chat-choices');
+    if (choices) {
+      choices.style.opacity = '0.3';
+      choices.style.pointerEvents = 'none';
+    }
+  }
+
+  // --- BGM管理 ---
+  const titleBgm = document.getElementById('titleBgm');
+  if (E.bgmTrack === null) {
+    // BGMなし: タイトルBGMを停止
+    if (titleBgm) titleBgm.pause();
+  } else {
+    // BGMあり: エンディング専用BGMを再生（ファイルが存在しない場合も try-catch で保護）
+    const playBgm = () => {
+      const audio = new Audio('bgm/' + E.bgmTrack + '.mp3');
+      audio.volume = 0.6;
+      try {
+        audio.play().catch(() => {});
+      } catch (e) {}
+    };
+    if (E.bgmDelay) {
+      setTimeout(playBgm, E.bgmDelay);
+    } else {
+      playBgm();
+    }
+  }
+
+  // --- appIconFade (chinmoku): デスクトップアイコンをフェードアウト ---
+  if (E.appIconFade) {
+    document.querySelectorAll('.desktop-icon').forEach(el => {
+      el.style.transition = 'opacity 3s';
+      el.style.opacity = '0';
+    });
+  }
+
+  // --- モノローグ逐次表示 ---
+  const interval = E.monologueInterval || 1800;
+  if (E.monologue && E.monologue.length > 0 && monoEl) {
+    let delay = 400;
+    E.monologue.forEach(line => {
+      if (line === '') {
+        // spacer: intervalだけ待機
+        delay += interval;
+      } else {
+        setTimeout(() => {
+          const span = document.createElement('span');
+          span.className = 'ending-mono-line';
+          span.textContent = line;
+          monoEl.appendChild(span);
+        }, delay);
+        delay += interval;
+      }
+    });
+
+    // モノローグ終了後にエンド別演出
+    const afterMonoDelay = delay;
+
+    // --- chinmoku 固有演出 ---
+    if (endKey === 'chinmoku') {
+      // mysteryMessage をモノローグ完了後 1000ms で表示
+      if (E.mysteryMessage && mysteryEl) {
+        setTimeout(() => {
+          mysteryEl.style.display = '';
+          const senderEl = document.getElementById('mysterySender');
+          const textEl = mysteryEl.querySelector('.mystery-text');
+          if (senderEl) senderEl.textContent = E.mysteryMessage.sender;
+          if (textEl) textEl.textContent = E.mysteryMessage.text;
+
+          // クリックで差出人を逆再生アニメーションで revealed に変える
+          mysteryEl.onclick = () => {
+            if (senderEl && !senderEl.classList.contains('revealed')) {
+              senderEl.classList.add('revealed');
+              const original = senderEl.textContent;
+              let len = original.length;
+              const eraseInterval = setInterval(() => {
+                len--;
+                senderEl.textContent = original.slice(0, len);
+                if (len <= 0) {
+                  clearInterval(eraseInterval);
+                  senderEl.textContent = E.mysteryMessage.senderRevealed;
+                }
+              }, 120);
+            }
+          };
+        }, afterMonoDelay + 1000);
+      }
+
+      // mysteryMessage 表示後 retryButtonDelay ms でボタンをfadeInで表示
+      setTimeout(() => {
+        if (retryBtn) {
+          retryBtn.style.display = '';
+          retryBtn.style.animation = 'fadeIn .6s ease both';
+        }
+      }, afterMonoDelay + 1000 + (E.retryButtonDelay || 10000));
+    }
+
+    // --- zange 固有演出 ---
+    if (endKey === 'zange' && E.typingText && typingArea) {
+      setTimeout(() => {
+        typingArea.style.display = '';
+
+        const fullText = E.typingText;
+
+        // タイピングアニメーション関数
+        function typeText(text, onDone) {
+          typingInput.textContent = '';
+          let i = 0;
+          function next() {
+            if (i >= text.length) { if (onDone) onDone(); return; }
+            typingInput.textContent += text[i];
+            i++;
+            setTimeout(next, 40 + Math.random() * 40);
+          }
+          next();
+        }
+
+        // typingRetry: 途中まで打ったら削除→最初から再入力
+        if (E.typingRetry) {
+          // 半分まで打つ
+          const halfway = Math.floor(fullText.length / 2);
+          const halfText = fullText.slice(0, halfway);
+          typeText(halfText, () => {
+            // 少し間を置いて削除
+            setTimeout(() => {
+              let cur = halfText.length;
+              const del = setInterval(() => {
+                cur--;
+                typingInput.textContent = fullText.slice(0, cur);
+                if (cur <= 0) {
+                  clearInterval(del);
+                  // 全文を最初から打ち直す
+                  setTimeout(() => {
+                    typeText(fullText, () => _startKarenTyping());
+                  }, 600);
+                }
+              }, 30);
+            }, 800);
+          });
+        } else {
+          typeText(fullText, () => _startKarenTyping());
+        }
+
+        // karenTypingLoops: タイピングインジケーターをN回表示
+        function _startKarenTyping() {
+          const loops = E.karenTypingLoops || 0;
+          let loopCount = 0;
+
+          function showLoop() {
+            if (loopCount >= loops) {
+              // ループ完了後 karenResponse を表示
+              _showKarenResponses();
+              return;
+            }
+            // インジケーター追加
+            const ind = document.createElement('div');
+            ind.className = 'ending-karen-typing';
+            ind.innerHTML = '<span></span><span></span><span></span>';
+            karenBubbles.appendChild(ind);
+            loopCount++;
+            setTimeout(() => {
+              ind.remove();
+              setTimeout(showLoop, 1200);
+            }, 2800);
+          }
+
+          showLoop();
+        }
+
+        // karenResponse: チャットバブル風に順番に表示
+        function _showKarenResponses() {
+          const responses = E.karenResponse || [];
+          let idx = 0;
+          function next() {
+            if (idx >= responses.length) return;
+            const r = responses[idx];
+            const bubble = document.createElement('div');
+            bubble.className = 'ending-karen-bubble';
+            bubble.textContent = r.text;
+            karenBubbles.appendChild(bubble);
+            idx++;
+            if (r.pauseAfter > 0) {
+              setTimeout(next, r.pauseAfter);
+            } else {
+              // pauseAfter === 0 は「ここで止まる」
+            }
+          }
+          next();
+        }
+
+      }, afterMonoDelay);
+    }
+  }
 }
