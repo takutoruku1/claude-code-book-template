@@ -3,8 +3,8 @@
 ============================================================ */
 const CHARACTERS = {
   midori: { name: '田中 みどり', avatar: '🌿', tag: 'チュートリアル' },
-  saku:   { name: '倉田 朔',     avatar: '🔧', tag: '' },
-  seiji:  { name: '松本 誠司',   avatar: '☕', tag: '' },
+  saku:   { name: '水無月 朔',   avatar: '🔧', tag: '' },
+  seiji:  { name: '天羽 誠司',   avatar: '☕', tag: '' },
   karen:  { name: '篠宮 花蓮',   avatar: '🌸', tag: 'キーパーソン' },
 };
 
@@ -107,6 +107,8 @@ function addChatMsg(from, text, ava, keyword, imageSrc) {
   const msgs = document.getElementById('chatMessages');
   const row  = document.createElement('div');
   row.className = 'msg-row' + (from === 'self' ? ' self' : '');
+  const senderLabel = from === 'self' ? '湊' : (CHARACTERS[GS?.route]?.name || '相手');
+  row.setAttribute('aria-label', `${senderLabel}: ${text}`);
   const now = new Date();
   const t   = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
   const extraClass = (from === 'client' && keyword) ? ' clippable' : '';
@@ -162,8 +164,10 @@ function addTyping() {
   const msgs = document.getElementById('chatMessages');
   const r = document.createElement('div');
   r.className = 'msg-row'; r.id = 'typingRow';
+  r.setAttribute('role', 'status');
+  r.setAttribute('aria-label', '入力中...');
   r.innerHTML = `<div class="msg-ava client">${CHARACTERS[GS.route].avatar}</div>
-    <div class="typing-indicator">
+    <div class="typing-indicator" aria-hidden="true">
       <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
     </div>`;
   msgs.appendChild(r);
