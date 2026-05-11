@@ -220,7 +220,11 @@ const CHAT_FLOWS = {
     {
       id: 'midori_post_reaction',
       from: 'player',
-      text: 'では、投稿を作ってみましょう。'
+      text: 'では、投稿を作ってみましょう。',
+      direction: [
+        { cmd: 'wait', ms: 600 },
+        { cmd: 'mono', text: '翻訳が上手くいった、と思う。\nこの仕事を始めた理由を、今夜は考えないようにした。', style: 'normal', durationMs: 3600, force: false }
+      ]
     },
     { id: 'midori_post_trigger', from: 'trigger', action: 'showPost' }
   ],
@@ -279,7 +283,11 @@ const CHAT_FLOWS = {
     {
       id: 'saku_dilemma1',
       from: 'client',
-      text: 'これ…使えないですよね。\nぼけてるし、何が撮りたいかもわかんないし。\nでも捨てられなくて。送ってみました。'
+      text: 'これ…使えないですよね。\nぼけてるし、何が撮りたいかもわかんないし。\nでも捨てられなくて。送ってみました。',
+      direction: [
+        { cmd: 'wait', ms: 400 },
+        { cmd: 'mono', text: '——カレン。\n付箋に書かれた名前が、目に入った瞬間、手が止まった。よくある名前だ。そう思おうとした。', style: 'flashback', durationMs: 3200, force: false }
+      ]
     },
     {
       id: 'saku_dilemma1_reply',
@@ -291,7 +299,11 @@ const CHAT_FLOWS = {
     {
       id: 'saku_dilemma1_end_self',
       from: 'client',
-      text: '…そうですね。じゃあ、出してみます。'
+      text: '…そうですね。じゃあ、出してみます。',
+      direction: [
+        { cmd: 'wait', ms: 800 },
+        { cmd: 'mono', text: '届く、という言葉を、私はいつも慎重に使う。\n届くのが良いことだとは限らない、と——一度だけ思い知ったから。\nでも今この瞬間は、届いてほしいと思った。朔さんの、この視点が。', style: 'normal', durationMs: 5000, force: false }
+      ]
     },
     // 投稿フェーズへ移行。投稿後の反響フェーズ完了後に saku_dilemma2 から会話を再開する
     { id: 'saku_post_trigger', from: 'trigger', action: 'showPost', resumeAt: 'saku_dilemma2' },
@@ -312,16 +324,32 @@ const CHAT_FLOWS = {
       id: 'saku_dilemma2_reply',
       from: 'choices', opts: [
         { text: 'そのまま素直に、ありがとうと伝えてみてください', next: 'saku_dm_end' },
-        { text: '…そのアカウント名、教えてもらえますか',         next: 'saku_dm_name',    egoPlus: true, setFlag: 'kShinonoya' },
+        { text: '…そのアカウント名、教えてもらえますか',         next: 'saku_dm_notice',  egoPlus: true, setFlag: 'kShinonoya' },
         { text: '（何も言わず、次の投稿の話をする）',            next: 'saku_dm_end' }
       ]
     },
 
     // kShinonoya フラグを立てた選択肢からのみ到達するため condition は不要
     {
+      id: 'saku_dm_notice',
+      from: 'client',
+      text: '……（少し間があって）\n開けてもいい？'
+    },
+    {
+      id: 'saku_dm_notice_reply',
+      from: 'choices', opts: [
+        { text: '…どうぞ',           next: 'saku_dm_name' },
+        { text: '（何も言わず、見ている）', next: 'saku_dm_name' }
+      ]
+    },
+    {
       id: 'saku_dm_name',
       from: 'client',
-      text: 'え…k_shinonoya、って。\n知り合いですか？'
+      text: 'え…k_shinonoya、って。\n知り合いですか？',
+      direction: [
+        { cmd: 'wait', ms: 1200 },
+        { cmd: 'mono', text: 'k_shinonoya——\n3年前に削除されたはずのアカウント名と、最初の4文字が同じだった。\n偶然だ、と言い聞かせた。', style: 'flashback', durationMs: 4200, force: true }
+      ]
     },
     {
       id: 'saku_dm_name_reply',
@@ -345,9 +373,37 @@ const CHAT_FLOWS = {
     {
       id: 'seiji_hello_reply',
       from: 'choices', opts: [
-        { text: 'どんなお店ですか？',            next: 'seiji_shop' },
+        { text: 'どんなお店ですか？',            next: 'seiji_regulars' },
         { text: '映えを意識してみますか', next: 'seiji_insta_bridge' }
       ]
+    },
+    {
+      id: 'seiji_regulars',
+      from: 'client',
+      text: '以前、よく来てた女の子がいてね。若いのに落ち着いた子で。\n急にぱったり来なくなって。まあ、よくあることだけど。\nなんかね、思い出すことがあって。'
+    },
+    {
+      id: 'seiji_regulars_reply',
+      from: 'choices', opts: [
+        { text: 'どんな方でしたか',     next: 'seiji_regulars_detail' },
+        { text: '……そうですか',        next: 'seiji_regulars_mono' }
+      ]
+    },
+    {
+      id: 'seiji_regulars_detail',
+      from: 'client',
+      text: '名前は聞いてなかった。でも花が好きで、よく話してくれた。生け花をやってるって。',
+      next: 'seiji_regulars_mono'
+    },
+    {
+      id: 'seiji_regulars_mono',
+      from: 'player',
+      text: '',
+      direction: [
+        { cmd: 'wait', ms: 600 },
+        { cmd: 'mono', text: '——生け花。\n反応しそうになって、止めた。\n名前も顔も知らない。急に来なくなった若い女性。\nそれだけの情報で、何かを決めるのは、早計だ。', style: 'normal', durationMs: 4800, force: false }
+      ],
+      next: 'seiji_shop'
     },
     {
       id: 'seiji_insta_bridge',
@@ -371,7 +427,23 @@ const CHAT_FLOWS = {
       id: 'seiji_send',
       from: 'client',
       text: 'あ、そっちの方がいいかも。映える店じゃないし。写真送りますね。',
-      clippable: true, keyword: '映える店じゃない'
+      clippable: true, keyword: '映える店じゃない',
+      next: 'seiji_tired'
+    },
+    {
+      id: 'seiji_tired',
+      from: 'client',
+      text: 'うちに来てくれる子はね、全員、何かに疲れた顔してるんだよ。\n若い子もそう。一人でコーヒー飲んで、2時間いる。何も頼まなくてもいい、って言ってある。\nそういう場所、SNSで呼べるのかな。'
+    },
+    {
+      id: 'seiji_tired_mono',
+      from: 'player',
+      text: '',
+      direction: [
+        { cmd: 'wait', ms: 700 },
+        { cmd: 'mono', text: '居場所を作る、か。\n私が3年前に奪ったのも、それだったかもしれない。\n——止めろ。仕事に集中しろ。', style: 'normal', durationMs: 4200, force: false }
+      ],
+      next: 'seiji_system'
     },
     { id: 'seiji_system',  from: 'system',  text: '→ 素材が届きました' },
     { id: 'seiji_trigger', from: 'trigger', action: 'showMaterial', resumeAt: 'seiji_post_reaction' },
@@ -382,7 +454,15 @@ const CHAT_FLOWS = {
     },
     { id: 'seiji_system_buzz',  from: 'system',  text: '→ 素材が届きました' },
     { id: 'seiji_trigger_buzz', from: 'trigger', action: 'showMaterial', resumeAt: 'seiji_post_reaction' },
-    { id: 'seiji_post_reaction', from: 'player',  text: 'では、投稿を作ってみましょう。' },
+    {
+      id: 'seiji_post_reaction',
+      from: 'player',
+      text: 'では、投稿を作ってみましょう。',
+      direction: [
+        { cmd: 'wait', ms: 500 },
+        { cmd: 'mono', text: '——どこかで見た、と思った。\n喫茶 ゆきわりそう。古い書体のネオン管。\n記憶の引っかかり方が、ただの既視感ではないような気がした。\nでも思い出せない。考えないようにした。', style: 'normal', durationMs: 5200, force: false }
+      ]
+    },
     { id: 'seiji_post_trigger',  from: 'trigger', action: 'showPost' }
   ],
 
@@ -618,6 +698,7 @@ const REACTIONS = {
         { ava: '☕', name: 'cafe_hopper',    text: 'こういうお店、大好きです。今度行ってみます' },
         { ava: '🏘️', name: 'shotengai_fan', text: '商店街の喫茶店、なんか落ち着く。また来たくなる投稿' },
         { ava: '📖', name: 'slow_morning',   text: '「気分次第」のメニュー、いいですね。それが一番正直' },
+        { ava: '🌸', name: 'hanaren_log',    text: 'ここ、知ってます。大切な場所です。', likes: 0, rts: 0 },
       ],
       karen: [
         { ava: '🌸', name: 'ikebana_note',  text: 'この生け花、白と淡紅のバランスが美しい…' },
