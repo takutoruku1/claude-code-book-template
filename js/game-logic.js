@@ -477,7 +477,8 @@ function showEnding(endKey) {
   const karenEnds = ['zange', 'kidoku', 'chinmoku'];
 
   // 1. #screen-ending のクラスをリセットし .active + .ending-${endKey} を追加
-  const screenEnding = document.getElementById('screen-ending');
+  var screenEnding = document.getElementById('screen-ending');
+  if (!screenEnding) { console.warn('[showEnding] #screen-ending が見つかりません'); return; }
   screenEnding.className = '';
   screenEnding.classList.add('active', 'ending-' + endKey);
 
@@ -506,6 +507,12 @@ function showEnding(endKey) {
   // 5. endSub を空にしてモノローグ用エリアとして使う
   if (endSub) endSub.innerHTML = '';
 
+  // 前回の動的要素をクリーンアップ
+  var oldZangeArea = screenEnding.querySelector('.zange-area');
+  if (oldZangeArea) oldZangeArea.parentNode.removeChild(oldZangeArea);
+  var oldMysteryMsg = screenEnding.querySelector('.ending-mystery-msg');
+  if (oldMysteryMsg) oldMysteryMsg.parentNode.removeChild(oldMysteryMsg);
+
   // 6. .btn-retry を非表示に設定
   var btnRetry = screenEnding.querySelector('.btn-retry');
   if (btnRetry) btnRetry.style.display = 'none';
@@ -514,7 +521,7 @@ function showEnding(endKey) {
   if (typeof directionBgmChange === 'function' && E.bgmTrack) {
     var bgmDelay = E.bgmDelay || 0;
     setTimeout(function() {
-      directionBgmChange(E.bgmTrack, E.fadeDuration || 0);
+      directionBgmChange({ track: E.bgmTrack, fadeMs: (E.fadeDuration || 0) * 1000, volume: 0.5 });
     }, bgmDelay);
   }
 
@@ -563,11 +570,20 @@ function showEnding(endKey) {
     // noReplyEffect: 入力欄をグレーアウト
     if (E.noReplyEffect) {
       setTimeout(function() {
-        var chatInput = document.getElementById('chatInput') ||
-                        document.querySelector('.chat-input');
-        if (chatInput) {
-          chatInput.classList.add('disabled');
-        }
+        // チャット入力エリアを探してグレーアウト
+        var targets = [
+          document.getElementById('chatChoices'),
+          document.querySelector('.chat-choices'),
+          document.querySelector('#chatFooter'),
+          document.querySelector('.chat-footer'),
+          document.querySelector('.chat-input-area')
+        ];
+        targets.forEach(function(el) {
+          if (el) {
+            el.style.opacity = '0.3';
+            el.style.pointerEvents = 'none';
+          }
+        });
       }, afterMonologue);
     }
 
@@ -585,14 +601,28 @@ function showEnding(endKey) {
       }, afterMonologue);
     }
 
-  }, blackoutMs);
+    // zange / chinmoku の演出所要時間を大まかに加算してリトライボタンを表示
+    var extraDelay = 0;
+    if (endKey === 'zange') {
+      // typingRetry + karenTypingLoops + karenResponse 全 pauseAfter の合計
+      var zangeTypingMs = (E.typingText || '').length * 60;
+      if (E.typingRetry) zangeTypingMs = zangeTypingMs * 2 + 1300 + 500;
+      var loopMs = (E.karenTypingLoops || 0) * 1600 + 1000;
+      var respMs = (E.karenResponse || []).reduce(function(s, r) { return s + (r.pauseAfter || 0); }, 0);
+      extraDelay = zangeTypingMs + loopMs + respMs;
+    }
+    if (endKey === 'chinmoku') {
+      extraDelay = E.silenceDuration != null ? E.silenceDuration : 10000;
+    }
 
-  // retryButtonDelay 後に .btn-retry を表示
-  var retryDelay = E.retryButtonDelay || 5000;
-  setTimeout(function() {
-    var btn = screenEnding.querySelector('.btn-retry');
-    if (btn) btn.style.display = '';
-  }, retryDelay);
+    var totalRetryDelay = afterMonologue + extraDelay + (E.retryButtonDelay || 5000);
+    setTimeout(function() {
+      var btn = document.getElementById('screen-ending') &&
+                document.getElementById('screen-ending').querySelector('.btn-retry');
+      if (btn) btn.style.display = '';
+    }, totalRetryDelay);
+
+  }, blackoutMs);
 }
 
 /* ============================================================

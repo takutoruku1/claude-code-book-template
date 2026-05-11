@@ -4497,3 +4497,12 @@ body[data-flashback-phase="3"] .protag-bubble {
   letter-spacing: 0.1em;
   font-style: italic;
 }
+
+/* noReplyEffect: チャット入力エリアのグレーアウト */
+.chat-input.disabled,
+.chat-footer.disabled,
+#chatFooter.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
