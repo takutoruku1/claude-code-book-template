@@ -89,7 +89,7 @@
 ```
 - `target`: `"chatMessages"` / `"chatBubble"` / `"appWindow"` / `"body"`
 - `durationMs`: グリッチ持続時間。
-- `intensity`: `"low"` / `"medium"` / `"high"` — CSS アニメーション強度クラスに対応。
+- `intensity`: `"mild"` / `"medium"` / `"severe"` — CSS アニメーション強度クラスに対応（`.mystery-glitch.mild/medium/severe`）。
 
 #### `mono`
 ```json
@@ -575,7 +575,8 @@ function directionSilenceInput(d) {
   text: 'お母さんが最近、施設に入ったんです。\n離れてても繋がってるって感じたくて。\n私の日常、見ててほしいなって。',
   clippable: true, keyword: 'お母さんに届けたい',
   direction: [
-    { cmd: 'mono', text: '（…言葉が、ある）', style: 'normal', durationMs: 2000, force: false }
+    // plot_steinsgate.md §みどりルート「翻訳」テーマ確定テキストに合わせる
+    { cmd: 'mono', text: '翻訳が上手くいった、と思う。その人の言葉として届く投稿——それが、この仕事の正解だ。', style: 'normal', durationMs: 3600, force: false }
   ]
 },
 ```
@@ -713,12 +714,18 @@ if (m.flashback3Trigger) {
       { cmd: 'wait',          ms: 1800 },
       { cmd: 'sfx',           sound: 'heartbeat',    volume: 0.6 },
       { cmd: 'flash',         color: '#1a0020', durationMs: 800, opacity: 0.7 },
-      { cmd: 'overlay_text',  text: '3年前の記事。\n篠宮カレンの姉。\n俺が——追っていた。',
-                              style: 'memory', durationMs: 4000, fadeInMs: 600, fadeOutMs: 800 },
+      // overlay_textは使わず、mono連打で身体感覚・衝撃を表現（世界観視点レビュー指摘対応）
+      { cmd: 'mono',          text: '——篠宮。', style: 'flashback', durationMs: 1800, force: true },
+      { cmd: 'wait',          ms: 1200 },
+      { cmd: 'mono',          text: 'カレンが好きそう、という名前。ゆきわりそう。既読のつかないメッセージ。', style: 'flashback', durationMs: 3400, force: true },
+      { cmd: 'wait',          ms: 1600 },
+      { cmd: 'mono',          text: '頭の中で、点と点が線になっていく。', style: 'flashback', durationMs: 2600, force: true },
       { cmd: 'wait',          ms: 1000 },
       { cmd: 'glitch',        target: 'appWindow', durationMs: 700, intensity: 'medium' },
       { cmd: 'sfx',           sound: 'glitch_buzz', volume: 0.5 },
-      { cmd: 'mono',          text: '——全部、繋がっていた。', style: 'flashback', durationMs: 3800, force: true },
+      // 身体感覚・衝撃を一行に集中（plot_steinsgate.md §湊が気づく瞬間の設計 確定テキスト）
+      { cmd: 'overlay_text',  text: '線になった瞬間——吐き気がした。',
+                              style: 'memory', durationMs: 3200, fadeInMs: 600, fadeOutMs: 800 },
       { cmd: 'wait',          ms: 600 },
       { cmd: 'mystery_update' }
     ];
@@ -772,6 +779,28 @@ if (m.flashback3Trigger) {
     { cmd: 'sfx',           sound: 'notification_read', volume: 0.3 },
     // 8秒の pause の間、心拍音で緊張感を維持
     { cmd: 'sfx',           sound: 'heartbeat', volume: 0.25 }
+  ]
+},
+
+// 贖罪エンド経路: karen_zange_response → エンディングへの橋渡し演出
+// plot_steinsgate.md §「全てが繋がる」収束のナラティブ 確定テキストに準拠
+{
+  id: 'karen_zange_mono_bridge',
+  from: 'player',
+  text: '',
+  direction: [
+    { cmd: 'wait',  ms: 1200 },
+    // 「翻訳」テーマの収束モノローグ（贖罪エンド経路）
+    { cmd: 'mono',  text: '3年前の記事は、今もある。', style: 'hollow', durationMs: 2400, force: true },
+    { cmd: 'wait',  ms: 1800 },
+    { cmd: 'mono',  text: '翻訳者というのは、消えることだと思う。', style: 'hollow', durationMs: 2800, force: true },
+    { cmd: 'wait',  ms: 2000 },
+    { cmd: 'mono',  text: '3年前の私は、代わりに叫んだ。自分のために。', style: 'flashback', durationMs: 3000, force: true },
+    { cmd: 'wait',  ms: 1800 },
+    { cmd: 'mono',  text: '今は——その人の言葉として届けようとしている。', style: 'hollow', durationMs: 3000, force: true },
+    { cmd: 'wait',  ms: 2000 },
+    { cmd: 'mono',  text: 'これが贖罪なのか、ただの仕事なのか。わからないまま、明日も仕事がある。', style: 'hollow', durationMs: 4000, force: true },
+    { cmd: 'wait',  ms: 1600 }
   ]
 },
 ```
@@ -1117,11 +1146,17 @@ function triggerFlashback(phase, callback) {
       // 暗赤フラッシュで記憶の侵入を表現
       { cmd: 'flash',      color: '#1a0000', durationMs: 500, opacity: 0.55 },
       { cmd: 'sfx',        sound: 'static', volume: 0.25 },
-      // モノローグ行 1
-      { cmd: 'mono',       text: '——残す、か。', style: 'flashback', durationMs: 2000, force: true },
+      // モノローグ行 1（plot_steinsgate.md §朔ルート「追加フラッシュバック強化テキスト」確定版）
+      { cmd: 'mono',       text: '——残す。あの記事も、残っている。', style: 'flashback', durationMs: 2200, force: true },
       { cmd: 'wait',       ms: 1800 },
       // モノローグ行 2
-      { cmd: 'mono',       text: '証拠を残す。それが俺の仕事だった。', style: 'flashback', durationMs: 2400, force: true },
+      { cmd: 'mono',       text: '2200文字。送信まで8分かかった。', style: 'flashback', durationMs: 2000, force: true },
+      { cmd: 'wait',       ms: 1600 },
+      // モノローグ行 3
+      { cmd: 'mono',       text: '@k_shinonoya のアカウントが削除されたのを確認したのは、翌朝の5時だった。', style: 'flashback', durationMs: 3200, force: true },
+      { cmd: 'wait',       ms: 2000 },
+      // モノローグ行 4
+      { cmd: 'mono',       text: 'コメント欄は302件。私が書いたのはその火種の一つだった。', style: 'flashback', durationMs: 3000, force: true },
       { cmd: 'wait',       ms: 2200 }
     ];
     processDirections(phase2Directions, () => {
@@ -1133,12 +1168,15 @@ function triggerFlashback(phase, callback) {
     const phase3Directions = [
       // Phase 3 は §2-4 の k_memo 演出とのシーケンスで処理する
       // ここではモノローグのみ（オーバーレイ演出は game-logic.js 側で実行済み）
+      // plot_steinsgate.md §湊が気づく瞬間の設計 確定テキストに準拠
       { cmd: 'wait',  ms: 500 },
-      { cmd: 'mono',  text: '3年前の捜査。', style: 'flashback', durationMs: 2000, force: true },
-      { cmd: 'wait',  ms: 1800 },
-      { cmd: 'mono',  text: '篠宮 カレンの姉。', style: 'flashback', durationMs: 2200, force: true },
-      { cmd: 'wait',  ms: 2000 },
-      { cmd: 'mono',  text: '俺が追っていた——', style: 'flashback', durationMs: 2400, force: true },
+      { cmd: 'mono',  text: '——篠宮。', style: 'flashback', durationMs: 1800, force: true },
+      { cmd: 'wait',  ms: 1200 },
+      { cmd: 'mono',  text: 'カレンが好きそう、という名前。ゆきわりそう。既読のつかないメッセージ。', style: 'flashback', durationMs: 3400, force: true },
+      { cmd: 'wait',  ms: 1600 },
+      { cmd: 'mono',  text: '頭の中で、点と点が線になっていく。', style: 'flashback', durationMs: 2600, force: true },
+      { cmd: 'wait',  ms: 1400 },
+      { cmd: 'mono',  text: '線になった瞬間——吐き気がした。', style: 'flashback', durationMs: 2800, force: true },
       { cmd: 'wait',  ms: 2200 }
     ];
     processDirections(phase3Directions, () => {
@@ -1501,6 +1539,38 @@ function showKidokuEndingSequence(lastChoiceCallback) {
       showProtagMsg('（…何を、言えばいい）', true, 3500, true);
     }
   }, 2000);
+}
+
+/**
+ * 沈黙エンド直前: 「翻訳、ありがとうございました。」への収束演出
+ * plot_steinsgate.md §5「沈黙エンド」確定テキストに準拠
+ * 差出人不明のメッセージが届く前の、主人公の空白を演出する。
+ */
+function showChinmokuEndTranslationConverge(onComplete) {
+  if (typeof processDirections !== 'function') {
+    if (onComplete) onComplete();
+    return;
+  }
+
+  const chinmokuDirections = [
+    { cmd: 'bgm_change',   track: 'silence', fadeMs: 2000 },
+    { cmd: 'wait',         ms: 2200 },
+    // 湊が「何も言えなかった」という空白を示す
+    { cmd: 'mono',         text: '言えなかった。', style: 'hollow', durationMs: 2200, force: true },
+    { cmd: 'wait',         ms: 1800 },
+    { cmd: 'mono',         text: '口を開けたまま、何も出てこなかった。', style: 'hollow', durationMs: 2600, force: true },
+    { cmd: 'wait',         ms: 2000 },
+    // 「翻訳、ありがとうございました。」が届く直前の空白
+    { cmd: 'silence_input', durationMs: 3500, visual: 'kidoku' },
+    { cmd: 'wait',         ms: 3000 },
+    // 収束演出: 差出人不明のメッセージへの橋渡し
+    { cmd: 'sfx',          sound: 'notification_read', volume: 0.3 },
+    { cmd: 'wait',         ms: 1200 }
+  ];
+
+  processDirections(chinmokuDirections, () => {
+    if (onComplete) onComplete();
+  });
 }
 ```
 

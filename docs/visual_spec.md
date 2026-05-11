@@ -1,9 +1,59 @@
 # バズったー ビジュアル仕様書 (visual_spec.md)
 
-> バージョン: 1.0  
+> バージョン: 1.1  
 > 担当: ビジュアル・デザイン担当エージェント  
 > 作成日: 2026-05-11  
+> 更新日: 2026-05-11（Phase 3 レビュー指摘反映）  
 > 参照: `docs/UI設計書.md` v1.1 との整合確認済み
+
+---
+
+## 実装上の最重要注意事項
+
+### A. ミステリーフェーズ制御方式の統一
+
+**本仕様書は `body[data-mystery="N"]` データ属性セレクタでミステリーフェーズを制御する。**
+
+`direction_script.md` 側の `applyMysteryPhase()` が `body.classList` でクラスを付与する実装になっている場合は、以下のいずれかに統一すること:
+
+- **推奨**: `applyMysteryPhase()` を修正し、クラスと data 属性の両方を設定する:
+  ```javascript
+  // applyMysteryPhase() 内で両方を設定する
+  document.body.classList.remove('mystery-0', 'mystery-1', 'mystery-2', 'mystery-3');
+  document.body.classList.add(`mystery-${phase}`);
+  document.body.dataset.mystery = String(phase); // 本仕様書のCSSセレクタ用
+  ```
+- または: 本仕様書の CSS セレクタを `body.mystery-N ...` に統一変更する
+
+**本仕様書のCSS (`body[data-mystery="N"]`) は、`document.body.dataset.mystery` が正しく設定されていることを前提とする。**
+
+### B. `.karen-climax` の付与手段
+
+`direction_script.md` の `executeDirectionCmd()` に以下の命令が追加されていることを前提とする:
+
+```javascript
+// add_class 命令の実装（direction_script.md 側に追加が必要）
+case 'add_class': {
+  const el = document.querySelector(d.target);
+  if (el) el.classList.add(d.class);
+  break;
+}
+case 'remove_class': {
+  const el = document.querySelector(d.target);
+  if (el) el.classList.remove(d.class);
+  break;
+}
+```
+
+`.karen-climax` は以下の演出命令から呼ばれる:
+
+```javascript
+// direction_script.md の karen_mystery_choice シーケンス内
+{ type: 'add_class', target: '.reaction-area', class: 'karen-climax' }
+// 収束時:
+{ type: 'remove_class', target: '.reaction-area', class: 'karen-climax' }
+{ type: 'add_class',    target: '.reaction-area', class: 'karen-resolve' }
+```
 
 ---
 
@@ -14,7 +64,15 @@
 3. [キャラクターアバター変化仕様](#3-キャラクターアバター変化仕様)
 4. [花蓮ルートのクライマックスビジュアル](#4-花蓮ルートのクライマックスビジュアル)
 5. [SNS風UIを「違和感ツール」として使う設計](#5-sns風uiを違和感ツールとして使う設計)
-6. [既存UI設計書との整合確認・差分](#6-既存ui設計書との整合確認差分)
+6. [フラッシュバック演出レイヤー仕様](#6-フラッシュバック演出レイヤー仕様)
+7. [既存UI設計書との整合確認・差分](#7-既存ui設計書との整合確認差分)
+
+> **v1.2 更新内容（Phase 3 レビュー指摘反映）:**
+> - §A: `.karen-climax` 付与手段・タイミング・JS命令を明記（演出視点 問題3）
+> - §1-2: `--flashback-danger: #8b2020` を `:root` に追加（plot指摘）
+> - §1-3: 朔ルートに hue-rotate 最終表示の補足コメントを追加（plot指摘）
+> - §5-4: `@hanaren_log` リプライの「目立たない」CSS仕様を新規追加（世界観視点 推奨④）
+> - §6: フラッシュバック演出レイヤー仕様（2枚並列重ねレイヤー）を新規追加（世界観視点 問題②・演出視点 問題3）
 
 ---
 
@@ -46,6 +104,23 @@
   --mystery-hue:     0deg; /* hue-rotate 量 */
   --mystery-contrast: 1;   /* contrast() 倍率 */
   --mystery-glitch-opacity: 0; /* グリッチオーバーレイ透明度 */
+
+  /*
+   * ミステリークラックカラー（ルートごとに上書き）
+   * デフォルトは花蓮ルート用のダークローズだが、各ルートで上書きして
+   * 「花蓮色が他ルートに漏れる」問題を防ぐ。
+   * ※ CSS の rgba() は現状 custom property を channel 分離できないため、
+   *    ルート別のオーバーライドで直接 rgba 値を指定する方式を採用。
+   */
+  --mystery-crack-color-subtle:  rgba(200, 120, 144, 0.35); /* フェーズ2以降の枠色（花蓮デフォルト） */
+  --mystery-crack-color-mid:     rgba(200, 120, 144, 0.55); /* フェーズ3の枠色 */
+  --mystery-crack-color-glow:    rgba(200, 120, 144, 0.15); /* フェーズ3のシャドウ */
+  --mystery-crack-color-line:    rgba(200, 120, 144, 0.90); /* タイトルバー「傷」の最大輝度 */
+  --mystery-crack-color-inset:   rgba(200, 120, 144, 0.15); /* フェーズ3 inset シャドウ */
+  --mystery-crack-color-reduced: rgba(200, 120, 144, 0.06); /* reduced-motion 代替カラー */
+
+  /* 朔ルート専用フラッシュバック危険色 */
+  --flashback-danger: #8b2020; /* 暗赤色 — 朔ルートの「暗赤色フラッシュバック」専用 */
 }
 ```
 
@@ -65,6 +140,21 @@ body[data-route="midori"] {
   --route-avatar-grad: linear-gradient(135deg, #2a5a2a, #1a4a20);
   --route-avatar-border: #4caf80;
   --route-shadow:      rgba(76, 175, 128, 0.12);
+
+  /*
+   * みどりルートは「安心ゾーン」として機能する（伏線密度 0〜10%）。
+   * グリッチ透明度を 0 に強制し、花蓮色が漏れないようにする。
+   * ミステリーフェーズが更新されても視覚変化は最小限に抑える。
+   */
+  --mystery-glitch-opacity: 0;
+
+  /* みどりルートの「翻訳・安心」を表す緑系クラックカラー */
+  --mystery-crack-color-subtle:  rgba(76, 175, 128, 0.20);
+  --mystery-crack-color-mid:     rgba(76, 175, 128, 0.35);
+  --mystery-crack-color-glow:    rgba(76, 175, 128, 0.10);
+  --mystery-crack-color-line:    rgba(76, 175, 128, 0.70);
+  --mystery-crack-color-inset:   rgba(76, 175, 128, 0.10);
+  --mystery-crack-color-reduced: rgba(76, 175, 128, 0.04);
 }
 
 /* デスクトップ背景オーバーレイ（::before 疑似要素で重ねる） */
@@ -92,6 +182,28 @@ body[data-route="saku"] {
   --route-avatar-grad: linear-gradient(135deg, #1a2a3a, #0e1a28);
   --route-avatar-border: #6aa0c8;
   --route-shadow:      rgba(106, 160, 200, 0.10);
+
+  /*
+   * 朔ルートの不安は「工場・寒色・低温の孤独」。
+   * グリッチカラーをスチールブルー系に設定し、花蓮色が漏れないようにする。
+   * hue-rotate は寒色方向（デフォルトの暖色化とは逆）に振る。
+   * ※ hue-rotate の実際の方向は body[data-mystery] セレクタ側で -N deg に上書きすること。
+   */
+  --mystery-crack-color-subtle:  rgba(106, 160, 200, 0.25);
+  --mystery-crack-color-mid:     rgba(106, 160, 200, 0.45);
+  --mystery-crack-color-glow:    rgba(106, 160, 200, 0.12);
+  --mystery-crack-color-line:    rgba(106, 160, 200, 0.80);
+  --mystery-crack-color-inset:   rgba(106, 160, 200, 0.12);
+  --mystery-crack-color-reduced: rgba(106, 160, 200, 0.05);
+
+  /*
+   * 暗赤色フラッシュバック（--flashback-danger）の朔ルートでの最終表示:
+   * body[data-route="saku"][data-mystery="1"] では hue-rotate(4deg) が適用されるため、
+   * --flashback-danger: #8b2020 (R:139, G:32, B:32) に +4deg の色相回転が重なる。
+   * 結果: わずかに橙みを帯びた暗赤 (#8d2218 相当) — 血錆びた工場壁のイメージ。
+   * Phase 2 (hue-rotate 10deg): #8f1c10 相当 — より鮮烈な赤みに。
+   * Phase 3 (hue-rotate 20deg): #901408 相当 — 強い警告赤に近づく。
+   */
 }
 
 body[data-route="saku"] .desktop::before {
@@ -118,6 +230,15 @@ body[data-route="seiji"] {
   --route-avatar-grad: linear-gradient(135deg, #3a2a1a, #28180a);
   --route-avatar-border: #c8a878;
   --route-shadow:      rgba(200, 168, 120, 0.12);
+
+  /* 誠司ルートの不安は「黄昏・居場所の喪失・古い電球のちらつき」。
+     グリッチカラーはセピアゴールド系に設定する。 */
+  --mystery-crack-color-subtle:  rgba(200, 168, 120, 0.28);
+  --mystery-crack-color-mid:     rgba(200, 168, 120, 0.48);
+  --mystery-crack-color-glow:    rgba(200, 168, 120, 0.12);
+  --mystery-crack-color-line:    rgba(200, 168, 120, 0.85);
+  --mystery-crack-color-inset:   rgba(200, 168, 120, 0.12);
+  --mystery-crack-color-reduced: rgba(200, 168, 120, 0.05);
 }
 
 body[data-route="seiji"] .desktop::before {
@@ -144,6 +265,14 @@ body[data-route="karen"] {
   --route-avatar-grad: linear-gradient(135deg, #2a0e1e, #180a14);
   --route-avatar-border: #c87890;
   --route-shadow:      rgba(200, 120, 144, 0.15);
+
+  /*
+   * 花蓮ルートのみ、クラックカラーをダークローズ（デフォルト値）のまま使用する。
+   * 他ルートが各自の色で上書きすることで「花蓮色が他ルートに漏れる問題」を解消し、
+   * 花蓮ルートでのみダークローズが現れることで「この色が全伏線の答えだった」
+   * という視覚的回収を実現する。
+   */
+  /* --mystery-crack-color-* はデフォルト値（ダークローズ）を継承 */
 }
 
 body[data-route="karen"] .desktop::before {
@@ -202,10 +331,10 @@ body[data-mystery="2"] .chat-panel {
   filter: hue-rotate(10deg) contrast(1.05);
 }
 
-/* ウィンドウ枠がわずかに赤みを帯びる */
+/* ウィンドウ枠がルートカラーを帯びる（花蓮色ではなく現在ルートのクラックカラーを使用） */
 body[data-mystery="2"] .app-window {
-  border-color: rgba(200, 120, 144, 0.35);
-  box-shadow: 0 0 0 1px rgba(200, 120, 144, 0.08) inset;
+  border-color: var(--mystery-crack-color-subtle);
+  box-shadow: 0 0 0 1px var(--mystery-crack-color-inset) inset;
 }
 
 /* スコアバーのバズ側がわずかに歪む */
@@ -232,10 +361,10 @@ body[data-mystery="3"] .chat-panel {
 }
 
 body[data-mystery="3"] .app-window {
-  border-color: rgba(200, 120, 144, 0.55);
+  border-color: var(--mystery-crack-color-mid);
   box-shadow:
-    0 0 0 1px rgba(200, 120, 144, 0.15) inset,
-    0 4px 24px rgba(200, 120, 144, 0.10);
+    0 0 0 1px var(--mystery-crack-color-inset) inset,
+    0 4px 24px var(--mystery-crack-color-glow);
 }
 
 /* タイトルバーに「傷」を表現するグラデーションライン */
@@ -247,8 +376,8 @@ body[data-mystery="3"] .titlebar::after {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(200, 120, 144, 0.6) 40%,
-    rgba(200, 120, 144, 0.9) 60%,
+    var(--mystery-crack-color-mid)  40%,
+    var(--mystery-crack-color-line) 60%,
     transparent 100%
   );
   animation: mystery-crack-slide 4s ease-in-out infinite;
@@ -416,7 +545,7 @@ body[data-mystery="3"] .titlebar::after {
   .mystery-glitch.medium::before,
   .mystery-glitch.severe::before {
     /* アニメーションの代わりに静的な色オーバーレイで「異常」を示す */
-    background: rgba(200, 120, 144, 0.06);
+    background: var(--mystery-crack-color-reduced);
     opacity: 0.08;
   }
 
@@ -743,35 +872,50 @@ body[data-mystery="2"] .karen-avatar,
 /* ================================================
    収束フェーズ — 暴走終息（.karen-climax → .karen-resolve）
    JSで .karen-climax を除去し .karen-resolve を付与
+   ※ エンディング別に分岐する。以下参照。
    ================================================ */
-.karen-resolve {
+
+/* 贖罪エンド（zange）: 白飛びから温かい金色へ */
+.karen-resolve.ending-zange {
   filter: none;
-  animation: karen-resolve-fade 2.5s ease-out forwards;
+  animation: karen-resolve-fade-zange 2.5s ease-out forwards;
 }
 
-@keyframes karen-resolve-fade {
-  0%   {
-    filter: hue-rotate(25deg) contrast(1.15) saturate(1.3);
-  }
-  /* 一度強く「白飛び」してリセット */
-  15%  {
-    filter: brightness(2.5) saturate(0.2);
-    background: rgba(255, 255, 255, 0.05);
-  }
-  30%  {
-    filter: brightness(1.8) saturate(0.5) hue-rotate(5deg);
-  }
-  /* ゆっくりと温かい色調へ落ち着く */
-  70%  {
-    filter: brightness(1.1) saturate(0.85) sepia(0.08);
-  }
-  100% {
-    filter: brightness(1.0) saturate(1.0);
-  }
+@keyframes karen-resolve-fade-zange {
+  0%   { filter: hue-rotate(25deg) contrast(1.15) saturate(1.3); }
+  15%  { filter: brightness(2.5) saturate(0.2); background: rgba(255, 255, 255, 0.05); }
+  30%  { filter: brightness(1.8) saturate(0.5) hue-rotate(5deg); }
+  70%  { filter: brightness(1.1) saturate(0.85) sepia(0.08); }
+  100% { filter: brightness(1.0) saturate(1.0); }
 }
 
-/* 収束後の画面背景 — 深い紫から柔らかいダスクへ */
-body[data-route="karen"].karen-resolved .desktop::before {
+/* 既読エンド（kidoku）: 藍色のまま静かに落ち着く。解決感を出さない */
+.karen-resolve.ending-kidoku {
+  filter: none;
+  animation: karen-resolve-fade-kidoku 3s ease-out forwards;
+}
+
+@keyframes karen-resolve-fade-kidoku {
+  0%   { filter: hue-rotate(25deg) contrast(1.15) saturate(1.3); }
+  20%  { filter: hue-rotate(15deg) contrast(1.05) saturate(0.9); }
+  60%  { filter: hue-rotate(5deg)  contrast(1.0)  saturate(0.75) brightness(0.9); }
+  100% { filter: hue-rotate(0deg)  contrast(1.0)  saturate(0.7)  brightness(0.88); }
+}
+
+/* 沈黙エンド（chinmoku）: 暴走が「消える」だけで何も解決しない */
+.karen-resolve.ending-chinmoku {
+  filter: none;
+  animation: karen-resolve-fade-chinmoku 4s ease-out forwards;
+}
+
+@keyframes karen-resolve-fade-chinmoku {
+  0%   { filter: hue-rotate(25deg) contrast(1.15) saturate(1.3); }
+  40%  { filter: hue-rotate(10deg) contrast(1.0)  saturate(0.5); }
+  100% { filter: hue-rotate(0deg)  contrast(1.0)  saturate(0.0) brightness(0.7); }
+}
+
+/* 収束後の画面背景（贖罪エンドのみ金色グラデーション） */
+body[data-route="karen"].karen-resolved.ending-zange .desktop::before {
   background:
     radial-gradient(ellipse at 50% 60%, rgba(240, 208, 128, 0.08) 0%, transparent 55%),
     radial-gradient(ellipse at 30% 20%, rgba(200, 120, 144, 0.06) 0%, transparent 40%);
@@ -962,15 +1106,17 @@ body[data-yukiwarisou="found"] .yukiwarisou-kw {
   animation: yukiwarisou-glow 3s ease-in-out infinite;
 }
 
+/* 古い電球の不均一なちらつき: steps() で非連続な点灯 */
 @keyframes yukiwarisou-glow {
-  0%, 100% {
-    text-shadow: 0 0 6px rgba(200, 168, 120, 0.4);
-    background: rgba(200, 168, 120, 0.12);
-  }
-  50% {
-    text-shadow: 0 0 12px rgba(200, 168, 120, 0.7), 0 0 4px rgba(200, 168, 120, 0.9);
-    background: rgba(200, 168, 120, 0.22);
-  }
+  0%   { text-shadow: 0 0 4px rgba(200, 168, 120, 0.3);  background: rgba(200, 168, 120, 0.10); }
+  15%  { text-shadow: 0 0 10px rgba(200, 168, 120, 0.8); background: rgba(200, 168, 120, 0.22); }
+  18%  { text-shadow: 0 0 2px rgba(200, 168, 120, 0.2);  background: rgba(200, 168, 120, 0.06); }
+  20%  { text-shadow: 0 0 8px rgba(200, 168, 120, 0.7);  background: rgba(200, 168, 120, 0.18); }
+  60%  { text-shadow: 0 0 4px rgba(200, 168, 120, 0.3);  background: rgba(200, 168, 120, 0.10); }
+  80%  { text-shadow: 0 0 6px rgba(200, 168, 120, 0.5);  background: rgba(200, 168, 120, 0.14); }
+  81%  { text-shadow: 0 0 1px rgba(200, 168, 120, 0.1);  background: rgba(200, 168, 120, 0.04); }
+  83%  { text-shadow: 0 0 6px rgba(200, 168, 120, 0.5);  background: rgba(200, 168, 120, 0.14); }
+  100% { text-shadow: 0 0 4px rgba(200, 168, 120, 0.3);  background: rgba(200, 168, 120, 0.10); }
 }
 
 /* メモ帳ウィンドウ内のゆきわりそうキーワード */
@@ -1069,6 +1215,176 @@ document.body.dataset.yukiwarisou =
 3. **グリッチと既存フィルター**: 既存の `filter` プロパティ（例: `.card-flip-wrapper.locked { opacity: .45 }`）とグリッチフィルターが同一要素に重なる場合、CSS specificity の競合に注意。グリッチはなるべく親要素（`.game-panel`, `.app-window`）に適用し、子要素の既存フィルターと分離すること。
 
 4. **`prefers-reduced-motion` の優先度**: 本仕様書の `@media (prefers-reduced-motion: reduce)` ブロックは全グリッチアニメーションを停止する。ゲームプレイ体験上の核心演出（花蓮クライマックス）に影響するが、アクセシビリティを優先しこの設計を維持する。代替として、静的なカラー変化のみで「何かがおかしい」ことを伝える設計とする。
+
+---
+
+---
+
+## 7. フラッシュバック演出レイヤー仕様
+
+### 7-1. `#flashback-overlay` — フラッシュバック3「2枚並列演出」
+
+`plot_steinsgate.md §3` が定義するフラッシュバック3の二層テキスト演出のCSS。
+- **背景レイヤー**: 過去テキスト（Phase 1 のフラッシュバック文）を薄く重ねる
+- **前景レイヤー**: `k_memo` カードを画面中央に固定表示
+
+```css
+/* ================================================
+   #flashback-overlay — フラッシュバック3専用レイヤー
+   JS で show()/hide() で表示切り替え
+   ================================================ */
+#flashback-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+#flashback-overlay.visible {
+  opacity: 1;
+}
+
+/* 過去テキスト（背景レイヤー、約30%透明度） */
+#flashback-overlay .fb-past-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 0.85rem;
+  line-height: 2;
+  text-align: center;
+  white-space: pre-line;
+  padding: 40px;
+  animation: fb-past-fadein 1.2s ease forwards;
+  letter-spacing: 0.05em;
+}
+
+@keyframes fb-past-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* 前景カード（k_memo カード、影を強調して「浮いている」感） */
+#flashback-overlay .fb-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.92);
+  width: min(320px, 80vw);
+  background: var(--surface, #1e1e2a);
+  border: 1px solid var(--mystery-crack-color-mid);
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.8),
+    0 0 24px var(--mystery-crack-color-glow);
+  animation: fb-card-rise 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  z-index: 1;
+}
+
+@keyframes fb-card-rise {
+  from { transform: translate(-50%, -40%) scale(0.85); opacity: 0.4; }
+  to   { transform: translate(-50%, -50%) scale(1.0);  opacity: 1; }
+}
+```
+
+### 7-2. 沈黙エンドの「文字が浮かび上がる」テキスト演出
+
+```css
+/* ================================================
+   沈黙エンド: テキストが漆黒から静かに浮かぶ
+   完全には見えないまま留まる（解決しない余韻）
+   ================================================ */
+.ending-chinmoku .ending-text {
+  opacity: 0;
+  animation: chinmoku-text-float 5s ease-in 0.5s forwards;
+  color: rgba(200, 200, 220, 0.7);
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  line-height: 2.2;
+  text-align: center;
+}
+
+@keyframes chinmoku-text-float {
+  0%   { opacity: 0;    transform: translateY(8px); }
+  40%  { opacity: 0.35; transform: translateY(4px); }
+  70%  { opacity: 0.55; transform: translateY(2px); }
+  100% { opacity: 0.6;  transform: translateY(0); }
+  /* 意図的に 0.6 止まり。完全な透明度 1.0 には達しない */
+}
+
+/* 「——カ」1文字だけが最後に出る専用クラス */
+.ending-chinmoku .ending-final-char {
+  opacity: 0;
+  animation: chinmoku-final 3s ease-in 3s forwards;
+  font-size: 1.4rem;
+  color: rgba(200, 180, 220, 0.5);
+  display: block;
+  margin-top: 2em;
+}
+
+@keyframes chinmoku-final {
+  from { opacity: 0; letter-spacing: 0.6em; }
+  to   { opacity: 0.5; letter-spacing: 0.12em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ending-chinmoku .ending-text,
+  .ending-chinmoku .ending-final-char {
+    animation: none;
+    opacity: 0.6;
+    transform: none;
+  }
+}
+```
+
+### 7-3. 湊の内部モノローグ専用バブルスタイル（「翻訳」テーマの視覚化）
+
+```css
+/* ================================================
+   湊の内部モノローグバブル
+   「翻訳者として自分が消える」アイデンティティを
+   UIで表現: 通常バブルより透明度を高め、斜体で
+   ================================================ */
+.protag-bubble {
+  background: rgba(30, 30, 50, 0.65);   /* 通常バブルより薄い */
+  border: 1px solid rgba(126, 184, 247, 0.15);
+  color: rgba(220, 230, 255, 0.80);
+  font-style: italic;
+  opacity: 0.88;
+  transition: opacity 0.4s ease;
+}
+
+/* flashback スタイル: より薄く、過去の残滓 */
+.protag-bubble.flashback {
+  background: rgba(20, 10, 30, 0.55);
+  border-color: var(--mystery-crack-color-subtle);
+  color: rgba(200, 180, 240, 0.65);
+  opacity: 0.80;
+}
+
+/* hollow スタイル（贖罪エンド経路）: 輪郭だけが残る */
+.protag-bubble.hollow {
+  background: transparent;
+  border: 1px solid rgba(126, 184, 247, 0.20);
+  color: rgba(200, 220, 255, 0.55);
+  opacity: 0.75;
+  font-style: italic;
+}
+
+/* モノローグが増えるほど湊が「見えてくる」— flashbackPhase 3 以降 */
+body[data-flashback-phase="3"] .protag-bubble {
+  opacity: 1.0;
+  font-style: normal;
+  border-color: rgba(126, 184, 247, 0.35);
+  color: rgba(230, 235, 255, 0.95);
+  transition: all 0.8s ease;
+}
+```
 
 ---
 
