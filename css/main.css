@@ -4728,3 +4728,40 @@ body.mobile-mode .note-window.active {
   height: calc(100vh - var(--taskbar-height)) !important;
   border-radius: 0 !important;
 }
+
+/* ================================================
+   アクセシビリティ: フォーカス・キーボード操作
+   ================================================ */
+
+/* Tab キー / キーボード操作時のみフォーカスリングを表示
+   マウスクリック時は非表示（:focus:not(:focus-visible)） */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--accent2, #7c6af7);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* 選択肢ボタン専用フォーカスリング */
+.protag-choice-btn:focus-visible {
+  outline: 2px solid var(--accent2, #7c6af7);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* 素材カード専用フォーカスリング（accent3 = 緑系） */
+.card-flip-wrapper:focus-visible {
+  outline: 2px solid var(--accent3, #00d4aa);
+  outline-offset: 4px;
+  border-radius: 14px;
+}
+
+/* カードフリップ: prefers-reduced-motion 対応
+   3D 回転は前庭感覚に影響するため即時切り替え */
+@media (prefers-reduced-motion: reduce) {
+  .card-flip-inner {
+    transition: none;
+  }
+}

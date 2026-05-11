@@ -12,6 +12,9 @@ function setupMaterials() {
     const wrapper = document.createElement('div');
     wrapper.className = 'card-flip-wrapper';
     wrapper.dataset.idx = i;
+    wrapper.setAttribute('role', 'button');
+    wrapper.setAttribute('tabindex', '0');
+    wrapper.setAttribute('aria-label', `素材カード: ${m.title}（クリックで内容を確認）`);
     wrapper.innerHTML = `
       <div class="card-check">✓</div>
       <div class="card-flip-inner">
@@ -29,6 +32,9 @@ function setupMaterials() {
         </div>
       </div>`;
     wrapper.onclick = () => handleCardClick(wrapper, i, m);
+    wrapper.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(wrapper, i, m); }
+    });
     grid.appendChild(wrapper);
   });
 
@@ -127,8 +133,10 @@ function updateCardBadge() {
 function lockExcessCards() {
   document.querySelectorAll('.card-flip-wrapper').forEach(w => {
     const idx = parseInt(w.dataset.idx);
-    w.classList.toggle('locked',
-      GS.selectedCards.length >= 2 && !GS.selectedCards.includes(idx));
+    const shouldLock = GS.selectedCards.length >= 2 && !GS.selectedCards.includes(idx);
+    w.classList.toggle('locked', shouldLock);
+    w.setAttribute('aria-disabled', shouldLock ? 'true' : 'false');
+    w.setAttribute('tabindex', shouldLock ? '-1' : '0');
   });
 }
 
