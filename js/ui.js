@@ -213,11 +213,16 @@ function closeTrashWindow() {
    EXPLORER NAVIGATION
 ============================================================ */
 const _DESKTOP_ITEMS = [
-  { icon: '📱', name: 'ばずったー', action: (_wid) => openApp()         },
-  { icon: '💬', name: 'チャトル',   action: (_wid) => openChatApp()     },
-  { icon: '📝', name: 'メモ帳',     action: (_wid) => openMemoApp()     },
-  { icon: '🎮', name: 'ゲーム',     action: (_wid) => openGamesWindow() },
-  { icon: '🗑️', name: 'ゴミ箱',   action: (wid)  => {
+  { iconHtml: `<div class="ic-buzzter"><span class="heart">♥</span></div>`,
+    name: 'ばずったー', action: (_wid) => openApp() },
+  { iconHtml: `<div class="ic-chattle"><div class="tile"></div><div class="bubble"></div></div>`,
+    name: 'チャトル',   action: (_wid) => openChatApp() },
+  { iconHtml: `<div class="ic-notepad"><div class="paper"></div><div class="pen"></div></div>`,
+    name: 'メモ帳',     action: (_wid) => openMemoApp() },
+  { iconHtml: `<div class="ic-game"><div class="pad"></div><div class="grip-l"></div><div class="grip-r"></div><div class="bumpers"></div><div class="dpad"></div><div class="btns"><div class="b1"></div><div class="b2"></div></div><div class="stick-l"></div><div class="stick-r"></div></div>`,
+    name: 'ゲーム',     action: (_wid) => openGamesWindow() },
+  { iconHtml: `<div class="ic-trash"><div class="handle"></div><div class="lid"></div><div class="bin"></div></div>`,
+    name: 'ゴミ箱',     action: (wid)  => {
       explorerNavTo('trashWindow', 'home');
       if (wid !== 'trashWindow') openTrashWindow();
     }
@@ -256,7 +261,7 @@ function explorerNavTo(winId, view) {
       const el = document.createElement('div');
       el.className = 'explorer-file-item';
       el.innerHTML = `
-        <div class="explorer-file-icon" style="display:flex;align-items:center;justify-content:center;font-size:38px;width:56px;height:56px;">${item.icon}</div>
+        <div class="explorer-file-icon">${item.iconHtml}</div>
         <div class="explorer-file-name">${item.name}</div>`;
       el.onclick    = () => { win.querySelectorAll('.explorer-file-item').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); };
       el.ondblclick = () => item.action(winId);

@@ -1344,7 +1344,7 @@ body:has(#screen-title.active) .taskbar { display: none; }
 }
 .explorer-file-item:hover { background: rgba(85,51,255,.15); }
 .explorer-file-item.selected { background: rgba(85,51,255,.28); outline: 1px solid rgba(85,51,255,.5); }
-.explorer-file-icon { width: 56px; height: 56px; }
+.explorer-file-icon { width: 56px; height: 56px; position: relative; }
 .explorer-file-icon svg { width: 100%; height: 100%; }
 .explorer-file-name {
   font-size: 11px;
@@ -3043,7 +3043,7 @@ body:has(#screen-title.active) .taskbar { display: none; }
   transition: background .12s;
 }
 .start-rec-item:hover { background: rgba(255,255,255,.08); }
-.start-rec-icon { font-size: 26px; flex-shrink: 0; }
+.start-rec-icon { width: 32px; height: 32px; flex-shrink: 0; position: relative; }
 .start-rec-text {}
 .start-rec-name { font-size: 13px; color: var(--text); font-weight: 500; }
 .start-rec-meta { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
