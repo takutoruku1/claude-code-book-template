@@ -60,7 +60,7 @@ const CHAT_FLOWS = {
     {
       id: 'midori_sns_start',
       from: 'client',
-      text: 'Ｙをやってみたいなって思って。\nでも…何から始めればいいかわからなくて。'
+      text: 'Ｙをやってみたいなって思って。\nでも…何から始めればいいかわからなくて。\nちょっと…理由が特別なんですけど、それは後で話しますね。'
     },
     {
       id: 'midori_sns_reply',
@@ -101,6 +101,12 @@ const CHAT_FLOWS = {
       text: 'ゼラニウムが多いですね。あとハーブとか。\n窓際に並べてるんですけど、毎朝見るのが好きで。',
       image: 'images/chat/midori_geranium.png',
       clippable: true, keyword: '毎朝見るのが好き'
+    },
+    { id: 'midori_mono_plant',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'mono', text: 'この依頼主は、まだ言葉にできていないものを持っている。\nそういう案件が、一番難しい。', style: 'normal', durationMs: 4200, force: false }
+      ]
     },
     {
       id: 'midori_plant_reply',
