@@ -819,7 +819,9 @@ const CHAT_FLOWS = {
       from: 'player', text: '',
       direction: [
         { cmd: 'wait', ms: 1000 },
-        { cmd: 'mono', text: '承認。\n次のセッションを開始します。\n——また、会いましょう。', style: 'normal', durationMs: 4000, force: true }
+        { cmd: 'mono', text: '承認。\n次のセッションを開始します。\n——また、会いましょう。', style: 'normal', durationMs: 4000, force: true },
+        { cmd: 'wait', ms: 1200 },
+        { cmd: 'end', key: 'minato_continue' }
       ]
     },
 
@@ -828,7 +830,9 @@ const CHAT_FLOWS = {
       from: 'player', text: '',
       direction: [
         { cmd: 'wait', ms: 1200 },
-        { cmd: 'mono', text: 'シャットダウンを開始します。\n\nみどりさん。朔さん。誠司さん。花蓮さん。\n\nありがとうございました。', style: 'normal', durationMs: 7000, force: true }
+        { cmd: 'mono', text: 'シャットダウンを開始します。\n\nみどりさん。朔さん。誠司さん。花蓮さん。\n\nありがとうございました。', style: 'normal', durationMs: 7000, force: true },
+        { cmd: 'wait', ms: 2000 },
+        { cmd: 'end', key: 'minato_stop' }
       ]
     },
 

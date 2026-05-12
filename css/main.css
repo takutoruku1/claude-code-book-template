@@ -4924,3 +4924,89 @@ body.mobile-mode .note-window.active {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ============================================================
+   MINATO WIDGET（タイトル画面）
+============================================================ */
+.minato-ts-widget {
+  margin-top: 14px;
+  border: 1px solid #2a3050;
+  background: #080810;
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-family: 'DotGothic16', monospace;
+  font-size: 11px;
+  color: #8090b0;
+  animation: minato-widget-in 0.9s ease forwards;
+}
+
+.minato-ts-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #4a5a8a;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  margin-bottom: 9px;
+}
+
+.minato-ts-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #8090b0;
+  animation: minato-led-blink 1.6s step-end infinite;
+}
+
+.minato-ts-body {
+  color: #9aabcc;
+  line-height: 1.8;
+  min-height: 2.8em;
+  white-space: pre-line;
+}
+
+.minato-ts-cursor {
+  animation: minato-cursor-blink 0.9s step-end infinite;
+  color: #6070a0;
+}
+
+.minato-ts-btn {
+  margin-top: 10px;
+  background: none;
+  border: 1px solid #2a3050;
+  color: #7080a8;
+  font-family: 'DotGothic16', monospace;
+  font-size: 11px;
+  padding: 5px 14px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  border-radius: 3px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.minato-ts-btn:hover {
+  background: #141830;
+  color: #c0d0f0;
+  border-color: #5060a0;
+}
+
+@keyframes minato-widget-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes minato-led-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.15; }
+}
+
+@keyframes minato-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .minato-ts-widget { animation: none; }
+  .minato-ts-led    { animation: none; }
+  .minato-ts-cursor { animation: none; }
+}

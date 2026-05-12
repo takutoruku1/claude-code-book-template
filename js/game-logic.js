@@ -504,6 +504,8 @@ function showEnding(endKey) {
   const E = ENDINGS[endKey] || ENDINGS['saihan'];
   const karenEnds = ['zange', 'kidoku', 'chinmoku'];
 
+  if (typeof markRouteClear === 'function') markRouteClear(GS.route);
+
   // 1. #screen-ending のクラスをリセットし .active + .ending-${endKey} を追加
   var screenEnding = document.getElementById('screen-ending');
   if (!screenEnding) { console.warn('[showEnding] #screen-ending が見つかりません'); return; }

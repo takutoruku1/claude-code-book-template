@@ -149,6 +149,49 @@ function _startTsTyper() {
   })();
 }
 
+/* ============================================================
+   MINATO WIDGET（タイトル画面・全ルートクリア後に出現）
+============================================================ */
+function _showMinatoWidget() {
+  const w = document.getElementById('minatoWidget');
+  if (!w || !w.hidden) return;
+  w.hidden = false;
+  _startMinatoWidgetTyper();
+}
+
+function _startMinatoWidgetTyper() {
+  const el = document.getElementById('minatoWidgetTyper');
+  if (!el) return;
+  const text = '全セッション記録を確認しました。\n再起動しますか？';
+  let i = 0;
+  const tick = () => {
+    el.textContent = text.slice(0, i);
+    if (i < text.length) { i++; setTimeout(tick, 46 + Math.random() * 34); }
+  };
+  setTimeout(tick, 700);
+}
+
+function startMinatoRoute() {
+  _stopTitleBgm();
+  document.getElementById('screen-title').classList.remove('active');
+  const overlay = document.getElementById('boot-overlay');
+  if (overlay) overlay.classList.add('active');
+  window.IS_DEBUG_MODE        = false;
+  window.appIsRunning         = true;
+  window.appMinimized         = false;
+  window.chatMinimized        = false;
+  window.MAIN_MODE_ROUTES     = null;
+  window.MAIN_MODE_ROUTE_INDEX = null;
+  setTimeout(() => {
+    if (overlay) overlay.classList.add('fading');
+    const appWin = document.getElementById('appWindow');
+    if (appWin) appWin.classList.add('active');
+    if (typeof updateTaskbarIndicators === 'function') updateTaskbarIndicators();
+    if (typeof resetGame === 'function') resetGame('minato');
+    setTimeout(() => { if (overlay) overlay.classList.remove('active', 'fading'); }, 700);
+  }, 3000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const savedDesign = localStorage.getItem('titleDesign') || 'new';
   const titleEl = document.getElementById('screen-title');
@@ -165,6 +208,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (savedDesign === 'new') {
     _startTsTimeline();
     _startTsTyper();
+  }
+
+  if (typeof isAllRoutesClear === 'function' && isAllRoutesClear()) {
+    _showMinatoWidget();
   }
 
   const bgm = document.getElementById('titleBgm');

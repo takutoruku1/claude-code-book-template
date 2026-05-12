@@ -84,8 +84,8 @@ function _runChatNode(node, idx, pause) {
       return;
     }
     setTimeout(() => {
-      addChatMsg('self', node.text, '👤');
-      setTimeout(() => runChat(idx + 1), 400);
+      if (node.text) addChatMsg('self', node.text, '👤');
+      setTimeout(() => runChat(idx + 1), node.text ? 400 : 0);
     }, pause);
 
   } else if (node.from === 'system') {
@@ -370,6 +370,11 @@ function executeDirectionCmd(d, next) {
     case 'face':
       // 将来の立ち絵実装へのフック（現在はスタブ）
       console.debug('[direction:face]', d);
+      next();
+      break;
+
+    case 'end':
+      if (typeof showEnding === 'function') showEnding(d.key || 'saihan');
       next();
       break;
 

@@ -704,6 +704,9 @@ function retryGame() {
       document.getElementById('screen-charselect').classList.add('active');
       buildCharSelect();
     });
+  } else if (!window.MAIN_MODE_ROUTES) {
+    // MINATOルートなど単独起動の場合はタイトルへ
+    showEndroll(goToTitle);
   } else {
     window.MAIN_MODE_ROUTE_INDEX++;
     if (window.MAIN_MODE_ROUTE_INDEX < window.MAIN_MODE_ROUTES.length) {
@@ -736,6 +739,9 @@ function goToTitle() {
   window.MAIN_MODE_ROUTE_INDEX = null;
   _closeAllGameWindows();
   _playTitleBgm();
+  if (typeof isAllRoutesClear === 'function' && isAllRoutesClear()) {
+    if (typeof _showMinatoWidget === 'function') _showMinatoWidget();
+  }
 }
 
 function renderMemoNotes() {
