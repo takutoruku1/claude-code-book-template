@@ -84,7 +84,7 @@ body {
 }
 .desktop-icon:hover { background: rgba(255,255,255,.10); outline: 1px solid rgba(255,255,255,.18); }
 .desktop-icon .icon-img { font-size: 32px; }
-.desktop-icon .icon-label { font-size: 10px; font-family: 'DotGothic16', monospace; color: rgba(255,255,255,.88); text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+.desktop-icon .icon-label { font-size: 11px; font-family: 'DotGothic16', monospace; color: rgba(255,255,255,.88); text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
 .desktop-notif {
   position: absolute;
   top: 10px;
@@ -3252,15 +3252,6 @@ body:has(#screen-title.active) .taskbar { display: none; }
 /* taskbar icon for Y */
 .y-taskbar-icon {
   font-size: 16px; font-weight: 900; font-family: 'Georgia', serif; color: #e7e9ea;
-}
-
-/* desktop icon letter */
-.y-desktop-icon-letter {
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 26px; font-weight: 900; color: #e7e9ea;
-  font-family: 'Georgia', serif;
-  line-height: 1;
 }
 
 /* responsive: hide right col on narrow window */
