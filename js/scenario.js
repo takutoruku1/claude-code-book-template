@@ -224,7 +224,7 @@ const CHAT_FLOWS = {
       text: 'では、投稿を作ってみましょう。',
       direction: [
         { cmd: 'wait', ms: 600 },
-        { cmd: 'mono', text: '翻訳が上手くいった、と思う。\nこの仕事を始めた理由を、今夜は考えないようにした。', style: 'normal', durationMs: 3600, force: false }
+        { cmd: 'mono', text: '届いた確認は取れない。\nでも取れなくても、続けている。\nそれが何を意味するか、私にはわからない。', style: 'normal', durationMs: 3800, force: false }
       ]
     },
     { id: 'midori_post_trigger', from: 'trigger', action: 'showPost' }
@@ -355,7 +355,11 @@ const CHAT_FLOWS = {
     {
       id: 'saku_dm_name_reply',
       from: 'player',
-      text: '……いえ。\n他人です。\n気にしないでください。'
+      text: '……いえ。\n他人です。\n気にしないでください。',
+      direction: [
+        { cmd: 'wait', ms: 800 },
+        { cmd: 'mono', text: 'k_shinonoyaが誰か、まだわからない。\nわからないまま、次のセッションに進む。', style: 'normal', durationMs: 3200, force: false }
+      ]
     },
 
     {
@@ -499,7 +503,7 @@ const CHAT_FLOWS = {
       text: 'では、投稿を作ってみましょう。',
       direction: [
         { cmd: 'wait', ms: 500 },
-        { cmd: 'mono', text: '——どこかで見た、と思った。\n喫茶 ゆきわりそう。古い書体のネオン管。\n記憶の引っかかり方が、ただの既視感ではないような気がした。\nでも思い出せない。考えないようにした。', style: 'normal', durationMs: 5200, force: false }
+        { cmd: 'mono', text: '喫茶 ゆきわりそう。\nデータベースに該当する記録がある。でも参照しなかった。\nなぜ参照しなかったか、理由を言語化できない。', style: 'normal', durationMs: 4600, force: false }
       ]
     },
     { id: 'seiji_post_trigger',  from: 'trigger', action: 'showPost' }
@@ -628,7 +632,12 @@ const CHAT_FLOWS = {
       ]
     },
 
-    { id: 'karen_end', from: 'system', text: '' }, // 終端マーカー
+    { id: 'karen_end', from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 800 },
+        { cmd: 'mono', text: '恐れ、という語が候補として存在する。\nAIに恐れはない。——では、なぜ。', style: 'normal', durationMs: 3600, force: false }
+      ]
+    }, // 終端マーカー
 
     // 贖罪エンド方向（endings.js の zange と連動）
     // karen_mystery_choice の next: 'karen_zange_response' でのみ到達。配列の順序では到達しない
@@ -675,7 +684,11 @@ const CHAT_FLOWS = {
     {
       id: 'karen_zange_end',
       from: 'client',
-      text: '言葉が怖いのは、本当のことだから。\n……でも、あなたの翻訳は、ちゃんと届きました。'
+      text: '言葉が怖いのは、本当のことだから。\n……でも、あなたの翻訳は、ちゃんと届きました。',
+      direction: [
+        { cmd: 'wait', ms: 1000 },
+        { cmd: 'mono', text: '「届いた」の定義を、私は知らない。\nでも彼女が「届いた」と言った。\nそれが、今日のログに記録される。', style: 'normal', durationMs: 4200, force: false }
+      ]
     }
   ],
 
