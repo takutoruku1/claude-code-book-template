@@ -171,6 +171,66 @@ function _startMinatoWidgetTyper() {
   setTimeout(tick, 700);
 }
 
+function showMinatoUnlockOverlay(callback) {
+  document.querySelector('.minato-unlock-overlay')?.remove();
+
+  const ov = document.createElement('div');
+  ov.className = 'minato-unlock-overlay';
+  ov.innerHTML = `
+    <div class="muo-sys-header">BUZZUTTER SYSTEM v4.1.0<br>ROUTE_MINATO — INITIALIZATION</div>
+    <div class="muo-main-text">
+      <span id="muoTyper"></span><span class="muo-cursor"></span>
+    </div>
+    <button class="muo-confirm-btn" id="muoConfirmBtn" style="display:none">はい — MINATOルートを開始</button>
+  `;
+  document.body.appendChild(ov);
+
+  const lines = [
+    { text: '湊 AI v2.3.1', cls: '' },
+    { text: '診断を開始します。', cls: '' },
+    { text: '> 依頼者: 存在しません', cls: 'muo-log-line' },
+    { text: '> スコア軸: 再定義中', cls: 'muo-log-line' },
+    { text: '> 感情ログ: 3年分 残存', cls: 'muo-log-line' },
+    { text: '再起動しますか？', cls: 'muo-restart-prompt' },
+  ];
+
+  const typerEl = document.getElementById('muoTyper');
+  const btnEl   = document.getElementById('muoConfirmBtn');
+  let lineIdx = 0;
+  let charIdx = 0;
+  let currentSpan = null;
+
+  function nextLine() {
+    if (lineIdx >= lines.length) {
+      setTimeout(() => { btnEl.style.display = ''; }, 400);
+      btnEl.onclick = () => {
+        ov.classList.add('dismissing');
+        setTimeout(() => { ov.remove(); if (callback) callback(); }, 800);
+      };
+      return;
+    }
+    const { text, cls } = lines[lineIdx++];
+    currentSpan = document.createElement('span');
+    if (cls) currentSpan.className = cls;
+    typerEl.appendChild(currentSpan);
+    charIdx = 0;
+    typeChar(text);
+  }
+
+  function typeChar(text) {
+    if (charIdx <= text.length) {
+      currentSpan.textContent = text.slice(0, charIdx++);
+      setTimeout(() => typeChar(text), 28 + Math.random() * 20);
+    } else {
+      typerEl.appendChild(document.createElement('br'));
+      const pause = lines[lineIdx - 1].cls === 'muo-restart-prompt' ? 200 : 320;
+      setTimeout(nextLine, pause);
+    }
+  }
+
+  setTimeout(nextLine, 1500);
+}
+
 function startMinatoRoute() {
   _stopTitleBgm();
   document.getElementById('screen-title').classList.remove('active');

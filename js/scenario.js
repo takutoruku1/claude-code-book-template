@@ -326,7 +326,7 @@ const CHAT_FLOWS = {
       from: 'choices', opts: [
         { text: 'そのまま素直に、ありがとうと伝えてみてください', next: 'saku_dm_thanks', selfBonus: 5 },
         { text: '…そのアカウント名、教えてもらえますか',         next: 'saku_dm_notice',  egoPlus: true, setFlag: 'kShinonoya' },
-        { text: '（何も言わず、次の投稿の話をする）',            next: 'saku_dm_end' }
+        { text: '（何も言わず、次の投稿の話をする）',            next: 'saku_dm_silent',  setFlag: 'sakuSilent' }
       ]
     },
 
@@ -369,6 +369,14 @@ const CHAT_FLOWS = {
       direction: [
         { cmd: 'wait', ms: 500 },
         { cmd: 'mono', text: '——本人の言葉で、本人が返した。\nこういう瞬間のために、この仕事をしているのかもしれない。', style: 'normal', durationMs: 3400, force: false }
+      ]
+    },
+    { id: 'saku_dm_silent',
+      from: 'player', text: '',
+      condition: 'flags.sakuSilent',
+      direction: [
+        { cmd: 'wait', ms: 600 },
+        { cmd: 'mono', text: 'DMを受け取った。返信しなかった。\nk_shinonoyaという名前を、照合しなかった。', style: 'normal', durationMs: 3200, force: false }
       ]
     },
     { id: 'saku_dm_end', from: 'system', text: '' } // 終端マーカー
