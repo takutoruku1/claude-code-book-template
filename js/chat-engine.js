@@ -83,9 +83,10 @@ function _runChatNode(node, idx, pause) {
       window._pendingPlayerIdx = idx;
       return;
     }
+    const nextStep = node.next ? () => runChatId(node.next) : () => runChat(idx + 1);
     setTimeout(() => {
       if (node.text) addChatMsg('self', node.text, '👤');
-      setTimeout(() => runChat(idx + 1), node.text ? 400 : 0);
+      setTimeout(nextStep, node.text ? 400 : 0);
     }, pause);
 
   } else if (node.from === 'system') {
