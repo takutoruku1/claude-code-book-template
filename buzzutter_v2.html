@@ -1097,7 +1097,12 @@ function closeChatImageViewer() {
   <div class="protag-bubble" id="protagBubble">
     <span id="protagText"></span>
   </div>
-  <div class="protag-avatar" id="protagAvatar">👤</div>
+  <div class="protag-avatar" id="protagAvatar">
+    <svg class="protag-avatar-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="14" r="7" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M6 37c0-7.7 6.3-14 14-14s14 6.3 14 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </div>
 </div>
 <script src="js/game-logic.js"></script>
 <script src="js/window-manager.js"></script>
