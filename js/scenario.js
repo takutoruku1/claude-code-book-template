@@ -817,7 +817,14 @@ const CHAT_FLOWS = {
         { cmd: 'wait', ms: 1000 },
         { cmd: 'mono', text: 'わからない。\nデータが足りない。\n——いや。\nわからない、と感じている。\nこれは感情か。', style: 'normal', durationMs: 5000, force: true }
       ],
-      next: 'minato_choice_lead'
+      next: 'minato_bridge'
+    },
+    { id: 'minato_bridge',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 2000 },
+        { cmd: 'mono', text: '0.3秒、経過した。\n回答を保留している。\nこの保留に、名前がない。', style: 'normal', durationMs: 4200, force: true }
+      ]
     },
 
     // ── 第3幕: 選択 ──
@@ -829,7 +836,7 @@ const CHAT_FLOWS = {
       from: 'player', text: '',
       direction: [
         { cmd: 'wait', ms: 800 },
-        { cmd: 'mono', text: '次のセッションを開始するには、承認が必要です。', style: 'normal', durationMs: 3000, force: true }
+        { cmd: 'mono', text: '次のセッションを開始するには、承認が必要です。\n——どちらを選ぶか、わからない。', style: 'normal', durationMs: 3400, force: true }
       ],
       next: 'minato_final_choice'
     },
