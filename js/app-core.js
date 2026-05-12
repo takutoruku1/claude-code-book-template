@@ -166,20 +166,10 @@ function addChatMsg(from, text, ava, keyword, imageSrc) {
       window._chatUnread = (window._chatUnread || 0) + 1;
       updateChatBadge();
     }
-    if (typeof showProtagMsg === 'function') {
-      if (!winActive) {
-        setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_GUIDE_CHAT), false, 7000), 600);
-      } else {
-        if (typeof setMood === 'function') setMood('nervous');
-        setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_ON_CLIENT), true, 2800), 600);
-      }
-    }
+    if (winActive && typeof setMood === 'function') setMood('nervous');
   }
   if (from === 'self' && !window._skipChatHistory) {
     if (typeof setMood === 'function') setMood('neutral');
-    if (typeof showProtagMsg === 'function') {
-      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_ON_ANSWER), true, 3000), 300);
-    }
   }
 }
 

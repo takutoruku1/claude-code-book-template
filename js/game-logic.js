@@ -432,18 +432,8 @@ function afterReactions() {
 /* ============================================================
    CLIENT REACTION (midori / seiji)
 ============================================================ */
-const _PROTAG_Y_BEFORE_END = [
-  '（結末を見る前に、Yで反響を確認しておこう）',
-  '（投稿の影響を自分の目で確認する）',
-  '（Yの空気を読んでから、結末へ）',
-  '（コメントまで見てから判断しよう）',
-];
-
 function _showEndingBtn() {
   const chatMsgs = document.getElementById('chatMessages');
-  if (typeof showProtagMsg === 'function') {
-    setTimeout(() => showProtagMsg(_pick(_PROTAG_Y_BEFORE_END), false, 5000, true), 200);
-  }
   const btn = document.createElement('button');
   btn.className = 'btn-next-phase';
   btn.style.cssText = 'display:block;margin:12px auto 4px;';

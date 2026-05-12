@@ -103,23 +103,6 @@ function _runChatNode(node, idx, pause) {
   }
 }
 
-const _PROTAG_GUIDE_CHAT = {
-  _default: ['依頼人から連絡が来ている。チャトルを見よう', 'メッセージが届いている', 'チャトルを確認しよう'],
-};
-const _PROTAG_GUIDE_BUZZ = {
-  midori:   ['ばずったーで言葉を組み立てよう。みどりらしい言葉を', '彼女の声を文章にする時間だ'],
-  saku:     ['ばずったーで朔の世界観を言語化しよう', '職人の言葉をばずったーで組み立てよう'],
-  seiji:    ['ばずったーで投稿を設計しよう。数字を動かす言葉を', '誠司の店を言葉で広げる。ばずったーへ'],
-  karen:    ['…ばずったーで言葉を選ぶ必要がある', '慎重に言葉を選ぼう。ばずったーで'],
-  _default: ['ばずったーで言葉を組み立てよう', '投稿を作ろう。ばずったーへ'],
-};
-const _PROTAG_GUIDE_POST = {
-  midori:   ['準備ができたらばずったーから投稿しよう。みどりの声を届けたい', '彼女の言葉を世界に出す時間だ'],
-  saku:     ['言葉が揃った。ばずったーから投稿しよう', '職人の仕事を世界に出そう。ばずったーへ'],
-  seiji:    ['投稿の準備完了。ばずったーへ', '仕掛けはできた。あとは投稿するだけだ'],
-  karen:    ['…送信するか、ばずったーで決めよう', '覚悟が決まったらばずったーから投稿しよう'],
-  _default: ['言葉は揃った。ばずったーから投稿しよう', 'ばずったーへ。投稿しよう'],
-};
 
 function _isChatOpen() {
   const winActive    = !!document.getElementById('chatWindow')?.classList.contains('active');
@@ -159,13 +142,7 @@ function showChoices(opts) {
   window._pendingChoices = opts;
 
   if (_isChatOpen()) {
-    // チャトルのトーク画面が既に開いているときはウィジェットに直接表示
     if (typeof _showPendingChoicesInWidget === 'function') _showPendingChoicesInWidget();
-  } else {
-    // チャトルが閉じているときはガイドメッセージを表示（選択肢はチャトルを開いたときに表示）
-    if (typeof showProtagMsg === 'function') {
-      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_GUIDE_CHAT), false, 5000), 400);
-    }
   }
 }
 
@@ -175,16 +152,10 @@ function handleTrigger(node, idx) {
     setStep(2);
     showArea('materialArea');
     setupMaterials();
-    if (!_isBuzzOpen() && typeof showProtagMsg === 'function') {
-      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_GUIDE_BUZZ), false, 7000), 600);
-    }
 
   } else if (node.action === 'showPost') {
     GS.postResumeAt = node.resumeAt || null;
     goToPost();
-    if (!_isBuzzOpen() && typeof showProtagMsg === 'function') {
-      setTimeout(() => showProtagMsg(_protagMsg(_PROTAG_GUIDE_POST), false, 7000), 600);
-    }
 
   } else if (node.action === 'flashback2') {
     triggerFlashback(2, () => runChat(idx + 1));
@@ -248,27 +219,14 @@ function showKidokuLastChoice(choices) {
 ============================================================ */
 function triggerFlashback(phase, callback) {
   GS.flashbackPhase = Math.max(GS.flashbackPhase, phase);
-  document.body.dataset.flashbackPhase = GS.flashbackPhase; // Phase B: mystery フェーズ連動
+  document.body.dataset.flashbackPhase = GS.flashbackPhase;
 
-  const lines = phase === 2
-    ? ['…残す、か。', '証拠を残す。それが俺の仕事だった。']
-    : ['3年前の捜査。', '篠宮 カレンの姉。', '俺が追っていた——'];
+  if (typeof setMood === 'function') setMood(phase >= 3 ? 'shaken' : 'nervous');
 
-  const lineInterval = 1800;
-  const lineDuration = 2200;
-
-  lines.forEach((text, i) => {
-    setTimeout(() => {
-      if (typeof showProtagMsg === 'function') showProtagMsg(text, false, lineDuration);
-      document.getElementById('protagBubble')?.classList.add('flashback');
-    }, 300 + i * lineInterval);
-  });
-
-  const total = 300 + (lines.length - 1) * lineInterval + lineDuration + 500;
+  const duration = phase === 2 ? 4100 : 5900;
   setTimeout(() => {
-    document.getElementById('protagBubble')?.classList.remove('flashback');
     if (callback) callback();
-  }, total);
+  }, duration);
 }
 
 /* ============================================================
@@ -329,19 +287,8 @@ function executeDirectionCmd(d, next) {
       break;
 
     case 'mono':
-      if (typeof showProtagMsg === 'function') {
-        const bubble = document.getElementById('protagBubble');
-        if (d.style === 'flashback' && bubble) bubble.classList.add('flashback');
-        if (d.style === 'hollow'    && bubble) bubble.classList.add('hollow');
-        if (d.mood && typeof setMood === 'function') setMood(d.mood);
-        showProtagMsg(d.text, false, d.durationMs || 3200, d.force || false);
-        setTimeout(() => {
-          if (bubble) bubble.classList.remove('flashback', 'hollow');
-          next();
-        }, (d.durationMs || 3200) + 200);
-      } else {
-        next();
-      }
+      if (d.mood && typeof setMood === 'function') setMood(d.mood);
+      next();
       break;
 
     case 'overlay_text':
@@ -644,26 +591,14 @@ function applyMysteryPhase(phase) {
  * @param {number} newPhase - 新しいフェーズ値 (1〜3)
  */
 function _onMysteryPhaseUp(newPhase) {
-  const monoTexts = {
-    1: '（……何か、引っかかる）',
-    2: '（同じ場所が、また出てきた）',
-    3: '（——全部、繋がっている）',
-  };
-  const text = monoTexts[newPhase];
-  if (!text) return;
-
   const glitchIntensity = newPhase === 3 ? 'medium' : 'low';
-
-  // フェーズ2以上ではグリッチを伴う
   if (newPhase >= 2 && typeof processDirections === 'function') {
     processDirections([
       { cmd: 'wait',   ms: 400 },
       { cmd: 'glitch', target: 'protagonistWidget', durationMs: 350, intensity: glitchIntensity },
-      { cmd: 'mono',   text, style: 'hollow', durationMs: 2800, force: true }
+      { cmd: 'mono',   mood: newPhase >= 3 ? 'shaken' : 'nervous' }
     ], null);
-  } else {
-    if (typeof showProtagMsg === 'function') {
-      setTimeout(() => showProtagMsg(text, false, 2800, false), 400);
-    }
+  } else if (newPhase === 1 && typeof setMood === 'function') {
+    setMood('nervous');
   }
 }

@@ -2,13 +2,6 @@
    Y APP  (Twitter/X 風 SNS ビューア)
 ============================================================ */
 
-const _PROTAG_Y_POST_CHECK = [
-  '（実際の反響を自分でも確認しておこう）',
-  '（投稿のコメントを見てみよう。数字の裏に何がある）',
-  '（反応の質を確認する。数だけじゃない）',
-  '（コメント欄は生の声だ）',
-];
-
 function openYWindow() {
   const win = document.getElementById('yWindow');
   win.classList.add('active');
@@ -20,9 +13,6 @@ function openYWindow() {
   updateTaskbarIndicators();
   setDesktopNotif('notifY', false);
 
-  if (window._allPostedContents?.length && typeof showProtagMsg === 'function') {
-    setTimeout(() => showProtagMsg(_pick(_PROTAG_Y_POST_CHECK), false, 4000, true), 700);
-  }
 }
 
 function closeYWindow() {
