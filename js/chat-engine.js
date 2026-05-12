@@ -333,6 +333,7 @@ function executeDirectionCmd(d, next) {
         const bubble = document.getElementById('protagBubble');
         if (d.style === 'flashback' && bubble) bubble.classList.add('flashback');
         if (d.style === 'hollow'    && bubble) bubble.classList.add('hollow');
+        if (d.mood && typeof setMood === 'function') setMood(d.mood);
         showProtagMsg(d.text, false, d.durationMs || 3200, d.force || false);
         setTimeout(() => {
           if (bubble) bubble.classList.remove('flashback', 'hollow');

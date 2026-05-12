@@ -30,6 +30,7 @@ function bringToFront(el) {
     if (lines && typeof showProtagMsg === 'function') {
       setTimeout(() => showProtagMsg(_pick(lines), false, 2800), 600);
     }
+    if (typeof setMood === 'function') setMood('neutral');
     _winFocusCooldown = setTimeout(() => { _winFocusCooldown = null; }, 3500);
   }
 }
@@ -201,10 +202,19 @@ function _onDragEnd() {
 }
 
 /* ===== GAME EVENT LISTENER ===== */
+const _GAME_MOOD = {
+  'invaders:start': 'focused', 'invaders:playerHit': 'nervous', 'invaders:gameover': 'quiet',
+  'invaders:win': 'happy', 'invaders:ufo': 'shaken',
+  'ms:start': 'focused', 'ms:lose': 'quiet', 'ms:win': 'happy',
+  'sol:start': 'focused', 'sol:foundation': 'neutral', 'sol:win': 'happy',
+};
 document.addEventListener('gameEvent', (e) => {
-  const lines = _PROTAG_ON_GAME[e.detail?.type];
+  const type  = e.detail?.type;
+  const lines = _PROTAG_ON_GAME[type];
   if (lines && typeof showProtagMsg === 'function')
     showProtagMsg(_pick(lines), e.detail?.thinking ?? false, 2800, true);
+  const mood = _GAME_MOOD[type];
+  if (mood && typeof setMood === 'function') setMood(mood);
 });
 
 /* ===== DRAGGABLE WINDOWS ===== */

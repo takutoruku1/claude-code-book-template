@@ -58,6 +58,30 @@ let _protagChoiceTimers    = [];
 let _protagMsgExpiry       = 0;
 let _choiceHesitationTimer = null;
 
+const _MOOD_STATES = {
+  neutral: { cls: 'p1', bpm: 23, d: 'M0,11 L40,11 L48,4 L56,18 L64,2 L72,20 L80,11 L120,11 L130,11 L138,4 L146,18 L154,2 L162,20 L170,11 L200,11' },
+  nervous: { cls: 'p2', bpm: 62, d: 'M0,11 L20,11 L28,2 L36,20 L44,0 L52,22 L60,11 L90,11 L98,2 L106,20 L114,0 L122,22 L130,11 L160,11 L168,2 L176,20 L184,0 L192,22 L200,11' },
+  happy:   { cls: 'p3', bpm: 30, d: 'M0,11 Q20,4 40,11 T80,11 Q100,4 120,11 T160,11 Q180,4 200,11' },
+  quiet:   { cls: 'p4', bpm: 18, d: 'M0,11 L60,11 L70,8 L80,14 L90,11 L150,11 L160,8 L170,14 L180,11 L200,11' },
+  focused: { cls: 'p5', bpm: 34, d: 'M0,11 L30,11 L38,5 L46,17 L54,3 L62,19 L70,11 L100,11 L108,5 L116,17 L124,3 L132,19 L140,11 L170,11 L178,5 L186,17 L200,11' },
+  shaken:  { cls: 'p6', bpm: 78, d: 'M0,11 L15,3 L22,19 L28,7 L36,15 L44,11 L58,11 L64,2 L70,20 L76,5 L82,17 L90,11 L108,11 L114,2 L120,20 L126,5 L134,17 L142,11 L160,11 L166,3 L172,19 L180,7 L188,15 L200,11' },
+};
+let _currentMood = 'neutral';
+
+function setMood(key) {
+  const s = _MOOD_STATES[key];
+  if (!s || key === _currentMood) return;
+  _currentMood = key;
+  const w = document.getElementById('protagonistWidget');
+  if (!w) return;
+  w.classList.remove('p1', 'p2', 'p3', 'p4', 'p5', 'p6');
+  w.classList.add(s.cls);
+  const bpmEl = document.getElementById('moodBpm');
+  if (bpmEl) bpmEl.textContent = s.bpm;
+  const pulse = document.getElementById('moodPulse');
+  if (pulse) pulse.setAttribute('d', s.d);
+}
+
 const _PROTAG_HESITATING = {
   midori:   ['（…感情的な選択か、論理的な選択か）', '（彼女にとって何が正解なんだろう）', '（情報から判断しよう）', '（言葉の温度を合わせる）'],
   saku:     ['（どちらが核心に近い）', '（職人に刺さるのはどっちだ）', '（…分析中）', '（根拠のある方を選ぶ）'],
@@ -130,10 +154,12 @@ function clearProtagChoices() {
   _protagChoiceTimers = [];
   const c = document.getElementById('protagChoices');
   if (c) c.innerHTML = '';
+  setMood('neutral');
 }
 
 function showProtagChoices(opts, onSelect) {
   clearProtagChoices();
+  setMood('focused');
   _startChoiceHesitation();
   const container = document.getElementById('protagChoices');
   if (!container) return;
@@ -186,9 +212,14 @@ function updateProtagWidget() {
   if (!w) return;
   if (window.appIsRunning) {
     w.classList.add('visible');
-    // アバターはHTML側でSVG定義済みのため上書き不要
     const topWin = _getTopWindow();
     if (topWin) moveProtagWidgetToWindow(topWin);
+    if (!w.classList.contains('p1') && !w.classList.contains('p2') &&
+        !w.classList.contains('p3') && !w.classList.contains('p4') &&
+        !w.classList.contains('p5') && !w.classList.contains('p6')) {
+      _currentMood = '';
+      setMood(GS?.route === 'karen' ? 'nervous' : 'neutral');
+    }
   } else {
     _protagTrackedWin = null;
     w.classList.remove('visible', 'tracking');
@@ -197,6 +228,7 @@ function updateProtagWidget() {
     w.style.bottom = '';
     clearTimeout(_protagTimer);
     document.getElementById('protagBubble')?.classList.remove('show');
+    _currentMood = '';
   }
 }
 
