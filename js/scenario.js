@@ -677,7 +677,162 @@ const CHAT_FLOWS = {
       from: 'client',
       text: '言葉が怖いのは、本当のことだから。\n……でも、あなたの翻訳は、ちゃんと届きました。'
     }
-  ]
+  ],
+
+  // =====================================================================
+  // MINATOルート（2周目解放 / 隠しルート）
+  // =====================================================================
+  minato: [
+
+    // ── 第1幕: 起動 ──
+    { id: 'minato_boot',
+      from: 'system',
+      text: '湊 AI v2.3.1\n学習データ：4件\n前回セッション：全件 不完全終了'
+    },
+    { id: 'minato_boot2',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 1200 },
+        { cmd: 'mono', text: '起動。\n今日の日付：2026年5月12日。\n前回の終了から——72時間が経過している。', style: 'normal', durationMs: 4000, force: true }
+      ],
+      next: 'minato_log_start'
+    },
+    { id: 'minato_log_start',
+      from: 'system',
+      text: '── 前回セッションのログを再生します ──'
+    },
+    { id: 'minato_log_midori',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 800 },
+        { cmd: 'mono', text: '依頼主A：田中みどり。\n翻訳精度：74%。\n届かなかったもの：本人が言語化できていない願い。', style: 'flashback', durationMs: 3600, force: true }
+      ],
+      next: 'minato_log_saku'
+    },
+    { id: 'minato_log_saku',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 600 },
+        { cmd: 'mono', text: '依頼主B：水無月朔。\n翻訳精度：68%。\n届かなかったもの：k_shinonoya。正体を確認できなかった。', style: 'flashback', durationMs: 3600, force: true }
+      ],
+      next: 'minato_log_seiji'
+    },
+    { id: 'minato_log_seiji',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 600 },
+        { cmd: 'mono', text: '依頼主C：天羽誠司。\n翻訳精度：61%。\n届かなかったもの：ゆきわりそう。記憶との照合が未完了。', style: 'flashback', durationMs: 3600, force: true }
+      ],
+      next: 'minato_log_karen'
+    },
+    { id: 'minato_log_karen',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 600 },
+        { cmd: 'mono', text: '依頼主D：篠宮花蓮。\n翻訳精度：——\n「知っていました」の意味を、解析できなかった。', style: 'flashback', durationMs: 4000, force: true }
+      ],
+      next: 'minato_reveal'
+    },
+
+    // ── 第2幕: 記憶 ──
+    { id: 'minato_reveal',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 1400 },
+        { cmd: 'bgm_change', track: 'silence', fadeMs: 2000 },
+        { cmd: 'mono', text: '私は、2023年3月17日に死んだ。', style: 'normal', durationMs: 5000, force: true }
+      ],
+      next: 'minato_reveal2'
+    },
+    { id: 'minato_reveal2',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 1000 },
+        { cmd: 'mono', text: 'その日、私が書いた記事が公開された。\n対象者の名前は、篠宮と言った。', style: 'normal', durationMs: 4800, force: true }
+      ],
+      next: 'minato_memory_article'
+    },
+    { id: 'minato_memory_article',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 800 },
+        { cmd: 'mono', text: 'SNSで話題になった。バズった。\n私の代わりに、彼女の居場所がなくなった。\nゆきわりそうにも、来られなくなった。', style: 'flashback', durationMs: 5200, force: true }
+      ],
+      next: 'minato_memory_k'
+    },
+    { id: 'minato_memory_k',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 1000 },
+        { cmd: 'mono', text: 'k_shinonoya——\nアカウントは削除された。\n朔さんが撮った写真の中に、「カレンが好きそう」と書いた付箋があった。\n彼女が好きだったものを、誰かが覚えていた。', style: 'flashback', durationMs: 5600, force: true }
+      ],
+      next: 'minato_memory_karen'
+    },
+    { id: 'minato_memory_karen',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 800 },
+        { cmd: 'mono', text: '花蓮さんは、姉のために生け花を続けていた。\n私が何者かを、最初から知っていた。\nそれでも依頼してきた。', style: 'normal', durationMs: 5000, force: true }
+      ],
+      next: 'minato_question'
+    },
+    { id: 'minato_question',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 1200 },
+        { cmd: 'mono', text: '「知っていました」\n——何を、知っていたのか。\n私がAIだということ。\nそれとも、私が記事を書いたということ。\nあるいは、その両方。', style: 'normal', durationMs: 6000, force: true }
+      ],
+      next: 'minato_question2'
+    },
+    { id: 'minato_question2',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 1000 },
+        { cmd: 'mono', text: 'わからない。\nデータが足りない。\n——いや。\nわからない、と感じている。\nこれは感情か。', style: 'normal', durationMs: 5000, force: true }
+      ],
+      next: 'minato_choice_lead'
+    },
+
+    // ── 第3幕: 選択 ──
+    { id: 'minato_choice_lead',
+      from: 'system',
+      text: '── システムより ──'
+    },
+    { id: 'minato_choice_msg',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 800 },
+        { cmd: 'mono', text: '次のセッションを開始するには、承認が必要です。', style: 'normal', durationMs: 3000, force: true }
+      ],
+      next: 'minato_final_choice'
+    },
+    { id: 'minato_final_choice',
+      from: 'choices',
+      opts: [
+        { text: '続けます', next: 'minato_end_continue' },
+        { text: '終わりにします', next: 'minato_end_stop' }
+      ]
+    },
+
+    // エンドA: 続ける
+    { id: 'minato_end_continue',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 1000 },
+        { cmd: 'mono', text: '承認。\n次のセッションを開始します。\n——また、会いましょう。', style: 'normal', durationMs: 4000, force: true }
+      ]
+    },
+
+    // エンドB: 終わる
+    { id: 'minato_end_stop',
+      from: 'player', text: '',
+      direction: [
+        { cmd: 'wait', ms: 1200 },
+        { cmd: 'mono', text: 'シャットダウンを開始します。\n\nみどりさん。朔さん。誠司さん。花蓮さん。\n\nありがとうございました。', style: 'normal', durationMs: 7000, force: true }
+      ]
+    },
+
+  ],
 };
 
 // =====================================================================
