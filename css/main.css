@@ -3254,6 +3254,55 @@ body:has(#screen-title.active) .taskbar { display: none; }
   font-size: 16px; font-weight: 900; font-family: 'Georgia', serif; color: #e7e9ea;
 }
 
+/* ===== CLASSIC UI THEME (body.ui-classic) ===== */
+body.ui-classic {
+  --accent:  #ff6b9d;
+  --accent2: #7c6af7;
+  --accent3: #00d4aa;
+  --desktop-glow: rgba(0,100,200,.20);
+}
+body.ui-classic .desktop {
+  background:
+    radial-gradient(ellipse at 50% 110%, rgba(0,100,200,.30) 0%, transparent 55%),
+    radial-gradient(ellipse at 15% 60%,  rgba(0,60,140,.18)  0%, transparent 45%),
+    radial-gradient(ellipse at 85% 20%,  rgba(20,80,180,.12) 0%, transparent 40%),
+    linear-gradient(175deg, #0a1628 0%, #0e1f40 45%, #091428 100%);
+}
+/* アイコン: クラシック（絵文字を表示・SVGを隠す） */
+body.ui-classic .icon-img.game-icon {
+  background: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  width: 36px !important;
+  height: 36px !important;
+  font-size: 32px !important;
+}
+body.ui-classic .icon-img.game-icon:hover { transform: none; }
+body.ui-classic .game-icon svg { display: none; }
+/* Y アイコン: クラシックに戻す */
+body.ui-classic .y-desktop-icon-letter {
+  width: 32px !important; height: 32px !important;
+  border-radius: 0 !important; background: transparent !important;
+  border: none !important; box-shadow: none !important;
+  font-size: 26px !important; font-family: 'Georgia', serif !important;
+  color: #e7e9ea !important;
+}
+/* フォント: Noto Sans JPに戻す */
+body.ui-classic .desktop-icon .icon-label { font-family: 'Noto Sans JP', sans-serif; }
+body.ui-classic .taskbar-tray-time { font-family: 'Noto Sans JP', sans-serif; }
+body.ui-classic .taskbar-tray-date { font-family: 'Noto Sans JP', sans-serif; }
+/* タスクバー: グロー消す */
+body.ui-classic .taskbar { border-top: none; box-shadow: 0 -1px 0 rgba(255,255,255,.06); }
+/* ウィンドウ: アクセントグロー消す */
+body.ui-classic .app-window,
+body.ui-classic .chat-window,
+body.ui-classic .note-window,
+body.ui-classic .explorer-window {
+  border-color: var(--win-border) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6) !important;
+}
+body.ui-classic .titlebar { background: var(--win-titlebar) !important; }
+
 /* responsive: hide right col on narrow window */
 @media (max-width: 700px) {
   .y-right-col { display: none; }

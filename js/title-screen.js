@@ -45,6 +45,13 @@ function toggleTsOptions() {
   if (arrow) arrow.textContent = drawer?.classList.contains('open') ? '∨' : '›';
 }
 
+function toggleDesktopTheme() {
+  const isClassic = document.body.classList.toggle('ui-classic');
+  localStorage.setItem('buzzutter_ui_theme', isClassic ? 'classic' : 'game');
+  const btn = document.getElementById('uiThemeBtn');
+  if (btn) btn.textContent = isClassic ? 'ゲーム風に切り替え' : 'クラシックに切り替え';
+}
+
 function toggleTitleDesign() {
   const el = document.getElementById('screen-title');
   if (!el) return;
@@ -256,6 +263,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const savedDesign = localStorage.getItem('titleDesign') || 'new';
   const titleEl = document.getElementById('screen-title');
   if (titleEl) titleEl.dataset.design = savedDesign;
+
+  // デスクトップUIテーマを復元
+  const savedUiTheme = localStorage.getItem('buzzutter_ui_theme');
+  if (savedUiTheme === 'classic') {
+    document.body.classList.add('ui-classic');
+    const btn = document.getElementById('uiThemeBtn');
+    if (btn) btn.textContent = 'ゲーム風に切り替え';
+  }
 
   const vol = Math.round(_getBgmVolume() * 100);
   ['bgmVolumeSlider','tsBgmSlider'].forEach(id => { const el = document.getElementById(id); if (el) el.value = vol; });
