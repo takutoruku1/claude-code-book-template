@@ -474,6 +474,7 @@ function showClientReaction() {
    ENDING RESOLUTION
 ============================================================ */
 function resolveEnding() {
+  if (GS.route === 'minato') return 'saihan'; // cmd:'end' で直接処理するためここには到達しない
   if (GS.route === 'midori') {
     if (GS.self >= 65)                  return 'jiritu';
     if (GS.buzz >= 65 && GS.self < 50) return 'zure';
@@ -741,6 +742,8 @@ function showEnding(endKey) {
     }
   }
 
+
+  if (typeof markRouteClear === 'function') markRouteClear(GS.route);
 
   // 1. #screen-ending のクラスをリセットし .active + .ending-${endKey} を追加
   var screenEnding = document.getElementById('screen-ending');

@@ -292,19 +292,21 @@ function makeDraggable(windowEl) {
   makeDraggable(document.getElementById(id));
 });
 
-// マインスイーパーは .ms-titlebar を使うため専用ドラッグ処理
-(function() {
-  const win = document.getElementById('minesweeperWindow');
+// .titlebar を持たないゲームウィンドウ用の汎用ドラッグヘルパー
+function _makeGameWinDraggable(winId, barSelector) {
+  const win = document.getElementById(winId);
   if (!win) return;
-  const bar = win.querySelector('.ms-titlebar');
+  const bar = win.querySelector(barSelector);
   if (!bar) return;
+  bar.style.cursor = 'grab';
   let dragging = false, ox = 0, oy = 0;
   bar.addEventListener('mousedown', (e) => {
     if (document.body.classList.contains('mobile-mode')) return;
     if (e.target.closest('button')) return;
     const r = win.getBoundingClientRect();
-    win.style.position = 'fixed';
-    win.style.margin = '0';
+    win.style.position  = 'fixed';
+    win.style.margin    = '0';
+    win.style.transform = 'none';
     win.style.left = r.left + 'px';
     win.style.top  = r.top  + 'px';
     ox = e.clientX - r.left;
@@ -324,11 +326,15 @@ function makeDraggable(windowEl) {
   document.addEventListener('mouseup', () => {
     if (!dragging) return;
     dragging = false;
-    bar.style.cursor = '';
+    bar.style.cursor = 'grab';
     document.body.style.userSelect = '';
     _onDragEnd();
   });
-})();
+}
+
+_makeGameWinDraggable('minesweeperWindow', '.ms-titlebar');
+_makeGameWinDraggable('invadersWindow',    '.inv-titlebar');
+_makeGameWinDraggable('solitaireWindow',   '.inv-titlebar');
 
 /* ===== RESIZABLE WINDOWS ===== */
 function makeResizable(windowEl) {

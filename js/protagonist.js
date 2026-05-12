@@ -186,8 +186,7 @@ function updateProtagWidget() {
   if (!w) return;
   if (window.appIsRunning) {
     w.classList.add('visible');
-    const ava = document.getElementById('protagAvatar');
-    if (ava) ava.textContent = '👤';
+    // アバターはHTML側でSVG定義済みのため上書き不要
     const topWin = _getTopWindow();
     if (topWin) moveProtagWidgetToWindow(topWin);
   } else {

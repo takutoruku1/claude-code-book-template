@@ -6,7 +6,29 @@ const CHARACTERS = {
   saku:   { name: '水無月 朔',   avatar: '🔧', tag: '' },
   seiji:  { name: '天羽 誠司',   avatar: '☕', tag: '' },
   karen:  { name: '篠宮 花蓮',   avatar: '🌸', tag: 'キーパーソン' },
+  minato: { name: 'MINATO AI',  avatar: '[AI]', tag: 'SYSTEM' },
 };
+
+/* ============================================================
+   ROUTE CLEAR TRACKING
+============================================================ */
+const _CLEARED_KEY = 'buzzutter_cleared';
+
+function markRouteClear(route) {
+  const d = getClearedRoutes();
+  d[route] = true;
+  localStorage.setItem(_CLEARED_KEY, JSON.stringify(d));
+}
+
+function getClearedRoutes() {
+  try { return JSON.parse(localStorage.getItem(_CLEARED_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function isAllRoutesClear() {
+  const d = getClearedRoutes();
+  return ['midori', 'saku', 'seiji', 'karen'].every(r => d[r]);
+}
 
 /* ============================================================
    CLIENT REACTION MESSAGES (for midori/seiji post-reaction phase)

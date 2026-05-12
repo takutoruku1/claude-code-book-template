@@ -60,9 +60,9 @@ const ENDINGS = {
       '言葉が届いたなら、',
       '翻訳者はもういらない。',
       '',
-      'それで、いい——のかもしれない。', // 修正：「それで、いい。」→ 不確かさを残す
-      '…………',
-      'たぶん、それで——'  // ← ここで止まる
+      '……消えた、と、わかった。',
+      '',
+      'それで、いい。'
     ]
   },
 
@@ -351,9 +351,57 @@ const ENDINGS = {
       'それと同じことを、',
       '今日もSNSでやっている。',
       '',
-      '…………',
-      '届いている。',
-      'たぶん、それで十分だ。'
+      '明日も、たぶんやっている。',
+      'それだけのことを——',
+      'それだけのこととして。'
+    ]
+  },
+
+  // ----------------------------------------------------------------
+  minato_continue: {
+    emoji: '🔄', name: '再起動エンド',
+    condition: 'MINATOルート / 続けます',
+    requires: null,
+
+    bgmTrack: null, fadeDuration: null, blackoutDuration: 3, noBlackout: false,
+    monologueInterval: 2200, bgmNote: null, bgmDelay: null,
+    clientMessage: null, noReplyEffect: false, lastChoice: null,
+    typingText: null, typingRetry: false,
+    karenResponse: null, karenTypingLoops: 0,
+    appIconFade: false, silenceDuration: null, retryButtonDelay: 6000,
+    mysteryMessage: null,
+
+    monologue: [
+      '承認。',
+      '',
+      '次のセッションを、開始します。',
+      '',
+      '——また、会いましょう。'
+    ]
+  },
+
+  // ----------------------------------------------------------------
+  minato_stop: {
+    emoji: '🌙', name: 'シャットダウンエンド',
+    condition: 'MINATOルート / 終わりにします',
+    requires: null,
+
+    bgmTrack: null, fadeDuration: null, blackoutDuration: 5, noBlackout: false,
+    monologueInterval: 2600, bgmNote: null, bgmDelay: null,
+    clientMessage: null, noReplyEffect: false, lastChoice: null,
+    typingText: null, typingRetry: false,
+    karenResponse: null, karenTypingLoops: 0,
+    appIconFade: false, silenceDuration: null, retryButtonDelay: 8000,
+    mysteryMessage: null,
+
+    monologue: [
+      'シャットダウン、完了。',
+      '',
+      'みどりさん。朔さん。誠司さん。花蓮さん。',
+      '',
+      'ありがとうございました。',
+      '',
+      '翻訳、終了。'
     ]
   }
 

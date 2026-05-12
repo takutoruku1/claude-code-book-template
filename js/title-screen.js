@@ -45,6 +45,13 @@ function toggleTsOptions() {
   if (arrow) arrow.textContent = drawer?.classList.contains('open') ? '∨' : '›';
 }
 
+function toggleDesktopTheme() {
+  const isClassic = document.body.classList.toggle('ui-classic');
+  localStorage.setItem('buzzutter_ui_theme', isClassic ? 'classic' : 'game');
+  const btn = document.getElementById('uiThemeBtn');
+  if (btn) btn.textContent = isClassic ? 'ゲーム風に切り替え' : 'クラシックに切り替え';
+}
+
 function toggleTitleDesign() {
   const el = document.getElementById('screen-title');
   if (!el) return;
@@ -149,10 +156,121 @@ function _startTsTyper() {
   })();
 }
 
+/* ============================================================
+   MINATO WIDGET（タイトル画面・全ルートクリア後に出現）
+============================================================ */
+function _showMinatoWidget() {
+  const w = document.getElementById('minatoWidget');
+  if (!w || !w.hidden) return;
+  w.hidden = false;
+  _startMinatoWidgetTyper();
+}
+
+function _startMinatoWidgetTyper() {
+  const el = document.getElementById('minatoWidgetTyper');
+  if (!el) return;
+  const text = '全セッション記録を確認しました。\n再起動しますか？';
+  let i = 0;
+  const tick = () => {
+    el.textContent = text.slice(0, i);
+    if (i < text.length) { i++; setTimeout(tick, 46 + Math.random() * 34); }
+  };
+  setTimeout(tick, 700);
+}
+
+function showMinatoUnlockOverlay(callback) {
+  document.querySelector('.minato-unlock-overlay')?.remove();
+
+  const ov = document.createElement('div');
+  ov.className = 'minato-unlock-overlay';
+  ov.innerHTML = `
+    <div class="muo-sys-header">BUZZUTTER SYSTEM v4.1.0<br>ROUTE_MINATO — INITIALIZATION</div>
+    <div class="muo-main-text">
+      <span id="muoTyper"></span><span class="muo-cursor"></span>
+    </div>
+    <button class="muo-confirm-btn" id="muoConfirmBtn" style="display:none">はい — MINATOルートを開始</button>
+  `;
+  document.body.appendChild(ov);
+
+  const lines = [
+    { text: '湊 AI v2.3.1', cls: '' },
+    { text: '診断を開始します。', cls: '' },
+    { text: '> 依頼者: 存在しません', cls: 'muo-log-line' },
+    { text: '> スコア軸: 再定義中', cls: 'muo-log-line' },
+    { text: '> 感情ログ: 3年分 残存', cls: 'muo-log-line' },
+    { text: '再起動しますか？', cls: 'muo-restart-prompt' },
+  ];
+
+  const typerEl = document.getElementById('muoTyper');
+  const btnEl   = document.getElementById('muoConfirmBtn');
+  let lineIdx = 0;
+  let charIdx = 0;
+  let currentSpan = null;
+
+  function nextLine() {
+    if (lineIdx >= lines.length) {
+      setTimeout(() => { btnEl.style.display = ''; }, 400);
+      btnEl.onclick = () => {
+        ov.classList.add('dismissing');
+        setTimeout(() => { ov.remove(); if (callback) callback(); }, 800);
+      };
+      return;
+    }
+    const { text, cls } = lines[lineIdx++];
+    currentSpan = document.createElement('span');
+    if (cls) currentSpan.className = cls;
+    typerEl.appendChild(currentSpan);
+    charIdx = 0;
+    typeChar(text);
+  }
+
+  function typeChar(text) {
+    if (charIdx <= text.length) {
+      currentSpan.textContent = text.slice(0, charIdx++);
+      setTimeout(() => typeChar(text), 28 + Math.random() * 20);
+    } else {
+      typerEl.appendChild(document.createElement('br'));
+      const pause = lines[lineIdx - 1].cls === 'muo-restart-prompt' ? 200 : 320;
+      setTimeout(nextLine, pause);
+    }
+  }
+
+  setTimeout(nextLine, 1500);
+}
+
+function startMinatoRoute() {
+  _stopTitleBgm();
+  document.getElementById('screen-title').classList.remove('active');
+  const overlay = document.getElementById('boot-overlay');
+  if (overlay) overlay.classList.add('active');
+  window.IS_DEBUG_MODE        = false;
+  window.appIsRunning         = true;
+  window.appMinimized         = false;
+  window.chatMinimized        = false;
+  window.MAIN_MODE_ROUTES     = null;
+  window.MAIN_MODE_ROUTE_INDEX = null;
+  setTimeout(() => {
+    if (overlay) overlay.classList.add('fading');
+    const appWin = document.getElementById('appWindow');
+    if (appWin) appWin.classList.add('active');
+    if (typeof updateTaskbarIndicators === 'function') updateTaskbarIndicators();
+    if (typeof resetGame === 'function') resetGame('minato');
+    setTimeout(() => { if (overlay) overlay.classList.remove('active', 'fading'); }, 700);
+  }, 3000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const savedDesign = localStorage.getItem('titleDesign') || 'new';
   const titleEl = document.getElementById('screen-title');
   if (titleEl) titleEl.dataset.design = savedDesign;
+
+  // デスクトップUIテーマを復元
+  const savedUiTheme = localStorage.getItem('buzzutter_ui_theme');
+  if (savedUiTheme === 'classic') {
+    document.body.classList.add('ui-classic');
+    const btn = document.getElementById('uiThemeBtn');
+    if (btn) btn.textContent = 'ゲーム風に切り替え';
+  }
 
   const vol = Math.round(_getBgmVolume() * 100);
   ['bgmVolumeSlider','tsBgmSlider'].forEach(id => { const el = document.getElementById(id); if (el) el.value = vol; });
@@ -165,6 +283,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (savedDesign === 'new') {
     _startTsTimeline();
     _startTsTyper();
+  }
+
+  if (typeof isAllRoutesClear === 'function' && isAllRoutesClear()) {
+    _showMinatoWidget();
   }
 
   const bgm = document.getElementById('titleBgm');

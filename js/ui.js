@@ -31,6 +31,26 @@ function buildCharSelect() {
     card.onclick = () => startRoute(key);
     grid.appendChild(card);
   });
+
+  const minatoCard = document.createElement('div');
+  const isUnlocked = typeof isAllRoutesClear === 'function' && isAllRoutesClear();
+  if (isUnlocked) {
+    minatoCard.className = 'char-card minato-card unlocked';
+    minatoCard.innerHTML = `
+      <div class="char-card-avatar minato-card-avatar">[AI]</div>
+      <div class="char-card-name">MINATO AI v2.3.1</div>
+      <div class="char-card-tag system-tag">SYSTEM</div>
+      <div class="char-card-tag hidden-tag">HIDDEN</div>`;
+    minatoCard.onclick = () => startRoute('minato');
+  } else {
+    minatoCard.className = 'char-card minato-card locked';
+    minatoCard.innerHTML = `
+      <div class="minato-card-lock-label">
+        <span class="minato-lock-glyph">???.???.???</span>
+        <span class="minato-lock-hint">LOCKED</span>
+      </div>`;
+  }
+  grid.appendChild(minatoCard);
 }
 
 /* ============================================================
@@ -704,6 +724,9 @@ function retryGame() {
       document.getElementById('screen-charselect').classList.add('active');
       buildCharSelect();
     });
+  } else if (!window.MAIN_MODE_ROUTES) {
+    // MINATOルートなど単独起動の場合はタイトルへ
+    showEndroll(goToTitle);
   } else {
     window.MAIN_MODE_ROUTE_INDEX++;
     if (window.MAIN_MODE_ROUTE_INDEX < window.MAIN_MODE_ROUTES.length) {
@@ -723,7 +746,14 @@ function showEndroll(callback) {
   el.classList.add('active');
   const onEnd = () => {
     el.classList.remove('active');
-    cb();
+    if (typeof isAllRoutesClear === 'function' && isAllRoutesClear()
+        && typeof showMinatoUnlockOverlay === 'function'
+        && !localStorage.getItem('buzzutter_minato_overlay_shown')) {
+      localStorage.setItem('buzzutter_minato_overlay_shown', '1');
+      showMinatoUnlockOverlay(cb);
+    } else {
+      cb();
+    }
   };
   el.addEventListener('click', onEnd, { once: true });
   document.getElementById('endrollInner')?.addEventListener('animationend', onEnd, { once: true });
@@ -736,6 +766,9 @@ function goToTitle() {
   window.MAIN_MODE_ROUTE_INDEX = null;
   _closeAllGameWindows();
   _playTitleBgm();
+  if (typeof isAllRoutesClear === 'function' && isAllRoutesClear()) {
+    if (typeof _showMinatoWidget === 'function') _showMinatoWidget();
+  }
 }
 
 function renderMemoNotes() {
