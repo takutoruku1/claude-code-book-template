@@ -1,0 +1,45 @@
+name: 週2回 X アップデート投稿
+
+on:
+  schedule:
+    - cron: '0 9 * * 2'  # 火曜 18:00 JST
+    - cron: '0 9 * * 5'  # 金曜 18:00 JST
+  workflow_dispatch:      # 手動実行（テスト用）
+
+jobs:
+  post-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install anthropic
+
+      - name: Generate tweet
+        id: generate
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/generate_update_tweet.py
+
+      - name: Post to X
+        if: steps.generate.outputs.has_update == 'true'
+        uses: ethomson/send-tweet-action@v1
+        with:
+          status: ${{ steps.generate.outputs.tweet }}
+          consumer-key: ${{ secrets.TWITTER_CONSUMER_KEY }}
+          consumer-secret: ${{ secrets.TWITTER_CONSUMER_SECRET }}
+          access-token: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          access-token-secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+
+      - name: Skip (no commits)
+        if: steps.generate.outputs.has_update != 'true'
+        run: echo "直近4日間のコミットなし。投稿をスキップしました。"
