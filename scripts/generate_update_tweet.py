@@ -10,6 +10,7 @@ import sys
 from datetime import datetime, timedelta
 
 import anthropic
+import tweepy
 
 GAME_URL = "https://takutoruku1.github.io/claude-code-book-template/buzzutter_v2.html"
 HASHTAGS = "#バズったー #インディーゲーム #ゲーム制作"
@@ -76,16 +77,16 @@ def generate_tweet(commits: str) -> str:
         return generate_tweet_fallback(commits)
 
 
-def set_github_output(key: str, value: str) -> None:
-    """GITHUB_OUTPUT にマルチライン対応で書き出す。"""
-    github_output = os.environ.get("GITHUB_OUTPUT", "")
-    if not github_output:
-        # ローカル実行時はコンソールに出力
-        print(f"[OUTPUT] {key}={value}")
-        return
-    delimiter = "GHADELIMITER"
-    with open(github_output, "a", encoding="utf-8") as f:
-        f.write(f"{key}<<{delimiter}\n{value}\n{delimiter}\n")
+def post_tweet(tweet: str) -> None:
+    client = tweepy.Client(
+        consumer_key=os.environ["TWITTER_CONSUMER_KEY"],
+        consumer_secret=os.environ["TWITTER_CONSUMER_SECRET"],
+        access_token=os.environ["TWITTER_ACCESS_TOKEN"],
+        access_token_secret=os.environ["TWITTER_ACCESS_TOKEN_SECRET"],
+    )
+    response = client.create_tweet(text=tweet)
+    print(f"投稿完了: tweet_id={response.data['id']}", file=sys.stderr)
+
 
 
 def main() -> None:
@@ -93,8 +94,6 @@ def main() -> None:
 
     if not commits:
         print("直近4日間のコミットなし。投稿をスキップします。", file=sys.stderr)
-        set_github_output("tweet", "")
-        set_github_output("has_update", "false")
         return
 
     print(f"コミットログ:\n{commits}\n", file=sys.stderr)
@@ -105,12 +104,9 @@ def main() -> None:
 
     if char_count > 280:
         print(f"警告: {char_count}文字で上限超え。スキップします。", file=sys.stderr)
-        set_github_output("tweet", "")
-        set_github_output("has_update", "false")
         return
 
-    set_github_output("tweet", tweet)
-    set_github_output("has_update", "true")
+    post_tweet(tweet)
 
 
 if __name__ == "__main__":

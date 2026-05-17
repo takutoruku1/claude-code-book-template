@@ -22,24 +22,13 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install anthropic
+        run: pip install anthropic tweepy
 
-      - name: Generate tweet
-        id: generate
+      - name: Generate and post tweet
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TWITTER_CONSUMER_KEY: ${{ secrets.TWITTER_CONSUMER_KEY }}
+          TWITTER_CONSUMER_SECRET: ${{ secrets.TWITTER_CONSUMER_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
         run: python scripts/generate_update_tweet.py
-
-      - name: Post to X
-        if: steps.generate.outputs.has_update == 'true'
-        uses: ethomson/send-tweet-action@v1
-        with:
-          status: ${{ steps.generate.outputs.tweet }}
-          consumer-key: ${{ secrets.TWITTER_CONSUMER_KEY }}
-          consumer-secret: ${{ secrets.TWITTER_CONSUMER_SECRET }}
-          access-token: ${{ secrets.TWITTER_ACCESS_TOKEN }}
-          access-token-secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
-
-      - name: Skip (no commits)
-        if: steps.generate.outputs.has_update != 'true'
-        run: echo "直近4日間のコミットなし。投稿をスキップしました。"
