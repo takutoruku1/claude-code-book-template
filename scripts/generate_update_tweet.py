@@ -12,8 +12,7 @@ from datetime import datetime, timedelta
 import anthropic
 import tweepy
 
-GAME_URL = "https://takutoruku1.github.io/claude-code-book-template/buzzutter_v2.html"
-HASHTAGS = "#バズったー #インディーゲーム #ゲーム制作"
+HASHTAGS = "#ゲーム制作 #インディーゲーム #ADV #Steam"
 
 
 def get_recent_commits(days: int = 4) -> str:
@@ -30,11 +29,11 @@ def get_recent_commits(days: int = 4) -> str:
 def generate_tweet_fallback(commits: str) -> str:
     """API不使用のフォールバック: 最初のコミットメッセージを使ってテンプレートからツイートを作成する。"""
     first_commit = commits.splitlines()[0][:40]
-    body = f"【開発日誌】{first_commit} など、バズったーをアップデートしました！"
-    tweet = f"{body}\n{GAME_URL}\n{HASHTAGS}"
+    body = f"【開発日誌】{first_commit} など、ばずったー（仮）をアップデートしました！"
+    tweet = f"{body}\n{HASHTAGS}"
     if len(tweet) > 280:
         body = body[:60] + "…"
-        tweet = f"{body}\n{GAME_URL}\n{HASHTAGS}"
+        tweet = f"{body}\n{HASHTAGS}"
     return tweet
 
 
@@ -47,19 +46,19 @@ def generate_tweet(commits: str) -> str:
             messages=[
                 {
                     "role": "user",
-                    "content": f"""あなたはインディーゲーム「バズったー」（SNSコンサルタントを主人公にしたナラティブゲーム）の開発者です。
+                    "content": f"""あなたはインディーゲーム「ばずったー（仮）」（SNSコンサルタントを主人公にしたナラティブゲーム）の開発者です。
 以下のgitコミットログをもとに、Xに投稿する開発アップデートツイートを日本語で作成してください。
 
 コミットログ:
 {commits}
 
 要件:
-- 全体で140文字以内（ハッシュタグ・URL含む）
-- ゲームのURLを末尾に含める: {GAME_URL}
+- 全体で200文字以内（ハッシュタグ含む）
+- URLは含めない
 - ハッシュタグ: {HASHTAGS}
 - 更新内容を1〜2点、具体的かつ簡潔に
 - 宣伝口調より「開発日誌」風のトーン
-- URLとハッシュタグ以外の本文は80文字程度に収める
+- ハッシュタグ以外の本文は120文字程度に収める
 
 ツイート本文のみ出力してください（説明文・前置きは不要）。""",
                 }
