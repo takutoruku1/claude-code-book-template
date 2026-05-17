@@ -26,15 +26,27 @@ def get_recent_commits(days: int = 4) -> str:
     return result.stdout.strip()
 
 
+def generate_tweet_fallback(commits: str) -> str:
+    """API不使用のフォールバック: 最初のコミットメッセージを使ってテンプレートからツイートを作成する。"""
+    first_commit = commits.splitlines()[0][:40]
+    body = f"【開発日誌】{first_commit} など、バズったーをアップデートしました！"
+    tweet = f"{body}\n{GAME_URL}\n{HASHTAGS}"
+    if len(tweet) > 280:
+        body = body[:60] + "…"
+        tweet = f"{body}\n{GAME_URL}\n{HASHTAGS}"
+    return tweet
+
+
 def generate_tweet(commits: str) -> str:
-    client = anthropic.Anthropic()
-    message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=400,
-        messages=[
-            {
-                "role": "user",
-                "content": f"""あなたはインディーゲーム「バズったー」（SNSコンサルタントを主人公にしたナラティブゲーム）の開発者です。
+    try:
+        client = anthropic.Anthropic()
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=400,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"""あなたはインディーゲーム「バズったー」（SNSコンサルタントを主人公にしたナラティブゲーム）の開発者です。
 以下のgitコミットログをもとに、Xに投稿する開発アップデートツイートを日本語で作成してください。
 
 コミットログ:
@@ -49,10 +61,19 @@ def generate_tweet(commits: str) -> str:
 - URLとハッシュタグ以外の本文は80文字程度に収める
 
 ツイート本文のみ出力してください（説明文・前置きは不要）。""",
-            }
-        ],
-    )
-    return message.content[0].text.strip()
+                }
+            ],
+        )
+        return message.content[0].text.strip()
+    except anthropic.BadRequestError as e:
+        print(f"Anthropic API エラー（フォールバックへ）: {e}", file=sys.stderr)
+        return generate_tweet_fallback(commits)
+    except anthropic.AuthenticationError as e:
+        print(f"Anthropic API 認証エラー（フォールバックへ）: {e}", file=sys.stderr)
+        return generate_tweet_fallback(commits)
+    except Exception as e:
+        print(f"Anthropic API 予期せぬエラー（フォールバックへ）: {e}", file=sys.stderr)
+        return generate_tweet_fallback(commits)
 
 
 def set_github_output(key: str, value: str) -> None:
