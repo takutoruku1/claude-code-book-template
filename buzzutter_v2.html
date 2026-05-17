@@ -12,68 +12,31 @@
 <div class="desktop">
   <div class="desktop-icons">
     <div class="desktop-icon" onclick="openApp()">
-      <div class="icon-img game-icon game-icon-buzz">📱<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="9" y="3" width="18" height="28" rx="3" stroke="white" stroke-width="1.8"/>
-          <circle cx="18" cy="28" r="1.5" fill="white"/>
-          <line x1="12" y1="22" x2="12" y2="17" stroke="white" stroke-width="2" stroke-linecap="round"/>
-          <line x1="18" y1="22" x2="18" y2="13" stroke="white" stroke-width="2" stroke-linecap="round"/>
-          <line x1="24" y1="22" x2="24" y2="9"  stroke="white" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </div>
+      <div class="icon-img"><div class="ic-buzzter"><span class="heart">♥</span></div></div>
       <div class="icon-label">ばずったー</div>
       <div class="desktop-notif" id="notifApp"></div>
     </div>
     <div class="desktop-icon" onclick="openChatApp()">
-      <div class="icon-img game-icon game-icon-chat">💬<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="6" width="28" height="19" rx="5" stroke="white" stroke-width="1.8"/>
-          <line x1="10" y1="14" x2="26" y2="14" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="10" y1="19" x2="20" y2="19" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-          <polyline points="10,25 8,32 16,25" stroke="white" stroke-width="1.6" stroke-linejoin="round" fill="none"/>
-        </svg>
-      </div>
+      <div class="icon-img"><div class="ic-chattle"><div class="tile"></div><div class="bubble"></div></div></div>
       <div class="icon-label">チャトル</div>
       <div class="desktop-notif" id="notifChat"></div>
     </div>
     <div class="desktop-icon" onclick="openMemoApp()">
-      <div class="icon-img game-icon game-icon-memo">📝<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="7" y="4" width="22" height="28" rx="3" stroke="white" stroke-width="1.8"/>
-          <line x1="12" y1="13" x2="24" y2="13" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="12" y1="18" x2="24" y2="18" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="12" y1="23" x2="19" y2="23" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-          <circle cx="26" cy="27" r="4" fill="white" fill-opacity=".25" stroke="white" stroke-width="1.4"/>
-          <line x1="24" y1="29" x2="28" y2="25" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
-        </svg>
-      </div>
+      <div class="icon-img"><div class="ic-notepad"><div class="paper"></div><div class="pen"></div></div></div>
       <div class="icon-label">メモ帳</div>
       <div class="desktop-notif" id="notifMemo"></div>
     </div>
     <div class="desktop-icon" onclick="openGamesWindow()">
-      <div class="icon-img game-icon game-icon-games">🎮<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6 16 Q6 10 12 10 H24 Q30 10 30 16 L28 26 Q27 30 24 30 Q21 30 20 28 H16 Q15 30 12 30 Q9 30 8 26 Z" stroke="white" stroke-width="1.8"/>
-          <line x1="13" y1="17" x2="13" y2="23" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-          <line x1="10" y1="20" x2="16" y2="20" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-          <circle cx="24" cy="18" r="1.5" fill="white"/>
-          <circle cx="27" cy="21" r="1.5" fill="white"/>
-        </svg>
-      </div>
+      <div class="icon-img"><div class="ic-game"><div class="pad"></div><div class="grip-l"></div><div class="grip-r"></div><div class="bumpers"></div><div class="dpad"></div><div class="btns"><div class="b1"></div><div class="b2"></div></div><div class="stick-l"></div><div class="stick-r"></div></div></div>
       <div class="icon-label">ゲーム</div>
     </div>
     <div class="desktop-icon" onclick="openYWindow()">
-      <div class="icon-img y-desktop-icon-letter">Y</div>
+      <div class="icon-img"><div class="ic-y"><span class="glyph">Y</span></div></div>
       <div class="icon-label">Y</div>
       <div class="desktop-notif" id="notifY"></div>
     </div>
     <div class="desktop-icon" onclick="openTrashWindow()">
-      <div class="icon-img game-icon game-icon-trash">🗑️<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <line x1="7" y1="11" x2="29" y2="11" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M10 11 L11 29 Q11.5 32 14 32 H22 Q24.5 32 25 29 L26 11" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
-          <line x1="14" y1="11" x2="13" y2="7" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="22" y1="11" x2="23" y2="7" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="14" y1="7" x2="22" y2="7" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="15" y1="17" x2="15" y2="27" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
-          <line x1="21" y1="17" x2="21" y2="27" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
-        </svg>
-      </div>
+      <div class="icon-img"><div class="ic-trash"><div class="handle"></div><div class="lid"></div><div class="bin"></div></div></div>
       <div class="icon-label">ゴミ箱</div>
     </div>
   </div>
@@ -544,15 +507,15 @@
   </div>
   <div class="start-pinned">
     <div class="start-pin-item" onclick="startMenuOpen('app')">
-      <div class="start-pin-icon">📱</div>
+      <div class="start-pin-icon" style="background:none;"><div class="ic-buzzter"><span class="heart">♥</span></div></div>
       <div class="start-pin-label">ばずったー</div>
     </div>
     <div class="start-pin-item" onclick="startMenuOpen('chat')">
-      <div class="start-pin-icon">💬</div>
+      <div class="start-pin-icon" style="background:none;"><div class="ic-chattle"><div class="tile"></div><div class="bubble"></div></div></div>
       <div class="start-pin-label">チャトル</div>
     </div>
     <div class="start-pin-item" onclick="startMenuOpen('memo')">
-      <div class="start-pin-icon">📝</div>
+      <div class="start-pin-icon" style="background:none;"><div class="ic-notepad"><div class="paper"></div><div class="pen"></div></div></div>
       <div class="start-pin-label">メモ帳</div>
     </div>
     <div class="start-pin-item">
@@ -568,13 +531,11 @@
       <div class="start-pin-label">設定</div>
     </div>
     <div class="start-pin-item" onclick="startMenuOpen('y')">
-      <div class="start-pin-icon" style="display:flex;align-items:center;justify-content:center;">
-        <svg style="width:28px;height:28px;fill:#e7e9ea;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.26 5.632 5.905-5.632Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-      </div>
+      <div class="start-pin-icon" style="background:none;"><div class="ic-y"><span class="glyph">Y</span></div></div>
       <div class="start-pin-label">Y</div>
     </div>
     <div class="start-pin-item" onclick="startMenuOpen('games')">
-      <div class="start-pin-icon">🎮</div>
+      <div class="start-pin-icon" style="background:none;"><div class="ic-game"><div class="pad"></div><div class="grip-l"></div><div class="grip-r"></div><div class="bumpers"></div><div class="dpad"></div><div class="btns"><div class="b1"></div><div class="b2"></div></div><div class="stick-l"></div><div class="stick-r"></div></div></div>
       <div class="start-pin-label">ゲーム</div>
     </div>
     <div class="start-pin-item">
@@ -604,21 +565,21 @@
   <div class="start-menu-section-title">おすすめ</div>
   <div class="start-recommended">
     <div class="start-rec-item" onclick="startMenuOpen('app')">
-      <div class="start-rec-icon">📱</div>
+      <div class="start-rec-icon"><div class="ic-buzzter"><span class="heart">♥</span></div></div>
       <div class="start-rec-text">
         <div class="start-rec-name">ばずったー.exe</div>
         <div class="start-rec-meta">最近開いた</div>
       </div>
     </div>
     <div class="start-rec-item" onclick="startMenuOpen('chat')">
-      <div class="start-rec-icon">💬</div>
+      <div class="start-rec-icon"><div class="ic-chattle"><div class="tile"></div><div class="bubble"></div></div></div>
       <div class="start-rec-text">
         <div class="start-rec-name">チャトル.exe</div>
         <div class="start-rec-meta">最近開いた</div>
       </div>
     </div>
     <div class="start-rec-item" onclick="startMenuOpen('memo')">
-      <div class="start-rec-icon">📝</div>
+      <div class="start-rec-icon"><div class="ic-notepad"><div class="paper"></div><div class="pen"></div></div></div>
       <div class="start-rec-text">
         <div class="start-rec-name">メモ帳.exe</div>
         <div class="start-rec-meta">最近開いた</div>
@@ -1028,6 +989,22 @@
   <div class="ending-emoji" id="endEmoji">🌿</div>
   <div class="ending-title" id="endTitle"></div>
   <div class="ending-sub" id="endSub"></div>
+
+  <!-- モノローグエリア（逐次表示） -->
+  <div id="endMono" class="ending-mono"></div>
+
+  <!-- zange用：タイピング入力エリア -->
+  <div id="endTypingArea" class="ending-typing-area" style="display:none">
+    <div class="ending-typing-input" id="endTypingInput"></div>
+    <div id="endKarenBubbles" class="ending-karen-bubbles"></div>
+  </div>
+
+  <!-- chinmoku用：ミステリーメッセージ -->
+  <div id="endMysteryMsg" class="ending-mystery" style="display:none">
+    <span class="mystery-sender" id="mysterySender">──────</span>
+    <span class="mystery-text"></span>
+  </div>
+
   <div class="ending-scores">
     <div class="ending-score">
       <span class="ending-score-num" id="endBuzz" style="color:var(--accent)">0</span>
@@ -1092,15 +1069,24 @@ function closeChatImageViewer() {
 <script src="js/chat-engine.js"></script>
 
 <!-- 主人公ウィジェット -->
-<div id="protagonistWidget">
+<div id="protagonistWidget" class="p1">
   <div id="protagChoices"></div>
-  <div class="protag-bubble" id="protagBubble">
-    <span id="protagText"></span>
-  </div>
   <div class="protag-avatar" id="protagAvatar">
-    <svg class="protag-avatar-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="14" r="7" stroke="currentColor" stroke-width="1.8"/>
-      <path d="M6 37c0-7.7 6.3-14 14-14s14 6.3 14 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <div class="mood-ring-wrap">
+      <svg viewBox="0 0 100 100"><circle class="mood-ring" cx="50" cy="50" r="46"/></svg>
+    </div>
+    <div class="mood-face">
+      <div class="mood-eye l"></div>
+      <div class="mood-eye r"></div>
+      <div class="mood-mouth"></div>
+      <div class="mood-cheek l"></div>
+      <div class="mood-cheek r"></div>
+    </div>
+  </div>
+  <div class="mood-ekg">
+    <span class="mood-bpm"><b id="moodBpm">23</b> bpm</span>
+    <svg viewBox="0 0 200 22" preserveAspectRatio="none">
+      <path class="mood-pulse" id="moodPulse" d="M0,11 L40,11 L48,4 L56,18 L64,2 L72,20 L80,11 L120,11 L130,11 L138,4 L146,18 L154,2 L162,20 L170,11 L200,11"/>
     </svg>
   </div>
 </div>

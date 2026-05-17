@@ -26,10 +26,7 @@ function bringToFront(el) {
 
   if (winId && winId !== _lastFocusedWinId && !_winFocusCooldown) {
     _lastFocusedWinId = winId;
-    const lines = _PROTAG_ON_WINDOW[winId];
-    if (lines && typeof showProtagMsg === 'function') {
-      setTimeout(() => showProtagMsg(_pick(lines), false, 2800), 600);
-    }
+    if (typeof setMood === 'function') setMood('neutral');
     _winFocusCooldown = setTimeout(() => { _winFocusCooldown = null; }, 3500);
   }
 }
@@ -185,10 +182,6 @@ function _onDragStart() {
   const w = document.getElementById('protagonistWidget');
   if (w) w.classList.add('drag-following');
   clearTimeout(_dragSpeechTimer);
-  _dragSpeechTimer = setTimeout(() => {
-    if (_dragActive && typeof showProtagMsg === 'function')
-      showProtagMsg(_pick(_PROTAG_ON_DRAG_START), false, 2000);
-  }, 400);
 }
 function _onDragEnd() {
   if (!_dragActive) return;
@@ -196,15 +189,18 @@ function _onDragEnd() {
   const w = document.getElementById('protagonistWidget');
   if (w) w.classList.remove('drag-following');
   clearTimeout(_dragSpeechTimer);
-  if (typeof showProtagMsg === 'function')
-    setTimeout(() => showProtagMsg(_pick(_PROTAG_ON_DRAG_END), false, 2200), 200);
 }
 
 /* ===== GAME EVENT LISTENER ===== */
+const _GAME_MOOD = {
+  'invaders:start': 'focused', 'invaders:playerHit': 'nervous', 'invaders:gameover': 'quiet',
+  'invaders:win': 'happy', 'invaders:ufo': 'shaken',
+  'ms:start': 'focused', 'ms:lose': 'quiet', 'ms:win': 'happy',
+  'sol:start': 'focused', 'sol:foundation': 'neutral', 'sol:win': 'happy',
+};
 document.addEventListener('gameEvent', (e) => {
-  const lines = _PROTAG_ON_GAME[e.detail?.type];
-  if (lines && typeof showProtagMsg === 'function')
-    showProtagMsg(_pick(lines), e.detail?.thinking ?? false, 2800, true);
+  const mood = _GAME_MOOD[e.detail?.type];
+  if (mood && typeof setMood === 'function') setMood(mood);
 });
 
 /* ===== DRAGGABLE WINDOWS ===== */
